@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="78bde411-662e-4314-815c-3fba6f4360ea" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="generator" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1af5oviMekmZr1jIF3gP16T3W5Q" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="flattenModules" value="true" />
+    <option name="flattenPackages" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showModules" value="false" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="E:/mybaits_genetator/mysql-connector-java-8.0.11.jar!/" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\generator" />
+      <recent name="G:\generator\src" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\generator\src\Generator" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="run" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="main.run" />
+      <module name="generator" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="main.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.run" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="78bde411-662e-4314-815c-3fba6f4360ea" name="Default Changelist" comment="" />
+      <created>1587113985504</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1587113985504</updated>
+      <workItem from="1587113987723" duration="4988000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="576" y="190" key="#Project_Structure" timestamp="1587114192377">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="576" y="190" key="#Project_Structure/0.0.1920.1040@0.0.1920.1040" timestamp="1587114192377" />
+    <state x="713" y="549" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1587114152241">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="713" y="549" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1920.1040@0.0.1920.1040" timestamp="1587114152241" />
+    <state x="764" y="286" key="FileChooserDialogImpl" timestamp="1587116621232">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="764" y="286" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1587116621232" />
+    <state width="1718" height="336" key="GridCell.Tab.0.bottom" timestamp="1587120121865">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1718" height="336" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1587120121865" />
+    <state width="1718" height="336" key="GridCell.Tab.0.center" timestamp="1587120121865">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1718" height="336" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1587120121865" />
+    <state width="1718" height="336" key="GridCell.Tab.0.left" timestamp="1587120121865">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1718" height="336" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1587120121865" />
+    <state width="1718" height="336" key="GridCell.Tab.0.right" timestamp="1587120121865">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1718" height="336" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1587120121865" />
+    <state x="464" y="106" key="SettingsEditor" timestamp="1587116625523">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="464" y="106" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1587116625523" />
+  </component>
+</project>
