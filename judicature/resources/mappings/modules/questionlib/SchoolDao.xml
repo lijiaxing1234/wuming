@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SchoolDao">
+    
+	<sql id="schoolColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.address AS "address",
+		a.rel_name AS "relName",
+		a.rel_phone AS "relPhone",
+		a.rel_email AS "relEmail",
+		a.state AS "state"
+	</sql>
+	
+	<sql id="schoolJoins">
+	</sql>
+    
+	<select id="get" resultType="School">
+		SELECT 
+			<include refid="schoolColumns"/>
+		FROM table_school a
+		<include refid="schoolJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="School">
+		SELECT 
+			<include refid="schoolColumns"/>
+		FROM table_school a
+		<include refid="schoolJoins"/>
+		<where>
+			
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="School">
+		SELECT 
+			<include refid="schoolColumns"/>
+		FROM table_school a
+		<include refid="schoolJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_school(
+			id,
+			title,
+			address,
+			rel_name,
+			rel_phone,
+			rel_email,
+			state
+		) VALUES (
+			#{id},
+			#{title},
+			#{address},
+			#{relName},
+			#{relPhone},
+			#{relEmail},
+			#{state}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_school SET 	
+			title = #{title},
+			address = #{address},
+			rel_name = #{relName},
+			rel_phone = #{relPhone},
+			rel_email = #{relEmail},
+			state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_school
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

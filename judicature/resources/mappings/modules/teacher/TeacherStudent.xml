@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.TeacherStudentDao">
+	
+	<select id="findList" resultType="TeacherStudent">
+		SELECT 
+			student.name AS studentName,
+			student.std_code AS studentCode,
+			student.std_phone AS studentPhone,
+			tc.title AS className,
+			ts.title AS examName 
+		FROM table_student student
+		JOIN table_class tc ON tc.id=student.class_id
+		JOIN table_exam_class tec ON tec.class_id=tc.id
+		JOIN table_exam_specility tes ON tes.exam_id=tec.exam_id
+		JOIN table_specialty ts ON ts.id=tes.specialty_id
+		<where>
+			AND student.del_flag='0'
+			<if test="className != null and className != ''">
+				AND tc.title=#{className}
+			</if>
+			<if test="examName != null and examName != ''">
+				AND ts.title=#{examName}
+			</if>
+			
+		</where>
+	</select>
+</mapper>

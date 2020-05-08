@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamQuestionScoreDao">
+
+	<select id="findExamQuestionScoreExamId" resultType="ExamQuestionScore">
+		SELECT 
+		   id as "id",
+		   ques_type as "quesType",
+		   ques_score as "quesScore",
+		   sort as "sort",
+		   exam_id as "examId"
+		FROM table_exam_question_score
+		WHERE  exam_id=#{examId}
+        order by sort
+	</select>
+	
+	
+	<insert id="batchExamQuestionScore">
+	     
+	    delete from table_exam_question_score where exam_id=#{examId};
+	     
+	    INSERT INTO table_exam_question_score(
+	          id,
+              ques_type,
+              ques_score,
+              exam_id,
+              sort)
+		<foreach item="item" index="index" collection="list"   separator="union all">
+	        select #{item.id},
+	               #{item.quesType},
+	        	   #{item.quesScore},
+	        	   #{item.examId},
+	        	   #{index}+1
+	        from dual
+	    </foreach>
+	</insert>
+	
+	
+</mapper>

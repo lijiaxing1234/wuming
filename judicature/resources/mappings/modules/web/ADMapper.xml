@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.ADMapper">
+
+  <select id="selectAD" resultType="com.thinkgem.jeesite.modules.web.entity.AD">
+	SELECT
+		ad.id,
+		ad.col_id as 'colId',
+		ad.image_url as 'imageUrl',
+		ad.target as 'target',
+		adColumns.col_name as 'adColumn.name',
+		ad.ad_type as adType,
+		ad.seq as 'seq'
+	FROM
+		table_ad ad,
+		table_ad_columns adColumns
+	WHERE
+		ad.col_id = adColumns.col_id
+		and adColumns.ad_code=#{adCode}
+	ORDER BY
+		ad.seq
+	</select>
+</mapper>

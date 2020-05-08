@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SchoolCourseDao">
+    
+	<sql id="courseColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.specialty_id AS "specialtyId",
+		a.level AS "level",
+		a.phase AS "phase",
+		a.couse_system AS "couseSystem",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="courseJoins">
+	</sql>
+    
+    <select id="getSchoolCourseIds" parameterType="map" resultType="map">
+		select course_id from table_school_course where school_id=#{schoolId} 	
+    </select>
+    
+    <select id="getCourseListNotInSchool" parameterType="map" resultType="Course">
+    	SELECT 
+    		<include refid="courseColumns" />
+    	FROM table_course a WHERE a.id NOT IN
+        <foreach item="item" index="index" collection="idsArr" open="(" separator="," close=")">
+            #{item}
+       </foreach> 
+    </select>
+    
+    <delete id="deleteCourseFromSchool" parameterType="map">
+ 		delete from table_school_course where school_id = #{schoolId} and course_id in 
+ 		<foreach item="item" index="index" collection="courseIdsArr" open="(" separator="," close=")">
+ 			#{item}
+ 		</foreach>
+ 		
+ 	</delete>
+    
+    <select id="getCourseListBySchoolId" resultType="Course">
+    	SELECT
+			<include refid="courseColumns" />
+		FROM
+			table_course a
+		LEFT JOIN table_school_course b ON a.id = b.course_id
+		LEFT JOIN sys_user c ON b.school_id = c.company_id
+		WHERE
+			c.company_id = #{schoolId}
+    </select>
+    
+    <insert id="addCourseToSchool" parameterType="java.util.List">
+    	insert into table_school_course values
+    	<foreach collection="list" item="item" index="index" separator=",">
+    		(#{item.id},#{item.school_id},#{item.course_id})
+    	</foreach>
+    </insert>
+    
+ 	
+	
+	
+</mapper>

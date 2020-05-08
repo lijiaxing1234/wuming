@@ -1,0 +1,26 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {margin:0px; padding:0px;
+}
+.blue { padding-left:10px; padding-right:10px;
+border: 1px solid #007ead;
+-moz-border-radius:10px;
+-webkit-border-radius:10px;
+border-radius: 10px;
+z-index:3px;
+background: #0690c4;
+color:#FFF;
+}
+.blue:hover {
+	background: #007ead;
+	background: -webkit-gradient(linear, left top, left bottom, from(#0095cc), to(#00678e));
+	background: -moz-linear-gradient(top,  #0095cc,  #00678e);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#0095cc', endColorstr='#00678e');
+}
+.blue:active {
+	color: #80bed6;
+	background: -webkit-gradient(linear, left top, left bottom, from(#0078a5), to(#00adee));
+	background: -moz-linear-gradient(top,  #0078a5,  #00adee);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#0078a5', endColorstr='#00adee');
+}

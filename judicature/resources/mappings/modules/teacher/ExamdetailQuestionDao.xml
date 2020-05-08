@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamdetailQuestionDao">
+	
+	<!-- 先删除后批量添加 -->
+	<insert id="batchDeleAndInsert">
+       <!-- DELETE FROM table_exam_detail_question where exam_detail_id=#{examDetailId}; -->
+	   INSERT INTO  table_exam_detail_question(question_id,exam_detail_id,sort,quesType)
+	   <foreach item="item" index="index" collection="questionList"   separator="union all">
+	        select #{item.question.id},
+	        	   #{examDetailId},
+	        	   (#{index}+1),
+	        	   #{item.question.quesType}
+	        from dual
+	    </foreach>
+	</insert>
+	
+	
+	
+	<!-- 插入补题数量 -->
+	<insert id="InsertSupplementExamDetailQuestion">
+	   INSERT INTO  table_exam_detail_question(question_id,exam_detail_id,quesType,sort)
+	   select t.*, (@i:=@i+1) AS sort from 
+	   (<foreach item="item" index="index" collection="list"   separator="union all">
+	        select #{item.id},
+	               #{examDetailId},
+	        	   #{item.quesType}
+	        from dual
+	    </foreach>
+	    ) t ,(SELECT @i:=IFNULL(MAX(sort),0) FROM table_exam_detail_question WHERE exam_detail_id=#{examDetailId} and quesType=#{quesType}) AS it
+	</insert>
+	
+	<!--根据试题详细表Id查询试卷试题 -->
+	<select id="getExamdetailQuestionByExamDetailId"  resultType="ExamdetailQuestion">
+		SELECT 
+		     a.exam_detail_id as 'examdetail.id',
+		     a.sort  as "sort",
+		     b.id  as "question.id",
+		     b.title as "question.title",
+		     a.quesType as "quesType",
+		     (
+			   SELECT COUNT(*) FROM  table_examination te, table_exam_detail ted ,table_exam_detail_question  tedq
+	            WHERE  te.id=ted.exam_id AND ted.id=tedq.exam_detail_id
+			    and   tedq.exam_detail_id !=#{examdetailId} AND tedq.question_id=b.id 
+			    <if test="beginTime !=null and endTime !=null">
+			      and  DATE_FORMAT(te.begin_time,'%Y-%m-%d') between #{beginTime} and #{endTime}
+			    </if>
+			    <if test="examType !=null">
+			      and  te.exam_type in 
+			        <foreach item="item"  index="index"  collection="examType"   separator="," open="(" close=")">
+			       		#{item}
+			   		</foreach> 
+			    </if>
+		     ) as 'count'
+		FROM  
+		table_exam_detail_question a,
+		table_version_question b
+		WHERE a.question_id=b.id
+		AND a.exam_detail_id=#{examdetailId}
+		order by a.sort
+	</select>
+	<!--查询全部试卷试题 -->
+	<select id="getExamdetailQuestions"  resultType="ExamdetailQuestion">
+	<!-- 	SELECT 
+		     b.id  as "question.id",
+		     b.title as "question.title",
+		     (
+			   SELECT COUNT(*) FROM  table_examination te, table_exam_detail ted ,table_exam_detail_question  tedq
+	            WHERE  te.id=ted.exam_id 
+	              AND ted.id=tedq.exam_detail_id
+			      and  tedq.question_id=b.id 
+			    <if test="beginTime !=null and endTime !=null">
+			      and  DATE_FORMAT(te.begin_time,'%Y-%m-%d') between #{beginTime} and #{endTime}
+			    </if>
+			    <if test="examType !=null">
+			      and  te.exam_type in   
+			      	<foreach item="item"  index="index"  collection="examType"   separator="," open="(" close=")">
+			       		#{item}
+			   		</foreach> 
+			    </if>
+		     ) as 'count'
+		FROM table_version_question b,table_knowledge_question tkq,table_school_questionlib tsq
+		where tkq.question_id=b.id
+		      AND  b.`questionlib_id`= tsq.`questionlib_id`
+		      AND  b.`del_flag`='0' AND tsq.`del_flag`='0'
+		      AND NOW() BETWEEN tsq.valid_start_date AND tsq.valid_end_date  
+		      AND tsq.school_id=#{schoolId}
+		      AND tkq.knowledge_id IN (SELECT course_knowledge_id FROM table_exam_knowledge WHERE  exam_id=#{examId})
+		      
+		      
+		and b.id not in
+		<foreach item="questionId"  index="index"  collection="questionId"   separator="," open="(" close=")">
+       		#{questionId,jdbcType=INTEGER}
+   		</foreach> 
+   		and b.ques_type=#{quesType} -->
+   		
+   		select * from (
+		SELECT 
+		     vaq.id  as "question.id",
+		     vaq.title as "question.title",
+		     (
+			   SELECT COUNT(*) FROM  table_examination te, table_exam_detail ted ,table_exam_detail_question  tedq
+	            WHERE  te.id=ted.exam_id 
+	              AND ted.id=tedq.exam_detail_id
+			      and  tedq.question_id=vaq.id 
+			    <if test="beginTime !=null and endTime !=null">
+			      and  DATE_FORMAT(te.begin_time,'%Y-%m-%d') between #{beginTime} and #{endTime}
+			    </if>
+			    <if test="examType !=null">
+			      and  te.exam_type in   
+			      	<foreach item="item"  index="index"  collection="examType"   separator="," open="(" close=")">
+			       		#{item}
+			   		</foreach> 
+			    </if>
+		     ) as 'count',
+		   
+		   CASE vaq.ques_type 
+			WHEN  (SELECT  qt.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=vaq.ques_type )
+			
+			THEN  (SELECT  qs.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=vaq.ques_type )
+			
+		    ELSE vaq.ques_point  END as "quesRealPoint"
+		         
+		FROM table_teacher_questionslib_split  ttqs 
+		   LEFT JOIN view_available_questionslib vaq ON ttqs.question_id=vaq.questionId
+		   left join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+		   LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+		          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id	
+		          
+		where  ttqs.type IN ('0','1')
+			   and ttqs.teacher_id=#{teacherId}
+			   and ttqs.version_id=#{versionId}
+			   and ttqs.school_id =#{schoolId}
+			   AND  vaq.`school_id`=#{schoolId}
+		       AND  vaq.`version_id`=#{versionId}
+		       and tek.exam_id=#{examId}          
+		      
+		      
+		and vaq.id not in
+		<foreach item="questionId"  index="index"  collection="questionId"   separator="," open="(" close=")">
+       		#{questionId,jdbcType=INTEGER}
+   		</foreach> 
+   		
+   		and vaq.ques_type=#{quesType}
+   		  
+ 	   <if test="examLevel !=null and examLevel !=''">
+	      and  vaq.ques_level= #{examLevel}
+	    </if>
+   		) _t
+   		<where>
+   		     _t.quesRealPoint=#{quesRealPoint}
+   		</where>
+	</select>
+    <!--查询全部试卷试题 -->
+	<select id="getOnlyOne"  resultType="ExamdetailQuestion">
+		SELECT 
+		    a.question_id as 'question.id',
+		    a.exam_detail_id as 'examdetail.id'
+		FROM  table_exam_detail_question a
+		where a.exam_detail_id=#{id},
+		order by sort 
+	</select>
+    
+     <update id="updateExamDetailQuesSort">
+        UPDATE  table_exam_detail_question 
+        SET sort=#{sort} 
+		WHERE  exam_detail_id =#{examdetail.id}
+		AND question_id=#{question.id}
+     </update>
+    
+    
+     <!-- 查询试卷A或B的试题-->
+    <select id="findQuestionsByExamDetailId" resultType="ExamDetailQuestionInfo" >
+	 SELECT ted.questype AS 'quesTypes',
+	      ted.quesScore AS 'quesScore',
+	      ted.totalScore AS 'totalScore',
+	      ted.quesCount AS 'quesCount',
+	      ted.ids AS 'quesIds',
+	      tvq.id AS "id",
+		  tvq.exam_code AS "examCode",
+		  tvq.ques_type AS "quesType",
+		  tvq.ques_level AS "quesLevel",
+		 <!--  tvq.ques_point AS "quesPoint", -->
+		  
+		   CASE tvq.ques_type 
+			WHEN  (SELECT  qt.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=tvq.ques_type )
+			
+			THEN  (SELECT  qs.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=tvq.ques_type )
+			
+		         ELSE tvq.ques_point  END as "quesPoint",
+		  
+		  tvq.title AS "title",
+		  tvq.choice0 AS "choice0",
+		  tvq.choice1 AS "choice1",
+		  tvq.choice2 AS "choice2",
+		  tvq.choice3 AS "choice3",
+		  tvq.choice4 AS "choice4",
+		  tvq.choice5 AS "choice5",
+		  tvq.choice6 AS "choice6",
+		  tvq.choice7 AS "choice7",
+		  tvq.choice8 AS "choice8",
+		  tvq.choice9 AS "choice9",
+		  tvq.answer0 AS "answer0",
+		  tvq.answer1 AS "answer1",
+		  tvq.answer2 AS "answer2",
+		  tvq.answer3 AS "answer3",
+		  tvq.answer4 AS "answer4",
+		  tvq.answer5 AS "answer5",
+		  tvq.answer6 AS "answer6",
+		  tvq.answer7 AS "answer7",
+		  tvq.answer8 AS "answer8",
+		  tvq.answer9 AS "answer9",
+		  tvq.count AS "count",
+		  tvq.description AS "description" 
+	    FROM  (	      
+	      SELECT a.questype,
+		    GROUP_CONCAT( DISTINCT (CASE a.questype 
+			WHEN  (SELECT  qt.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=a.questype )
+			
+			THEN  (SELECT  qs.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=a.questype )
+			
+		         ELSE b.ques_point  END ))AS 'quesScore',
+		         
+		     SUM(CASE a.questype 
+			WHEN  (SELECT  qt.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=a.questype )
+			
+			THEN  (SELECT  qs.value FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') qs,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') qt
+				WHERE qs.label=qt.label AND qt.value=a.questype )
+			
+		         ELSE b.ques_point  END) AS 'totalScore',   
+		         	   
+		    COUNT(a.question_id) AS 'quesCount',
+		    GROUP_CONCAT(a.question_id) AS 'ids'
+	       FROM 
+		table_exam_detail_question a,table_version_question b
+		WHERE a.question_id=b.id
+	          AND a.exam_detail_id=#{examDetailId}
+		GROUP BY  a.questype  ORDER BY a.questype,a.sort) ted
+		,table_version_question tvq
+		,table_exam_detail_question tedq
+		WHERE FIND_IN_SET(tvq.id,ted.ids)
+		
+		and tedq.question_id=tvq.id
+		and tedq.exam_detail_id=#{examDetailId}
+		ORDER BY  questype, tedq.sort		
+    </select>
+    
+    <select id="findList" resultType="java.util.Map" parameterType="java.lang.String">
+       SELECT question_id AS'quesId' ,
+              exam_detail_id AS 'examDetailId',
+              sort AS 'sort',
+              quesType AS 'quesType' 
+        FROM table_exam_detail_question 
+        WHERE exam_detail_id =#{examDetailId} 
+        ORDER BY sort
+    </select>
+    
+    
+</mapper>

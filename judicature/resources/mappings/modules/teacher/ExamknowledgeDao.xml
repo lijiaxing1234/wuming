@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamknowledgeDao">
+    
+	<sql id="examColumns">
+		
+	</sql>
+	
+	<select id="getknowledgeIdsByExamId" resultType="java.lang.String"  parameterType="java.lang.String">
+	     SELECT course_knowledge_id
+	     FROM table_exam_knowledge 
+	     WHERE exam_id=#{examId}
+	    ORDER BY course_knowledge_id
+	</select>
+	
+	
+	<!-- 批量添加知识点 -->
+	<insert id="batchAddExamKnowledge">
+	    DELETE  FROM table_exam_knowledge  WHERE exam_id=#{examId};
+	     
+		INSERT INTO table_exam_knowledge (exam_id,course_knowledge_id) 
+	    <foreach item="item" index="index" collection="ckIds"   separator="union all">
+	        select #{examId},
+	        	   #{item}
+	        from dual
+	    </foreach>
+	    ;
+	    delete from table_knowledge_question_detail where exam_id=#{examId} and knowledge_id in
+         <foreach item="item"  index="index"  collection="ckIds"   separator="," open="(" close=")">
+       		#{item}
+   		</foreach>   
+	</insert>
+	
+	<!-- 批量删除知识点 -->
+	<!-- <delete id="batchDeleteExamKnowledge">
+		DELETE  FROM table_exam_knowledge  WHERE exam_id=#{examId} and
+		course_knowledge_id IN 
+		<foreach item="item"  index="index"  collection="ckIds"   separator="," open="(" close=")">
+       		#{item}
+   		</foreach>
+	</delete> -->
+	
+	
+	<!-- 课后作业手动生成组卷的确认细节根据id罗列所选中的知识点 -->
+	<select id="queryExamKnowleByExamId" resultType="Examknowledge" parameterType="java.lang.String">
+		SELECT
+			te.id AS 'exam.id',
+			te.title AS 'exam.title',
+			tck.id AS 'courseKnowledge.id',
+			tck.title AS 'courseKnowledge.title'
+		FROM
+			table_examination te
+		JOIN table_exam_knowledge tek ON tek.exam_id = te.id
+		JOIN table_course_knowledge tck ON tck.id = tek.course_knowledge_id
+		<where>
+			<if test="examId!='' and examId!=null">
+				te.id =#{examId}
+			</if>
+		</where>
+	</select>
+	<!-- 根据知识点id查询知识点所对应的题目 -->
+	<select id="selectQuestionById" resultType="TeacherVersionQuestion" parameterType="TeacherVersionQuestion">
+		<!-- SELECT DISTINCT
+			tvq.id AS 'id',
+			tck.id AS 'courseKnowledge.id',
+			tck.title AS 'courseKnowledge.title',
+			tvq.exam_code AS 'examCode',
+			tvq.ques_type AS 'quesType',
+			tvq.ques_level AS 'quesLevel',
+			tvq.ques_point AS 'quesPoint', 
+			tvq.title AS 'title',
+			tvq.create_date AS 'createTime',
+			tvq.answer0 AS 'answer',
+			tvq.answer1 AS 'answer1',
+			tvq.answer2 AS 'answer2',
+			tvq.answer3 AS 'answer3',
+			tvq.answer4 AS 'answer4',
+			tvq.answer5 AS 'answer5',
+			tvq.answer6 AS 'answer6',
+			tvq.answer7 AS 'answer7',
+			tvq.answer8 AS 'answer8',
+			tvq.answer9 AS 'answer9',
+			tvq.description AS 'description'
+	      FROM  table_course_knowledge tck,table_knowledge_question tkq,table_version_question tvq,table_school_questionlib tsq
+		<where>
+		     tck.id=tkq.knowledge_id
+		    and tkq.question_id = tvq.id
+	        AND tvq.`questionlib_id`= tsq.`questionlib_id`
+	        AND tvq.`del_flag`='0' AND tsq.`del_flag`='0'
+	        AND NOW() BETWEEN tsq.valid_start_date AND tsq.valid_end_date  
+		    and tsq.school_id=#{question.sqlMap.schoolId} -->
+		   SELECT vaq.id AS 'id',
+			tck.id AS 'courseKnowledge.id',
+			tck.title AS 'courseKnowledge.title',
+			vaq.exam_code AS 'examCode',
+			vaq.ques_type AS 'quesType',
+			vaq.ques_level AS 'quesLevel',
+			<!-- vaq.ques_point AS 'quesPoint',  -->
+			
+			  CASE vaq.ques_type 
+				WHEN    (SELECT  b.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=vaq.ques_type )
+				
+				THEN   (SELECT  a.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=vaq.ques_type )
+		
+	            ELSE ques_point  END  AS `quesPoint`,
+			
+			
+			vaq.title AS 'title',
+			vaq.create_date AS 'createTime',
+			vaq.answer0 AS 'answer',
+			vaq.answer1 AS 'answer1',
+			vaq.answer2 AS 'answer2',
+			vaq.answer3 AS 'answer3',
+			vaq.answer4 AS 'answer4',
+			vaq.answer5 AS 'answer5',
+			vaq.answer6 AS 'answer6',
+			vaq.answer7 AS 'answer7',
+			vaq.answer8 AS 'answer8',
+			vaq.answer9 AS 'answer9',
+			vaq.description AS 'description'
+			
+			FROM table_teacher_questionslib_split  ttqs 
+		   LEFT JOIN view_available_questionslib vaq ON ttqs.question_id=vaq.questionId
+		   LEFT JOIN table_course_knowledge  tck ON  vaq.knowledge_id=tck.id
+		   LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+		          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id	
+		 <where> 
+		       AND ttqs.type IN ('0','1')
+		       AND ttqs.teacher_id=#{question.sqlMap.userId}
+			   AND ttqs.version_id=#{question.sqlMap.versionId}
+			   AND ttqs.school_id =#{question.sqlMap.schoolId}
+			   AND vaq.school_id=#{question.sqlMap.schoolId}
+               AND vaq.version_id=#{question.sqlMap.versionId}
+		    <if test="question!='' and question!=null and question.courseKnowledge!='' and question.courseKnowledge!=null and question.courseKnowledge.id!='' and question.courseKnowledge.id!=null">
+				AND (tck.id=#{question.courseKnowledge.id} or tck.parent_ids like concat('%,',#{question.courseKnowledge.id},',%'))
+			</if>
+			<if test="question!='' and question!=null and question.quesType!='' and question.quesType!=null">
+				AND vaq.ques_type=#{question.quesType}
+			</if>
+			<if test="question!='' and question!=null and question.quesLevel!='' and question.quesLevel!=null">
+				AND vaq.ques_level=#{question.quesLevel}
+			</if>
+		</where>
+		  ORDER BY ttqr.exampaper_count
+	</select>
+	<!-- 手动添加课后作业 -->
+	<insert id="addKnowledgeQuestionDetail" parameterType="KnowledgeQuestionDetail">
+		INSERT INTO table_knowledge_question_detail 
+			 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="know!=null and know.id != null and know.id !=''">
+					id,
+				</if>
+				<if test="know!=null and know.knowledgeId != null and know.knowledgeId !=''">
+					knowledge_id,
+				</if>
+				<if test="know!=null and know.questionType != null and know.questionType !=''">
+					question_type,
+				</if>
+				<if test="know!=null and know.questionDegree != null and know.questionDegree !=''">
+					question_degree,
+				</if>
+				<if test="know!=null and know.questionNumber != null and know.questionNumber !=''">
+					question_number,
+				</if>
+				<if test="know!=null and know.questionScore != null and know.questionScore !=''">
+					question_score,
+				</if>
+				<if test="know!=null and know.examId != null and know.examId !=''">
+					exam_id,
+				</if>
+				<if test="know!=null and know.teacherId != null and know.teacherId !=''">
+					teacher_id,
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="know!=null and know!=null and know.id != null and know.id !=''">
+					#{know.id},
+				</if>
+				<if test="know!=null and know.knowledgeId != null and know.knowledgeId !=''">
+					#{know.knowledgeId},
+				</if>
+				<if test="know!=null and know.questionType != null and know.questionType !=''">
+					#{know.questionType},
+				</if>
+				<if test="know!=null and know.questionDegree != null and know.questionDegree !=''">
+					#{know.questionDegree},
+				</if>
+				<if test="know!=null and know.questionNumber != null and know.questionNumber !=''">
+					#{know.questionNumber},
+				</if>
+				<if test="know!=null and know.questionScore != null and know.questionScore !=''">
+					#{know.questionScore},
+				</if>
+				<if test="know!=null and know.examId != null and know.examId !=''">
+					#{know.examId},
+				</if>
+				<if test="know!=null and know.teacherId != null and know.teacherId !=''">
+					#{know.teacherId},
+				</if>
+			</trim>
+	</insert>
+	
+	
+	
+	<!-- 自动组卷时 选中知识点的第一级父节点的知识 -->
+    <select id="getSelectKnowledgeFirstParentByExamId" resultType="CourseKnowledge">
+		<!--  select * from  table_course_knowledge tck,(
+		 select  
+		   DISTINCT (SELECT id FROM  table_course_knowledge WHERE  FIND_IN_SET(id,getCourseKnowledgeParentList(t.course_knowledge_id)) AND id !=1 ORDER BY parent_id LIMIT 1) as 'course_knowledge_id'
+		 FROM  table_exam_knowledge t
+		 WHERE exam_id=#{sqlParam.examId}) tek
+		 where tck.id=tek.course_knowledge_id
+		 order by tck.id -->
+		    
+	   SELECT id,title,parent_id ,credit_hours as 'creditHours'  FROM  table_course_knowledge  WHERE (parent_id='1' OR parent_id ='0') AND  FIND_IN_SET(id,
+		   (SELECT GROUP_CONCAT(DISTINCT parent_ids)  FROM table_course_knowledge a,table_exam_knowledge b   
+		    WHERE  a.`id`=b.`course_knowledge_id` 
+		    and b.`exam_id`=#{sqlParam.examId})    
+	   ) and  version_id=#{sqlMap.versionId}
+		 
+	</select>
+	
+</mapper>

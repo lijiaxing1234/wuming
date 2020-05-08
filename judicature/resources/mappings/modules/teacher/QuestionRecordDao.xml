@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.QuestionRecordDao">
+	
+		
+	<!--  获得练习题的百分比-->
+	<select id="findQuestionRecordByTeacher" resultType="QuestionRecord">
+		SELECT
+		  `question_id` as "questionId",
+		  `teacher_id` as "teacherId",
+		  `school_id` as "schoolId",
+		  `version_id` as "versionId",
+		  exampaper_count as "exampaperCount",
+		  practice_count  as "practiceCount" 
+		FROM `table_teacher_questions_record`
+		where  teacher_id=#{teacherId}
+		   and version_id=#{versionId}
+		   and school_id =#{schoolId}
+		   and question_id=#{questionId}
+	</select>
+	
+	
+	<insert id="insertSelective">
+	  INSERT INTO  table_teacher_questions_record 
+		 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="teacherId != null and teacherId !=''">
+					teacher_id,
+				</if>
+				<if test="versionId != null and versionId !=''">
+					version_id,
+				</if>
+				<if test="schoolId != null and schoolId !=''">
+					school_id,
+				</if>
+				<if test="questionId !=null and questionId !=''">
+				    question_id,
+				</if>
+				<if test="exampaperCount !=null">
+				    exampaper_count,
+				</if>
+				<if test="practiceCount !=null">
+				    practice_count,
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="teacherId != null and teacherId !=''">
+					#{teacherId},
+				</if>
+				<if test="versionId != null and versionId !=''">
+					#{versionId},
+				</if>
+				<if test="schoolId != null and schoolId !=''">
+					#{schoolId},
+				</if>
+				<if test="questionId !=null and questionId !=''">
+				    #{questionId},
+				</if>
+				<if test="exampaperCount !=null">
+				    #{exampaperCount},
+				</if>
+				<if test="practiceCount !=null">
+				    #{practiceCount},
+				</if>
+			</trim>
+	</insert>
+	
+	<update id="updateSelective">
+	    update table_teacher_questions_record 
+	    <set>
+				<if test="exampaperCount !=null">
+				   exampaper_count=#{exampaperCount},
+				</if>
+				<if test="practiceCount !=null">
+				   practice_count=#{practiceCount},
+				</if>
+	    </set>
+	  where  teacher_id=#{teacherId}
+		   and version_id=#{versionId}
+		   and school_id =#{schoolId}
+		   and question_id=#{questionId}
+	</update>
+	
+	
+</mapper>

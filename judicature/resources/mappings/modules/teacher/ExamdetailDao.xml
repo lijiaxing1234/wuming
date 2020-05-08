@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamdetailDao">
+	
+	
+	
+	<delete id="deleteExamDetailContactByExamId">
+	  delete from table_exam_detail_question where exam_detail_id in (select id from table_exam_detail where exam_id=#{examId});
+	  delete from table_exam_detail where exam_id=#{examId};
+	</delete>
+	
+	<insert id="insertSelective">
+	  INSERT INTO  table_exam_detail 
+		 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					id,
+				</if>
+				<if test="exam != null and exam.id !=null and exam.id !=''">
+					exam_id,
+				</if>
+				<if test="printTemplate != null and printTemplate !=''">
+					print_template,
+				</if>
+				<if test="type != null and type !=''">
+					type,
+				</if>
+				<if test="mainTitle !=null and mainTitle !=''">
+				    main_title,
+				</if>
+				<if test="subTitle !=null and subTitle !=''">
+				    sub_title,
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					#{id},
+				</if>
+				<if test="exam != null and exam.id !=null and exam.id !=''">
+					#{exam.id},
+				</if>
+				<if test="printTemplate != null and printTemplate !=''">
+					#{printTemplate},
+				</if>
+				<if test="type != null and type !=''">
+					#{type},
+				</if>
+				<if test="mainTitle !=null and mainTitle !=''">
+				    #{mainTitle},
+				</if>
+				<if test="subTitle !=null and subTitle !=''">
+				    #{subTitle},
+				</if>
+			</trim>
+	</insert>
+	
+	<update id="updateSelective">
+	    update table_exam_detail 
+	    <set>
+	    	<if test="id != null and id !=''">
+				id=#{id},
+			</if>
+			<if test="exam != null and exam.id !=null and exam.id !=''">
+				exam_id=#{exam.id},
+			</if>
+			<if test="printTemplate != null and printTemplate !=''">
+				print_template=#{printTemplate},
+			</if>
+			<if test="type != null and type !=''">
+				type=#{type},
+			</if>
+			<if test="mainTitle !=null and mainTitle !=''">
+			   main_title=#{mainTitle},
+			</if>
+			<if test="subTitle !=null and subTitle !=''">
+			   sub_title =#{subTitle},
+			</if>
+	    </set>
+	   where id =#{id}
+	</update>
+	
+	
+	<select id="getExamDetailByExamId" resultType="Examdetail">
+	   SELECT 
+	         id as "id",
+	         exam_id as "exam.id",
+	         print_template as "printTemplate",
+	         type as "type",
+	         main_title as "mainTitle",
+	         sub_title as "subTitle"
+	    FROM table_exam_detail 
+		WHERE exam_id=#{exam.id}
+		
+		<if test="sqlMap.notInId !=null">
+		  and id not in (#{sqlMap.notInId})
+		</if>
+	    order by type
+	</select>
+	
+	
+	<select id="getExamdetailById" resultType="Examdetail">
+	   SELECT 
+	         id as "id",
+	         exam_id as "exam.id",
+	         print_template as "printTemplate",
+	         type as "type",
+	         main_title as "mainTitle",
+	         sub_title as "subTitle"
+	    FROM table_exam_detail 
+		WHERE id=#{id}
+	    order by type
+	</select>
+	
+	<!-- 查询试卷分数 -->
+	<select id="findExamdetailScoresbyExamId" resultType="Examdetail">
+	 SELECT 
+		  ted.id as "id",
+		  ted.exam_id as "exam.id",
+		  ted.print_template as "printTemplate",
+		  ted.type as "type",
+	      main_title as "mainTitle",
+          sub_title as "subTitle",
+		  (SELECT SUM(
+		            
+		             CASE tvq.ques_type 
+				WHEN    (SELECT  b.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=tvq.ques_type )
+				
+				THEN   (SELECT  a.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=tvq.ques_type )
+				
+				ELSE ques_point  END    
+		              
+		           ) 
+		  FROM table_exam_detail_question tedq,table_version_question tvq
+		  WHERE tedq.question_id=tvq.id AND tedq.exam_detail_id=ted.id) AS "scores"
+	  FROM table_exam_detail ted WHERE exam_id=#{exam.id}
+	 ORDER BY TYPE 
+	</select>
+	
+	
+</mapper>

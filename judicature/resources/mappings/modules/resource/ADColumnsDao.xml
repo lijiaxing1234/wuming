@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.resource.dao.ADColumnsDao">
+	<select id="getADColumnsList" resultType="com.thinkgem.jeesite.modules.resource.entity.TableADColumns">
+		SELECT 
+			col_id as 'id',
+			ad_code as 'adCode',
+			col_name as 'colName'
+		FROM table_ad_columns
+	</select>
+	
+	<select id="selectADColumnsById" resultType="com.thinkgem.jeesite.modules.resource.entity.TableADColumns">
+		SELECT 
+			col_id as 'id',
+			ad_code as 'adCode',
+			col_name as 'colName'
+		FROM table_ad_columns
+		where col_id=#{adId}
+	</select>
+	
+	<select id="getADColumnByCode" resultType="com.thinkgem.jeesite.modules.resource.entity.TableADColumns">
+		SELECT 
+			col_id as 'id',
+			ad_code as 'adCode',
+			col_name as 'colName'
+		FROM table_ad_columns
+		where ad_code=#{adCode}
+	</select>
+	
+	<insert id="insert">
+	INSERT INTO table_ad_columns
+	  <trim prefix="(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			col_id,
+		</if>
+		<if test="adCode != null and adCode !=''">
+			ad_code,
+		</if>
+		<if test="colName != null and colName !=''">
+			col_name,
+		</if>
+	</trim>
+	 <trim prefix="values (" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			#{id},
+		</if>
+		<if test="adCode != null and adCode !=''">
+			#{adCode},
+		</if>
+		<if test="colName != null and colName !=''">
+			#{colName},
+		</if>
+	</trim>
+	</insert>
+	
+	<update id="update">
+	UPDATE table_ad_columns 
+	 <set>
+		<if test="adCode != null and adCode !=''">
+			ad_code=#{adCode},
+		</if>
+		<if test="colName != null and colName !=''">
+			col_name=#{colName},
+		</if>
+    </set>
+    <where>
+    	col_id=#{id}
+    </where>
+	</update>
+	<delete id="delete">
+		DELETE FROM table_ad_columns 
+		WHERE col_id=#{adColumnsId}
+	</delete>
+	
+</mapper>

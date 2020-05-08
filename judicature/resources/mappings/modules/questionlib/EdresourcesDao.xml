@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.EdresourcesDao">
+    
+	<sql id="edresourcesColumns">
+		a.id AS "id",
+		a.res_name AS "resName",
+		a.res_file AS "resFile",
+		a.user_id AS "userId",
+		a.office_id AS "officeId",
+		a.knowledge_id AS "courseKnowledge.id",
+		a.version_id AS "courseKnowledge.versionId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>	
+	<sql id="edresourcesJoins">	
+		
+	</sql>
+	<select id="get" resultType="Edresources">
+		SELECT 
+		<include refid="edresourcesColumns"/>,
+		b.title AS "courseKnowledge.title"	
+		FROM  table_resource a,table_course_knowledge b
+		<include refid="edresourcesJoins"/>
+		WHERE a.knowledge_id=b.id and
+		  
+		 a.id = #{id} 
+	</select>
+	
+	<select id="findList" resultType="Edresources">
+		SELECT 
+			<include refid="edresourcesColumns"/>
+		FROM table_resource a
+		<include refid="edresourcesJoins"/>
+		<where>
+			AND a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="knowledgeId != null and knowledgeId != ''">
+			and a.knowledge_id in(
+				 SELECT c.id
+				FROM table_course_knowledge c
+				where c.del_flag = #{DEL_FLAG_NORMAL}   <!-- FIND_IN_SET(c.id,getCourseKnowledgeList(#{knowledgeId})) -->
+				AND ( c.parent_ids LIKE
+					<if test="dbName == 'oracle'">'%'||#{knowledgeId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{knowledgeId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%,',#{knowledgeId},',%')</if>
+					or c.id=#{knowledgeId}
+					)
+			)
+		</if>
+
+		<if test="resName != null and resName != ''">
+			AND a.res_name LIKE
+			<if test="dbName == 'oracle'">'%'||#{resName}||'%'</if>
+			<if test="dbName == 'mssql'">'%'+#{resName}+'%'</if>
+			<if test="dbName == 'mysql'">concat('%',#{resName},'%')</if>
+		</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Edresources">
+		SELECT 
+			<include refid="edresourcesColumns"/>
+		FROM table_resource a
+		<include refid="edresourcesJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<insert id="insert">
+		INSERT INTO table_resource(
+			id,
+			res_name,
+			res_file,
+			user_id,
+			office_id,
+			knowledge_id,
+			version_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			 #{resName},
+		     #{resFile},
+			 #{userId},
+			 #{officeId},
+			 #{courseKnowledge.id},
+			 #{courseKnowledge.versionId},
+			 #{createBy.id},
+			 #{createDate},
+			 #{updateBy.id},
+			 #{updateDate},
+			 #{delFlag}
+			 
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_resource SET 	
+			res_name = #{resName},
+			res_file = #{resFile},
+			user_id = #{userId},
+			office_id = #{officeId},
+			knowledge_id = #{courseKnowledge.id},
+			version_id = #{courseKnowledge.versionId},
+			create_by = #{createBy.id},
+			create_date = #{createDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_flag=#{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE table_resource SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findSchoolResourcePageByCompanyId" resultType="Edresources">
+		SELECT 
+			<include refid="edresourcesColumns"/>
+			,b.title AS "courseKnowledge.title",c.name as 'uploadUserName'
+		FROM table_resource a,table_course_knowledge b,sys_user c
+		<where>
+			a.office_id = #{sqlMap.companyId}
+		  	AND a.del_flag = #{DEL_FLAG_NORMAL}
+		  	AND a.knowledge_id = b.id
+		  	and c.id = a.user_id
+			<if test="knowledgeId != null and knowledgeId != ''">
+				a.knowledge_id=#{knowledgeId}
+			</if>
+			<if test="resName != null and resName != ''">
+				AND a.res_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{resName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{resName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{resName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.PayMapper">
+
+	<insert id="addPumpkinPayInfo">
+		insert into table_pumpkin_pay(user_id,course_id,pumpkin_count,pay_date)
+		value(#{userId},#{courseId},#{pumpkinCount},NOW())
+	</insert>
+	
+	<select id="userhasByCourse" resultType="int">
+		select count(id) from table_pumpkin_pay where user_id=#{userId} and course_id=#{courseId}
+	</select>
+	
+	<select id="getPayPumpkinCountByUserId" resultType="int">
+		select SUM(pumpkin_count) from table_pumpkin_pay where user_id=#{userId}
+	</select>
+	
+	<select id="getAllUserHasPayCourse" resultType="com.thinkgem.jeesite.modules.web.entity.UserPayCourse">
+		SELECT tc.title AS "courseTitle",
+			   tcv.title AS "sonTitle",
+			   tcv.id AS "sonId",
+			   tcv.course_id AS "courseId"
+		FROM table_course_vesion tcv 
+		LEFT JOIN table_course tc 
+		ON tcv.course_id = tc.id
+		LEFT JOIN table_pumpkin_pay tpp
+		ON tpp.course_id = tcv.id
+		WHERE tpp.user_id=#{userId}
+	</select>
+</mapper>

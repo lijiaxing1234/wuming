@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.resource.dao.TableCategoryDao">
+	<select id="getCategoryAll" resultType="com.thinkgem.jeesite.modules.resource.entity.TableCategory">
+		SELECT  
+			id as 'id',
+			name as 'name',
+			description as 'description',
+			presenter as 'persenter',
+			price as 'price',
+			image as 'image',
+			type as 'type',
+			parent_id as 'parentId',
+		    parent_ids as 'parentIds',
+			play_num as 'playNum',
+			courseId AS 'courseId'
+		FROM table_category
+		where id !=1
+	</select>
+	
+	<select id="getTableCategoryById" resultType="com.thinkgem.jeesite.modules.resource.entity.TableCategory">
+	SELECT  
+			cate1.id AS 'id',
+			cate1.name AS 'name',
+			cate1.description AS 'description',
+			cate1.presenter AS 'persenter',
+			cate1.price AS 'price',
+			cate1.image AS 'image',
+			cate1.type AS 'type',
+			cate2.id AS 'parent.id',
+			cate2.name AS 'parent.name',
+			cate1.parent_id AS 'parentId',
+		        cate1.parent_ids AS 'parentIds',
+			cate1.play_num AS 'playNum',
+			cate1.courseId AS 'courseId'
+		FROM table_category cate1,table_category cate2
+		WHERE cate1.id=#{cateId} AND cate1.parent_id=cate2.id
+	</select>
+	<insert id="insert">
+	INSERT INTO table_category
+	  <trim prefix="(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			id,
+		</if>
+		<if test="name != null and name !=''">
+			name,
+		</if>
+		<if test="description != null and description !=''">
+			description,
+		</if>
+		<if test="persenter != null and persenter !=''">
+			presenter,
+		</if>
+		<if test="price != null and price !=''">
+			price,
+		</if>
+		<if test="image != null and image !=''">
+			image,
+		</if>
+		<if test="type != null">
+			type,
+		</if>
+		<if test="parentId != null and parentId !=''">
+			parent_id,
+		</if>
+		<if test="parentIds != null and parentIds !=''">
+			parent_ids,
+		</if>
+		<if test="playNum != null">
+			play_num,
+		</if>
+		<if test="courseId != null and courseId !=''">
+			courseId,
+		</if>
+	</trim>
+	 <trim prefix="values (" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			#{id},
+		</if>
+		<if test="name != null and name !=''">
+			#{name},
+		</if>
+		<if test="description != null and description !=''">
+			#{description},
+		</if>
+		<if test="persenter != null and persenter !=''">
+			#{persenter},
+		</if>
+		<if test="price != null">
+			#{price},
+		</if>
+		<if test="image != null and image !=''">
+			#{image},
+		</if>
+		<if test="type != null">
+			#{type},
+		</if>
+		<if test="parentId != null and parentId !=''">
+			#{parentId},
+		</if>
+		<if test="parentIds != null and parentIds !=''">
+			#{parentIds},
+		</if>
+		<if test="playNum != null and playNum !=''">
+			#{playNum},
+		</if>
+		<if test="courseId != null and courseId !=''">
+			#{courseId},
+		</if>
+	</trim>
+	</insert>
+	
+	<update id="update">
+	UPDATE table_category 
+	 <set>
+		<if test="name != null and name !=''">
+			name=#{name},
+		</if>
+		<if test="description != null and description !=''">
+			description=#{description},
+		</if>
+		<if test="persenter != null and persenter !=''">
+			presenter=#{persenter},
+		</if>
+		<if test="price != null">
+			price=#{price},
+		</if>
+		<if test="image != null and image !=''">
+			image=#{image},
+		</if>
+		<if test="type != null">
+			type=#{type},
+		</if>
+		<if test="parentId != null and parentIds !=''">
+			parent_id=#{parentId},
+		</if>
+		<if test="parentIds != null and parentIds !=''">
+			parent_ids=#{parentIds},
+		</if>
+		<if test="playNum != null">
+			play_num=#{playNum},
+		</if>
+		<if test="courseId != null and courseId !=''">
+			courseId=#{courseId},
+		</if>
+    </set>
+    <where>
+    	id=#{id}
+    </where>
+	</update>
+	<delete id="delete">
+		DELETE FROM table_category 
+		WHERE id=#{cateId} OR parent_ids LIKE CONCAT('%',#{cateId},'%')
+	</delete>
+</mapper>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamClassWorkDao">
+<!-- 试卷状态 0未发布   1已发布( 正在进行) 2测试完成  -->
+<select id="publishExam" resultType="Exam">
+		SELECT
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.id AS "id",
+			e.title AS "title",
+			e.create_date AS "time",
+			e.begin_time AS "beginTime",
+			e.exam_hours AS 'examHours'
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id = tc.id 
+		<where>
+		    AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.status='2'
+		    AND e.exam_type='1'
+		   <!--  AND e.istemplate='0' -->
+			<if test="beginTime != null and beginTime != ''">
+				<!-- AND e.create_date=#{beginTime} -->
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<!-- <if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if> -->
+			
+			<if test="examClass != null and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="unpublishExam" resultType="Exam">
+			SELECT
+				tc.id AS "examClass.id",
+				tc.title AS "examClass.title",
+				e.id AS "id",
+				e.title AS "title",
+				e.begin_time AS "beginTime",
+				e.create_date AS "time",
+				tec.status AS 'status',
+				e.exam_hours AS 'examHours'
+			FROM
+				table_examination e
+			JOIN table_exam_class tec ON tec.exam_id = e.id
+			JOIN table_class tc ON tc.id = tec.class_id
+			LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id = tc.id 
+		<where>
+		    AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.status in ('0','1')
+		    AND e.exam_type='1'
+		    <!-- AND e.istemplate='0' -->
+			<if test="beginTime != null and beginTime != ''">
+				<!-- AND e.create_date=#{beginTime} -->
+				AND DATE_FORMAT(e.create_date,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+		<!-- 	<if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if> -->
+			
+			<if test="examClass != null and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		
+		</where>
+		order by e.create_date desc
+	</select>
+
+<select id="publishExamLimit" resultType="Exam">
+		SELECT
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.id AS "id",
+			e.title AS "title",
+			e.create_date AS "time",
+			e.exam_hours AS 'examHours'
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id = tc.id 
+		<where>
+		   AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.status='2'
+		    AND e.exam_type='1'
+		   <!--  AND e.istemplate='0' -->
+			<if test="beginTime != null and beginTime != ''">
+				AND e.begin_time=#{beginTime}
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if>
+			
+			<if test="examClass != null and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="unpublishExamLimit" resultType="Exam">
+		SELECT
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.id AS "id",
+			e.title AS "title",
+			e.create_date AS "time"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id = tc.id
+		<where>
+		    AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.status='0'
+		    AND e.exam_type='1'
+		    <!-- AND e.istemplate='0' -->
+			<if test="beginTime != null and beginTime != ''">
+				AND e.begin_time=#{beginTime}
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if>
+			
+			<if test="examClass != null and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		
+		order by e.create_date desc
+	</select>
+	
+	<select id="get" resultType="Exam">
+		 SELECT 
+		 	*
+		FROM
+			table_examination
+		where 
+			id=#{id}
+	</select>
+	
+	<select id="publishExamDetail" resultType="TeacherVersionQuestion">
+		 SELECT DISTINCT
+			tvq.id AS 'id',
+			tvq.title AS 'title',
+			tvq.answer0 AS 'answer',
+			tvq.answer1 AS 'answer1',
+			tvq.answer2 AS 'answer2',
+			tvq.answer3 AS 'answer3',
+			tvq.answer4 AS 'answer4',
+			tvq.answer5 AS 'answer5',
+			tvq.answer6 AS 'answer6',
+			tvq.answer7 AS 'answer7',
+			tvq.answer8 AS 'answer8',
+			tvq.answer9 AS 'answer9',
+			tvq.ques_type AS 'quesType'
+		FROM
+			table_exam_class tec
+		JOIN table_exam_detail ted ON tec.exam_id = ted.exam_id
+		JOIN table_exam_detail_question tedq ON tedq.exam_detail_id = ted.id
+		JOIN (
+			SELECT
+				id,
+				title,
+				answer0,
+				answer1,
+				answer2,
+				answer3,
+				answer4,
+				answer5,
+				answer6,
+				answer7,
+				answer8,
+				answer9,
+				ques_type
+			FROM
+				table_version_question
+			GROUP BY
+				id
+			HAVING
+				count(id) = 1
+		) tvq ON tvq.id = tedq.question_id
+		<where>
+			<if test="sqlMap != null and sqlMap != '' and sqlMap.examId != null and sqlMap.examId != ''">
+				AND ted.exam_id=#{sqlMap.examId}
+			</if>
+			
+			<if test="sqlMap != null and sqlMap != '' and sqlMap.examClassId != null and sqlMap.examClassId != ''">
+				AND tec.class_id = #{sqlMap.examClassId}
+			</if>
+		</where>
+		order by tvq.ques_type,tedq.sort
+	</select>
+	
+	<select id="publishExamPersonDetail" resultType="StudentQuestionDTO">
+		SELECT
+			a.id AS 'student.id',
+			a. NAME AS 'student.name',
+			a.std_code AS 'student.stdCode',
+			a.std_phone AS 'student.stdPhone',
+			b.title AS 'student.schoolClass.title',
+			b.id AS 'student.schoolClass.id'
+		FROM
+			table_student a,
+			table_class b
+		WHERE
+			a.class_id = b.id
+		AND a.id NOT IN (
+			SELECT DISTINCT
+				ts.id
+			FROM
+				table_student ts
+			JOIN table_exam_class tec ON tec.class_id = ts.class_id
+			JOIN table_class tc ON tc.id = tec.class_id
+			JOIN table_examination te ON te.id = tec.exam_id
+			LEFT JOIN table_student_answer tsa ON tsa.student_id = ts.id
+			AND tsa.exam_id = te.id
+			WHERE
+				ts.del_flag = '0'
+			AND te.del_flag = '0'
+			AND tsa.is_correct = '1'
+			AND tsa.question_id = #{sqlMap.questionId}
+			AND te.id = #{sqlMap.examId}
+			AND tc.id = #{sqlMap.examClassId}
+		)
+		AND a.del_flag = '0'
+		AND a.class_id = #{sqlMap.examClassId}
+	order by a.std_code
+	</select>
+	<select id="getErrorStudent" resultType="String">
+		SELECT 
+			is_correct
+		FROM table_student_answer 
+		WHERE student_id=#{studentId} 
+			and exam_id=#{examId} 
+			and question_id=#{questionId}
+	</select>
+</mapper>

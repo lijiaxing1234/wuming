@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamSpecilityDao">
+
+     <sql id="examSpecility_columns">
+        a.exam_id as "exam.id",
+        b.id  as "specialty.id",
+        b.title as "specialty.title"
+     </sql>
+
+	<select id="getExamSpecilitiesByExamId" resultType="ExamSpecility">
+		
+		SELECT  
+		   <include refid="examSpecility_columns" />
+		FROM table_exam_specility  a 
+		
+		LEFT JOIN  table_specialty  b  ON a.specialty_id=b.id
+	    
+	    where a.exam_id=#{examId}
+	</select>
+	
+	<!-- 先删除后批量添加适用专业表 -->
+	<insert id="batchAdd" >
+		DELETE  FROM table_exam_specility  WHERE exam_id=#{examId};
+		INSERT INTO table_exam_specility (exam_id,specialty_id) 
+	    <foreach item="item" index="index" collection="specilityArr"   separator="union all">
+	        select #{examId},
+	        	   #{item}
+	        from dual
+	    </foreach>
+	</insert>
+	
+	
+	
+</mapper>

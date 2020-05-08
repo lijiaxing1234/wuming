@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.resource.dao.LVCourseMapper">
+  <resultMap id="BaseResultMap" type="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="lv_course_id" jdbcType="VARCHAR" property="lvCourseId" />
+    <result column="course_id" jdbcType="VARCHAR" property="courseId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="course_price" jdbcType="DECIMAL" property="coursePrice" />
+     <result column="img" jdbcType="VARCHAR" property="img" />
+    
+    
+    <result column="courseTitle" jdbcType="DECIMAL" property="courseTitle" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, lv_course_id, course_id, create_time, course_price,
+    (SELECT title FROM table_course where LEVEL=1 and id=course_id) as "courseTitle"
+  </sql>
+  <select id="selectByExample" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourseExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    
+     from lv_course_self
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from lv_course_self
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from lv_course_self
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourseExample">
+    delete from lv_course_self
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+    insert into lv_course_self (id, lv_course_id, course_id, 
+      create_time, course_price)
+    values (#{id,jdbcType=BIGINT}, #{lvCourseId,jdbcType=VARCHAR}, #{courseId,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{coursePrice,jdbcType=DECIMAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+    insert into lv_course_self
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="lvCourseId != null">
+        lv_course_id,
+      </if>
+      <if test="courseId != null">
+        course_id,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="coursePrice != null">
+        course_price,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="lvCourseId != null">
+        #{lvCourseId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null">
+        #{courseId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="coursePrice != null">
+        #{coursePrice,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourseExample" resultType="java.lang.Long">
+    select count(*) from lv_course_self
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update lv_course_self
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.lvCourseId != null">
+        lv_course_id = #{record.lvCourseId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.courseId != null">
+        course_id = #{record.courseId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.coursePrice != null">
+        course_price = #{record.coursePrice,jdbcType=DECIMAL},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update lv_course_self
+    set id = #{record.id,jdbcType=BIGINT},
+      lv_course_id = #{record.lvCourseId,jdbcType=VARCHAR},
+      course_id = #{record.courseId,jdbcType=VARCHAR},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      course_price = #{record.coursePrice,jdbcType=DECIMAL}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+    update lv_course_self
+    <set>
+      <if test="lvCourseId != null">
+        lv_course_id = #{lvCourseId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null">
+        course_id = #{courseId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="coursePrice != null">
+        course_price = #{coursePrice,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+    update lv_course_self
+    set lv_course_id = #{lvCourseId,jdbcType=VARCHAR},
+      course_id = #{courseId,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      course_price = #{coursePrice,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <select id="getLVbyPage" resultType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+  	select id,lv_course_id,course_id,create_time,course_price from lv_course_self
+  	limit #{pageNO},#{pageSize}
+  </select>
+  
+  <select id="getLVCount" resultType="int">
+  	select count(id) from lv_course_self
+  </select>
+  
+  <select id="getLvRecommend" resultType="com.thinkgem.jeesite.modules.resource.entity.LVCourse">
+  	select recommend,img from lv_course_self where lv_course_id=#{lvId}
+  </select>
+  
+  <update id="recommendLV">
+  	update lv_course_self
+  	<set>
+  	<if test="recommend == 1">
+  		recommend = 0
+  	</if>
+  	<if test="recommend == 0">
+  		recommend = 1
+  	</if>
+  	</set>
+  	where lv_course_id = #{lvCourseId}
+  </update>
+  
+  <select id="getHasRecommendLVCount" resultType="int">
+  	select count(id) from lv_course_self where recommend=1
+  </select>
+  
+ <update id="addLvImg">
+ 	update lv_course_self set img = #{img} where lv_course_id = #{lvCourseId}
+ </update>
+ 
+ <select id="getRecomLvId" resultType="string">
+ 	select lv_course_id from lv_course_self
+    where recommend=1
+ </select>
+ 
+ <select id="getRecomLv" resultMap="BaseResultMap">
+	 select id, lv_course_id, course_id, create_time, course_price,img,
+    (SELECT title FROM table_course where LEVEL=1 and id=course_id) as "courseTitle",
+    (select count(id) from table_pumpkin_pay tpp where tpp.course_id=lcs.lv_course_id and tpp.user_id=#{userId}) as"pumkinPay",
+    (select count(user_id) from pay_user_order puo where puo.target_id=lcs.lv_course_id and puo.user_id=#{userId} and puo.status=1) as"otherPay"
+    from lv_course_self lcs
+    where lv_course_id=#{lvCourseId} and recommend=1
+ </select>
+ 
+ <select id="getPPCourseId" resultType="string"> 
+    select course_id from table_pumpkin_pay where user_id=#{userId}
+ </select>
+ <select id="getOPCourseId" resultType="string">
+    select target_id from pay_user_order where user_id=#{userId} and status=1
+ </select>
+ 
+ <!--查询 我的主板课程集合 -->
+ <select id="selectUserMTCourseId"   resultType="java.lang.String">
+   SELECT id FROM (
+     SELECT  course_id AS "id",user_id AS " userId" , pay_date AS "createTime" FROM  table_pumpkin_pay  UNION ALL
+     SELECT  target_id  AS "id",user_id AS "userId" , create_time  AS "createTime"  FROM pay_user_order  WHERE  STATUS='1'  UNION ALL
+     SELECT  course_id AS "id", user_id AS "userId" , create_time AS "createTime" FROM  table_user_free_mtcourse
+     
+     ORDER BY  createTime DESC
+    ) t
+    WHERE  userId=#{userId}
+    GROUP BY  id
+ </select>
+ 
+ 
+  <!-- 插入用户观看 免费课程 关联表 -->
+  <insert id="insertIgnoreFreeMTCourse"    parameterType="java.util.Map">
+     INSERT IGNORE INTO  table_user_free_mtcourse(user_id,course_id,create_time) VALUES(#{userId},#{courseId},CURRENT_TIMESTAMP())
+  </insert>
+ 
+ 
+ 
+ 
+ <select id="hasBuyByPum" resultType="int">
+ 	select count(id) from table_pumpkin_pay where course_id=#{lvCourseId} and user_id=#{userId}
+ </select>
+ 
+ <select id="hasBuyByOther" resultType="int">
+ 	select count(user_id) from pay_user_order where target_id=#{lvCourseId} and user_id=#{userId} and status=1
+ </select>
+ 
+ <select id="getAllLvId" resultType="string">
+ 	select lv_course_id from lv_course_self
+ </select>
+ 
+</mapper>

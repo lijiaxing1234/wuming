@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.StudentDao">
+    
+	<sql id="studentColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.class_id AS "schoolClass.id",
+		a.std_code AS "stdCode",
+		a.std_sex AS "stdSex",
+		a.std_age AS "stdAge",
+		a.std_phone AS "stdPhone",
+		a.std_email AS "stdEmail",
+		a.std_password AS "stdPassword",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		z.title AS "schoolClass.title",
+		z.specialty_title as "schoolClass.specialtyTitle"
+	</sql>
+	
+	<sql id="studentJoins">
+		LEFT JOIN table_class z ON z.id = a.class_id
+	</sql>
+    
+	<select id="get" resultType="Student">
+		SELECT 
+			<include refid="studentColumns"/>
+		FROM table_student a
+		<include refid="studentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getStudentByStudentCode" resultType="Student">
+		SELECT 
+			<include refid="studentColumns"/>,
+			z.end_date
+		FROM table_student a,table_class z
+		WHERE a.std_code = #{stdCode}
+		and z.company_id = #{schoolId}
+		AND a.del_flag = '0'
+		and a.class_id = z.id
+		and z.del_flag = '0'
+	</select>
+	<select id="getStudentByStudentCode2" resultType="Student">
+		select 
+			a.id AS "id",
+			a.name AS "name",
+			a.class_id AS "schoolClass.id",
+			a.std_code AS "stdCode",
+			a.std_sex AS "stdSex",
+			a.std_age AS "stdAge",
+			a.std_phone AS "stdPhone",
+			a.std_email AS "stdEmail",
+			a.std_password AS "stdPassword",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.del_flag AS "delFlag"
+		from table_student a
+		where a.std_code = #{stdCode}
+		and a.del_flag = '0'
+	</select>
+	
+	
+	<select id="findList" resultType="Student">
+		SELECT 
+			<include refid="studentColumns"/>
+		FROM table_student a
+		<include refid="studentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="schoolClass != null and schoolClass.id != null and schoolClass.id != ''">
+				AND a.class_id = #{schoolClass.id}
+			</if>
+			<if test="stdCode != null and stdCode != ''">
+				AND a.std_code LIKE concat('%',#{stdCode},'%')
+				 
+			</if>
+			<if test="stdPhone != null and stdPhone != ''">
+				AND a.std_phone = #{stdPhone}
+			</if>
+			<if test="sqlParam.teacherClasss !=null">
+				and a.class_id in 
+				<foreach collection="sqlParam.teacherClasss" item="item" index="index" open="(" close=")" separator=",">
+				    #{item.id}
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Student">
+		SELECT 
+			<include refid="studentColumns"/>
+		FROM table_student a
+		<include refid="studentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_student(
+			id,
+			name,
+			class_id,
+			std_code,
+			std_sex,
+			std_age,
+			std_phone,
+			std_email,
+			std_password,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{schoolClass.id},
+			#{stdCode},
+			#{stdSex},
+			#{stdAge},
+			#{stdPhone},
+			#{stdEmail},
+			#{stdPassword},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_student SET 	
+			name = #{name},
+			class_id = #{schoolClass.id},
+			std_code = #{stdCode},
+			std_sex = #{stdSex},
+			std_age = #{stdAge},
+			std_phone = #{stdPhone},
+			std_email = #{stdEmail},
+			std_password = #{stdPassword},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE table_student SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getCourseListByStudentId" parameterType="String" resultType="Course">
+		SELECT
+			a.id,
+			a.title
+		FROM
+			table_course a,
+			table_teacher_class_course b,
+			table_class c,
+			table_student d
+		WHERE
+			a.id = b.course_id
+		AND b.class_id = c.id
+		AND c.id = d.class_id
+		AND d.id = #{studentId}
+	</select>
+	
+	<!-- 根据学生id获取学生所有考试的成绩 -->
+	<select id="getMyGradePage" resultType="StudentTask">
+		SELECT
+			te.id as 'examId',
+			ted.id as 'examDetailId',
+			te.title ,
+			tst.score ,
+			te.total_score as 'totalfraction' ,
+			te.exam_type as 'examType',
+			tst.startTime as 'starttime',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_student_answer tsa
+		        WHERE
+		            tsa.student_id = tst.student_id
+		                AND tsa.exam_id = te.id
+		                AND tsa.is_correct = '1') as 'rightCount',
+		    (select count(*) from table_exam_detail_question tedq
+		    where tedq.exam_detail_id = ted.id) as 'totalCount',
+			tec.isMark
+		FROM
+			table_student_task tst ,
+			table_exam_detail ted ,
+			table_examination te,
+		    table_exam_class tec,
+		    table_class tc,
+		    table_student ts
+		WHERE
+			student_id = #{studentId}
+		and tec.class_id = tc.id
+        and tc.id = ts.class_id
+        and ts.id = #{studentId}
+        and tec.exam_id = ted.exam_id
+		AND tst.exam_detail_id = ted.id
+		AND ted.exam_id = te.id
+		and tst.isSubmit = '1'
+		<if test="title != null and title != ''">
+			AND te.title LIKE concat('%',#{title},'%')
+		</if>
+		<if test="examType != null and examType != ''">
+			AND te.exam_type = #{examType}
+		</if>
+		order by tst.submitTime desc
+	</select>
+	<!-- 根据机构编码查询学校 -->
+	<select id="officeCode" parameterType="String" resultType="Office">
+		SELECT
+			so.id ,
+			so.`code` ,
+			so.type
+		FROM
+			sys_office so
+		WHERE
+			so.type = '3'
+		AND so.del_flag = '0'
+	</select>
+	<!-- 根据学校id查询该学校下的所有班级 -->
+	<select id="getSchoolClassesBySchoolId" parameterType="String" resultType="SchoolClass">
+		SELECT
+			tc.id ,
+			tc.title
+		FROM
+			table_class tc
+		WHERE
+			tc.del_flag = '0'
+			and tc.company_id = #{schoolId}
+	</select>
+	<!-- 根据机构编码获取机构 -->
+	<select id="getSchoolByOfficeCode" parameterType="String" resultType="Office">
+		SELECT
+			so.id ,
+			so.`code` ,
+			so.type
+		FROM
+			sys_office so
+		WHERE
+			so.type = '1'
+		AND so.del_flag = '0'
+		AND so.`code` = #{officeCode}
+	</select>
+	
+	<select id="findPageByCompanyId" resultType="Student">
+		SELECT 
+			<include refid="studentColumns"/>,
+			z.specialty_title as 'specialtyTitle'
+		FROM table_student a,table_class z
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.class_id = z.id
+			and z.company_id = #{sqlMap.companyId}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="schoolClass != null and schoolClass.id != null and schoolClass.id != ''">
+				AND a.class_id = #{schoolClass.id}
+			</if>
+			<if test="stdCode != null and stdCode != ''">
+				AND a.std_code LIKE concat('%',#{stdCode},'%')
+				 
+			</if>
+			<if test="stdPhone != null and stdPhone != ''">
+				AND a.std_phone = #{stdPhone}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findStudentSourcesPage" resultType="Edresources">
+		SELECT 
+		    x.id,
+		    x.res_name AS 'resName',
+		    x.res_file AS 'resFile',
+		    y.name AS 'userName',
+		    w.title AS 'knowledgeName'
+		FROM
+		    table_resource x,
+		    sys_user y,
+		    table_course_knowledge w
+		WHERE
+		    x.office_id IN (SELECT 
+		            z.id
+		        FROM
+		            sys_office z
+		        WHERE
+		            z.id = (SELECT 
+		                    a.id
+		                FROM
+		                    sys_office a,
+		                    table_class b,
+		                    table_student c
+		                WHERE
+		                    a.id = b.company_id
+		                        AND b.id = c.class_id
+		                        AND c.id = #{studentId})
+		                OR z.parent_ids LIKE CONCAT('%',
+		                    (SELECT 
+		                            a.id
+		                        FROM
+		                            sys_office a,
+		                            table_class b,
+		                            table_student c
+		                        WHERE
+		                            a.id = b.company_id
+		                                AND b.id = c.class_id
+		                                AND c.id = #{studentId}),
+		                    '%'))
+		        AND x.user_id = y.id
+		        AND w.id = x.knowledge_id
+		       	<if test="resName != null and resName != ''">
+					AND x.res_name like concat('%',#{resName},'%')
+				</if>
+		ORDER BY x.create_date DESC
+	</select>
+	
+	<select id="getExamCountByCourseType" parameterType="String" resultType="map">
+		SELECT 
+		    a.id AS 'versionId',
+		    a.title AS 'versionName',
+		    (SELECT 
+		            tc.id
+		        FROM
+		            table_course tc,
+		            table_course_vesion tcv
+		        WHERE
+		            tc.id = tcv.course_id AND tcv.id = a.id) AS 'courseId',
+		    (SELECT 
+		            tc.title
+		        FROM
+		            table_course tc,
+		            table_course_vesion tcv
+		        WHERE
+		            tc.id = tcv.course_id AND tcv.id = a.id) AS 'courseName',
+		    (SELECT 
+		            COUNT(z.id)
+		        FROM
+		            table_examination z,
+		            table_exam_class y,
+		            table_class x,
+		            table_student w
+		        WHERE
+		            z.id = y.exam_id 
+		            	AND y.`status` IN ('1' , '2')
+		                AND z.istemplate = '0'
+		                AND z.end_time <![CDATA[ > ]]> NOW()
+		            	AND y.class_id = x.id
+		                AND x.id = w.class_id
+		                AND w.id = #{studentId}
+		                AND z.id NOT IN (SELECT 
+		                    ted.exam_id
+		                FROM
+		                    table_exam_detail ted,
+		                    table_student_task tst
+		                WHERE
+		                    ted.id = tst.exam_detail_id
+		                        AND tst.student_id = #{studentId}
+		                        and tst.isSubmit = '1')
+		                AND z.exam_type = '3'
+		                AND z.version_id = a.id) AS 'homeworkCount',
+		    (SELECT 
+		            COUNT(z.id)
+		        FROM
+		            table_examination z,
+		            table_exam_class y,
+		            table_class x,
+		            table_student w
+		        WHERE
+		            z.id = y.exam_id 
+		            	AND y.`status` IN ('1' , '2')
+		                AND z.istemplate = '0'
+		                AND z.end_time <![CDATA[ > ]]> NOW()
+		            	AND y.class_id = x.id
+		                AND x.id = w.class_id
+		                AND w.id = #{studentId}
+		                AND z.id NOT IN (SELECT 
+		                    ted.exam_id
+		                FROM
+		                    table_exam_detail ted,
+		                    table_student_task tst
+		                WHERE
+		                    ted.id = tst.exam_detail_id
+		                        AND tst.student_id = #{studentId}
+		                        and tst.isSubmit = '1')
+		                AND z.exam_type = '5'
+		                AND z.version_id = a.id) AS 'examCount'
+		FROM
+		    table_course_vesion a,
+		    table_teacher_class_course b,
+		    table_class c,
+		    table_student d
+		WHERE
+		    a.id = b.verson_id AND b.class_id = c.id
+		        AND c.id = d.class_id
+		        AND d.id = #{studentId}
+	</select>
+	
+	<select id="getStudentGradChange" parameterType="map" resultType="com.thinkgem.jeesite.modules.teacher.dto.Exam2">
+		SELECT DISTINCT
+		    e.id, e.title, ts.id, ts.`name`, c.score, e.create_date
+		FROM
+		    table_examination e
+		        LEFT JOIN
+		    table_exam_class b ON e.id = b.exam_id
+		        LEFT JOIN
+		    table_exam_detail d ON d.exam_id = e.id
+		        LEFT JOIN
+		    table_student ts ON ts.class_id = b.class_id
+		        LEFT JOIN
+		    (SELECT 
+		        a.*
+		    FROM
+		        table_student_task a
+		    WHERE
+		        a.student_id IN (SELECT 
+		                id
+		            FROM
+		                table_student ts
+		            WHERE
+		                ts.class_id = #{classId})
+		            AND a.exam_detail_id IN (SELECT 
+		                id
+		            FROM
+		                table_exam_detail ted
+		            WHERE
+		                ted.exam_id IN (SELECT 
+		                        e.id
+		                    FROM
+		                        table_examination e
+		                    JOIN table_exam_class b ON e.id = b.exam_id
+		                    WHERE
+		                        e.exam_type IN ('2' , '5')
+		                            AND b.isMark = '1'
+		                            AND b.`status` IN ('0' , '1', '2')
+		                            <!-- AND e.istemplate = '0' -->))) c ON c.exam_detail_id = d.id
+		        AND c.student_id = ts.id
+		WHERE
+		    e.exam_type IN ('2' , '5')
+		        AND b.isMark = '1'
+		        AND b.`status` IN ('0' , '1', '2')
+		        <!-- AND e.istemplate = '0' -->
+		        AND ts.class_id = #{classId}
+		        AND ts.del_flag = '0'
+		        <if test="duration != 0">
+			        and e.create_date >= date_sub(curdate(), INTERVAL #{duration} DAY)
+		        </if>
+		GROUP BY e.id
+		ORDER BY e.create_date , c.score DESC , ts.std_code
+	</select>
+	
+	<select id="getStudentMsg" parameterType="String" resultType="com.thinkgem.jeesite.modules.questionlib.dto.MessageStudentDTO">
+		SELECT 
+		    a.id, b.title AS 'examTitle', a.message, c.name as 'teacherName'
+		FROM
+		    table_message_student a,
+		    table_examination b,
+		    sys_user c
+		WHERE
+		    a.exam_id = b.id AND c.id = a.teacher_id
+		        AND a.status = 0
+		        AND a.student_id = #{studentId}
+		        order by a.create_date desc
+	</select>
+	
+	<update id="updateStudentMsg" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="i" open="" close="" separator=";">
+			update  table_message_student
+				<set>
+					status = 1
+				</set>
+				where id = #{item.id}
+		</foreach>		
+	</update>
+	
+	<select id="getSpecialtyListBySchoolId" parameterType="String" resultType="Student">
+		SELECT 
+		    a.specialty_title as 'specialtyTitle'
+		FROM
+		    table_class a
+		WHERE
+		    a.company_id = #{schoolId}
+	</select>
+	
+	<select id="getExercisesCount" parameterType="String" resultType="map">
+		select 
+		    count(a.id) as 'allQuestionsCount',
+		    count(case
+		        when a.is_correct = '1' then 1
+		        else null
+		    end) as 'exercisesCount'
+		from
+		    table_student_answer a
+		where
+		    a.student_id = #{studentId}
+	</select>
+	
+	<select id="getSchoolIdByStudentId" parameterType="String" resultType="String">
+		select 
+		    b.company_id as 'schoolId'
+		from
+		    table_student a,
+		    table_class b
+		where
+		    a.id = #{studentId}
+		        and a.class_id = b.id
+	</select>
+	
+	<select id="getStudentPassingRate" parameterType="String" resultType="com.thinkgem.jeesite.modules.student.entity.DateVo">
+		select 
+		    tr.examCode,
+		    (case
+		        when (tt.rightCount / tr.allExamCodeCount) then (tt.rightCount / tr.allExamCodeCount)
+		        else 0
+		    end) as 'passingRate'
+		from
+		    (select 
+		        d.exam_code as examCode,
+		            count(d.exam_code) as 'allExamCodeCount'
+		    from
+		        table_examination a, table_exam_detail b, table_exam_detail_question c, table_version_question d
+		    where
+		        a.id = b.exam_id
+		            and b.id = c.exam_detail_id
+		            and c.question_id = d.id
+		            and a.teacher_id in (select 
+		                c.id
+		            from
+		                table_student a, table_teacher_class_course b, sys_user c
+		            where
+		                a.id = #{studentId}
+		                    and a.class_id = b.class_id
+		                    and b.teacher_id = c.id)
+		    group by d.exam_code) tr
+		        left join
+		    (select 
+		        t.examCode, count(t.isCorrent) as 'rightCount'
+		    from
+		        (select 
+		        tvq.exam_code as 'examCode', tsa.is_correct as 'isCorrent'
+		    from
+		        table_version_question tvq, table_student_answer tsa
+		    where
+		        tvq.id = tsa.question_id
+		            and tsa.student_id = #{studentId}
+		    group by tvq.exam_code) t
+		    where
+		        t.isCorrent = '1'
+		    group by t.examCode) tt ON tt.examCode = tr.examCode
+	</select>
+	
+	<select id="courseSchedule" parameterType="map" resultType="map">
+		select 
+		    count(z.id) as 'totalCount',
+		    (select 
+		            count(t.examKnowlege) as 'examKnowlegeCount'
+		        from
+		            (select distinct
+		                tck.title as 'examKnowlege'
+		            from
+		                table_examination a, table_exam_detail ted, table_exam_detail_question tedq, table_version_question tvq, table_course_knowledge tck
+		            where
+		                a.teacher_id in (select 
+		                        su.id
+		                    from
+		                        sys_user su, table_teacher_class_course ttcc, table_class tc, table_student ts
+		                    where
+		                        su.id = ttcc.teacher_id
+		                            and ttcc.class_id = tc.id
+		                            and tc.id = ts.class_id
+		                            and ts.id = #{studentId})
+		                    and a.version_id = #{versionId}
+		                    and a.id = ted.exam_id
+		                    and ted.id = tedq.exam_detail_id
+		                    and tedq.question_id = tvq.id
+		                    and tvq.exam_code = tck.title) t) as 'examCount'
+		from
+		    table_course_knowledge z
+		where
+		    z.version_id = #{versionId}
+	</select>
+	
+	<select id="getStudentGradeChange" parameterType="map" resultType="map">
+		select 
+		    a.id as 'examId', a.title as 'examName', c.score
+		from
+		    table_examination a,
+		    table_exam_detail b,
+		    table_student_task c
+		where
+		    a.exam_type = '5'
+			and a.status = '2'
+		        and a.version_id = #{versionId}
+		        and a.id in (select 
+		            tec.exam_id
+		        from
+		            table_exam_class tec,
+		            table_student ts
+		        where
+		            tec.class_id = ts.class_id
+		                and ts.id = #{studentId})
+		        and a.id = b.exam_id
+		        and b.id = c.exam_detail_id
+		        and c.student_id = #{studentId}
+	</select>
+	
+	<select id="getStudentRanking" parameterType="map" resultType="Long">
+		select 
+		    (count(a.score)+1) as 'studentRanking'
+		from
+		    table_student_answer a
+		where
+		    a.exam_id = #{examId}
+		        and a.student_id in (select 
+		            z.id
+		        from
+		            table_student z
+		        where
+		            z.class_id = (select 
+		                    tc.id
+		                from
+		                    table_student ts,
+		                    table_class tc
+		                where
+		                    ts.class_id = tc.id and ts.id = #{studentId}))
+			and a.score is not null
+			and a.score <![CDATA[ >= ]]> #{score}
+		order by a.score desc
+	</select>
+	
+	<update id="updatePasswordById" parameterType="map">
+		update table_student set std_password = #{newPassword} where id = #{studentId}
+	</update>
+	
+	
+	
+	<select id="selectByStudent"  resultType="Student">
+	  
+	   select a.id AS "id",
+			  a.name AS "name",
+			  a.class_id AS "schoolClass.id",
+			  a.std_code AS "stdCode",
+			  a.std_sex AS "stdSex",
+			  a.std_age AS "stdAge",
+			  a.std_phone AS "stdPhone",
+			  a.std_email AS "stdEmail",
+			  a.std_password AS "stdPassword",
+			  a.create_by AS "createBy.id",
+			  a.create_date AS "createDate",
+			  a.update_by AS "updateBy.id",
+			  a.update_date AS "updateDate",
+			  a.del_flag AS "delFlag"
+	   FROM table_student a
+	   
+	   <where>
+	       <if test="id !=null and id !=''">
+	          and a.id=#{id}
+	       </if>
+	   </where>
+	   
+	</select>
+</mapper>

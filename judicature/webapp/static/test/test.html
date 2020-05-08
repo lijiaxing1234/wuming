@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>
+            test
+        </title>
+    </head>
+    <body>
+        <object name="MyActiveX" classid="clsid:BF4C592B-6856-4C01-90B8-75B8155F5D96" style="height:2pt;width:6">
+            </object> <script type="text/javascript">
+function add() 
+        {
+		 MyActiveX.FunChooseDoc();//ѡ��word
+ 		 MyActiveX.FunAnalysisWordReturn();//����word
+		 MyActiveX.FunSendWord("127.0.0.1","8080","/questionlib/questionlib/versionQuestion/importQuestionFile?importDataId=4f1874d00ff3473082338bf3614c881f");//����word��pic
+        }
+        </script>
+        <div style="width:300px;height:300px;">
+            <input type="button" value="�ϴ�word�ļ�" onclick="add()" style="width:66.15pt;border:solid windowtext 1.0pt; border-left:none;padding:0cm 5.4pt 0cm 5.4pt">
+        </div>
+    </body>
+</html>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SCourseVersionDao">
+    
+	<sql id="sCourseVersionColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		b.id AS "course.id",
+		b.title AS "course.title",
+		b.specialty_id AS "course.specialtyId",
+		b.level AS "course.level",
+		b.phase AS "course.phase",
+		b.couse_system AS "course.couseSystem"
+	</sql>
+	
+	<sql id="courseColumns">
+		c.id AS "id",
+		c.title AS "title",
+		c.specialty_id AS "specialtyId",
+		c.level AS "level",
+		c.phase AS "phase",
+		c.couse_system AS "couseSystem",
+		c.create_by AS "createBy.id",
+		c.create_date AS "createDate",
+		c.update_by AS "updateBy.id",
+		c.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="sCourseVersionJoins">
+		LEFT JOIN table_course b ON b.id = a.course_id 
+	</sql>
+    
+	<select id="get" resultType="SCourseVersion">
+		SELECT 
+			<include refid="sCourseVersionColumns"/>
+		FROM table_course_vesion a
+		<include refid="sCourseVersionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getSchoolCourseVersionPage" resultType="SCourseVersion">
+		SELECT 
+			<include refid="sCourseVersionColumns"/>,
+			c.id as 'schoolVersionId'
+		FROM table_course_vesion a
+		LEFT JOIN table_course b ON b.id = a.course_id 
+		LEFT JOIN table_school_version c ON c.version_id = a.id
+		<where>
+			a.del_flag = '0' AND c.school_id = #{sqlMap.schoolId}
+			<if test="title != null and title != '' ">
+				and a.title like concat('%',#{title},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="findAllList" resultType="SCourseVersion">
+		SELECT 
+			<include refid="sCourseVersionColumns"/>
+		FROM table_course_vesion a
+		<include refid="sCourseVersionJoins"/>
+		<where>
+			a.del_flag = '0'
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_course_vesion(
+			id,
+			title,
+			course_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{course.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_course_vesion SET 	
+			title = #{title},
+			course_id = #{course.id},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getSchoolNotCourse" parameterType="String" resultType="Course">
+		<!-- SELECT
+			<include refid="courseColumns"/>
+		FROM
+			table_course c
+		WHERE
+			c.id NOT IN (
+				SELECT
+					b.course_id
+				FROM
+					table_course_vesion b
+				WHERE
+					b.id IN (
+						SELECT
+							a.version_id
+						FROM
+							table_school_version a
+						WHERE
+							a.school_id = #{schoolId}
+					)
+				AND b.del_flag = '0'
+			) -->
+		SELECT
+			<include refid="courseColumns"/>
+		FROM
+			table_course c
+	</select>
+	
+	<select id="getVersionsByCourseId" parameterType="map" resultType="SCourseVersion">
+		SELECT
+			a.id AS "id" ,
+			a.title AS "title" ,
+			a.create_by AS "createBy.id" ,
+			a.create_date AS "createDate" ,
+			a.update_by AS "updateBy.id" ,
+			a.update_date AS "updateDate" ,
+			a.del_flag AS "delFlag"
+		FROM
+			table_course_vesion a 
+		WHERE
+			a.course_id = #{courseId} 
+		AND a.id NOT IN(
+			SELECT
+				tsv.version_id
+			FROM
+				table_school_version tsv
+			WHERE
+				tsv.school_id = #{companyId}
+		)
+	</select>
+	
+	<insert id="addSchoolCourseVersion" parameterType="map">
+		insert into table_school_version value (
+			#{id},
+			#{schoolId},
+			#{versionId}
+		)
+	</insert>
+	<update id="updateSchoolCourseVersion" parameterType="map">
+		update table_school_version set version_id = #{versionId} where id = #{id}		
+	</update>
+	
+	<select id="getSchoolVersionBy2Id" parameterType="map" resultType="map">
+		select * from table_school_version where version_id = #{versionId} AND school_id = #{schoolId}
+	</select>
+	
+	<delete id="deleteSchoolVersion" parameterType="String">
+		delete from table_school_version where version_id = #{courseVersionId}
+	</delete>
+	
+	<select id="getVersionsByCourseIdAndSchoolId" parameterType="map" resultType="SCourseVersion">
+		SELECT
+			a.id AS "id" ,
+			a.title AS "title" ,
+			a.create_by AS "createBy.id" ,
+			a.create_date AS "createDate" ,
+			a.update_by AS "updateBy.id" ,
+			a.update_date AS "updateDate" ,
+			a.del_flag AS "delFlag"
+		FROM
+			table_course_vesion a,
+			table_school_version b
+		WHERE
+			a.course_id = #{courseId}
+		AND
+			a.id = b.version_id
+		AND 
+			b.school_id = #{companyId}
+	</select>
+	
+	<select id="getCoursesBySpecialtyId" parameterType="map" resultType="Specialty">
+		SELECT 
+		    a.id,a.title
+		FROM
+		    table_course a,
+		    table_specialty c
+		WHERE
+		    a.specialty_id = c.id
+		        AND (c.id = #{specialtyId}
+		        OR c.parent_ids LIKE concat('%',#{specialtyId},'%'))
+	</select>
+	
+	
+	<!-- 学校专业、课程、版本 -->
+	
+	<!--学校选中的专业 -->
+	<select id="findSchoolSpecialty"  resultType="map">
+	    SELECT t.id as "id",
+	           t.title as "name",
+	           t.parent_id as "pId",
+	           t.parent_ids as "pIds"
+	     FROM    table_specialty t
+		 WHERE t.del_flag='0'
+		 AND  FIND_IN_SET(t.id,( 
+		   SELECT  GROUP_CONCAT(DISTINCT ts.parent_ids,ts.id) FROM 
+		              table_school_version tsv,
+				      table_course_vesion  tcv,
+				      table_course tc,
+				      table_specialty ts
+			WHERE tsv.version_id=tcv.id
+			AND   tcv.course_id=tc.id
+			AND   tc.specialty_id=ts.id
+			AND tcv.del_flag='0'
+			AND tsv.school_id=#{companyId}   
+		))
+		ORDER BY t.create_date 
+	</select>
+	
+	<!--学校选中课程 -->
+	<select id="findSchoolCourseBySpecialtyId"  resultType="map">
+	 	SELECT tc.id as "id",tc.title  as "name"
+	 	FROM 
+		          table_school_version tsv,
+			      table_course_vesion  tcv,
+			      table_course tc
+		WHERE tsv.version_id=tcv.id
+		AND   tcv.course_id=tc.id
+		AND tcv.del_flag='0'
+		AND tsv.school_id=#{companyId}
+		AND tc.specialty_id=#{specialtyId}
+	</select>
+	
+	<!--学校选中版本-->
+	<select id="findSchoolCourseVersionByCourseId"  resultType="map">
+	    SELECT tcv.id as "id",tcv.title as "name"
+        FROM  table_school_version tsv,
+		      table_course_vesion  tcv
+		WHERE tsv.version_id=tcv.id
+		AND tcv.del_flag='0'
+		AND tsv.school_id=#{companyId}
+		and tcv.course_id=#{courseId}
+	</select>
+	
+	
+	
+	
+	
+</mapper>

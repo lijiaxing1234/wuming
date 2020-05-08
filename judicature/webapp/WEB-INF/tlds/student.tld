@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+
+	<description>JSTL 1.1 functions library</description>
+	<display-name>JSTL functions cms</display-name>
+	<tlib-version>1.1</tlib-version>
+	<short-name>student</short-name>
+	<uri>http://java.sun.com/jsp/jstl/functionsc</uri>
+
+	<function>
+		<description>某学生学习的所有课程</description>
+		<name>getCourseByStudentId</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.lang.String getCourseByStudentId()</function-signature>
+		<example>${student:getCourseByStudentId()}</example>
+	</function>
+
+	<function>
+		<description>学生的所有老师</description>
+		<name>getTeachersByStudentId</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.lang.String getTeachersByStudentId()</function-signature>
+		<example>${student:getTeachersByStudentId() }</example>
+	</function>
+	<!-- student:getCourseVersionListByStudentId -->
+	<function>
+		<description>某学生学习的所有课程</description>
+		<name>getCourseVersionListByStudentId</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.lang.String getCourseVersionListByStudentId()</function-signature>
+		<example>${student:getCourseVersionListByStudentId()}</example>
+	</function>
+	
+	
+	<function>
+		<description>获取平台下所有的学校</description>
+		<name>getAllSchool</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.util.List getAllSchool()</function-signature>
+		<example>${student:getAllSchool()}</example>
+	</function>
+	
+	
+	<function>
+		<description>获取答案</description>
+		<name>getStudentAnswer</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.lang.Object getStudentAnswer(com.thinkgem.jeesite.modules.student.entity.StudentAnswer,java.lang.String)</function-signature>
+		<example>${student:getStudentAnswer(StudentAnswer,property)}</example>
+	</function>
+	<function>
+		<description>获取已某个字段名称开头的属性值</description>
+		<name>getClassByProperty</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.lang.Object getClassByProperty(java.lang.Object,java.lang.String)</function-signature>
+		<example>${student:getClassByProperty(Object,property)}</example>
+	</function>
+	<function>
+		<description>获取已某个字段名称开头的属性值</description>
+		<name>getClassByPropertys</name>
+		<function-class>com.thinkgem.jeesite.modules.student.common.StudentTld</function-class>
+		<function-signature>java.util.List getClassByPropertys(java.lang.Object,java.lang.String)</function-signature>
+		<example>${student:getClassByPropertys(Object,property)}</example>
+	</function>
+</taglib>

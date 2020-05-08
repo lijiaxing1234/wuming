@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.TestPaperDao">
+	<!-- 成绩管理的列表 -->
+	<select id="getExamTeacherIdAndVersionId" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.create_date AS "time",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			tec. STATUS AS "status"
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+			and e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='2'
+			AND e.end_time <![CDATA[ < ]]>  NOW()
+			AND tec. STATUS IN ('1','2')
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="getOnLineExamByTeacherIdAndVersionId" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.create_date AS "time",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			tec. STATUS AS "status"
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+			and e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='5'
+			<!-- AND tec. STATUS = '2' -->
+			AND tec.isMark='1'
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<!-- 组卷录入成绩的列表 -->
+	<select id="findExamList" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.create_date AS "time",
+			tec.STATUS AS "status"
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+			and e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type IN (2)
+			AND tec. STATUS IN ('1')
+			<!-- AND e.istemplate = '0' -->
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="id != null and id != ''">
+				AND e.id=#{id}
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				AND e.begin_time=#{beginTime}
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+	</select>
+	<!-- 试卷管理的列表 线上已完成-->
+	<select id="getExamOnLine" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			e.create_date AS "time",
+			CASE WHEN e.begin_time <![CDATA[ > ]]> NOW() THEN '0' ELSE IF(e.end_time <![CDATA[ > ]]>  NOW() , '1' , '2') END AS "status",
+			<!-- IF(e.end_time  <![CDATA[ < ]]> NOW() , '1' , '2')AS "status", -->
+			e.exam_mode AS "examMode",
+			e.istemplate AS 'istemplate',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+			<!-- e.publish_answer_time AS 'publishAnswerTime' -->
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+		    e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='5'
+			AND e.end_time <![CDATA[ < ]]>  NOW()
+			AND tec. STATUS IN ('1', '2')
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tcc.id=ttcc.course_id 
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="examType != null and examType != ''">
+				AND e.exam_type = #{examType}
+			</if>
+			<if test="examMode != null and examMode != ''">
+				AND e.exam_mode = #{examMode}
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+<!-- 	线上未完成 -->
+	<select id="getExamOnline2" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			e.create_date AS "time",
+			CASE WHEN e.begin_time <![CDATA[ > ]]> NOW() THEN '0' ELSE IF(e.end_time <![CDATA[ > ]]>  NOW() , '1' , '2') END AS "status",
+			e.exam_mode AS "examMode",
+			e.istemplate AS 'istemplate',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+		    e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='5'
+			AND tec. STATUS IN ('0', '1')
+			AND e.end_time <![CDATA[ > ]]>  NOW()
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tcc.id=ttcc.course_id 
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="examType != null and examType != ''">
+				AND e.exam_type = #{examType}
+			</if>
+			<if test="examMode != null and examMode != ''">
+				AND e.exam_mode = #{examMode}
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<!-- 线下 已完成-->
+	<select id="getExam" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			e.create_date AS "time",
+			CASE WHEN e.begin_time <![CDATA[ > ]]> NOW() THEN '0' ELSE IF(e.end_time <![CDATA[ > ]]>  NOW() , '1' , '2') END AS "status",
+			<!-- IF(e.end_time  <![CDATA[ < ]]> NOW() , '1' , '2')AS "status", -->
+			e.exam_mode AS "examMode",
+			e.istemplate AS 'istemplate',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+			<!-- e.publish_answer_time AS 'publishAnswerTime' -->
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+		    e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='2'
+			AND tec. STATUS IN ('1', '2')
+			AND e.end_time <![CDATA[ < ]]>  NOW()
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tcc.id=ttcc.course_id 
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="examType != null and examType != ''">
+				AND e.exam_type = #{examType}
+			</if>
+			<if test="examMode != null and examMode != ''">
+				AND e.exam_mode = #{examMode}
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<!-- 未完成 -->
+	<select id="getExam3" resultType="Exam">
+		SELECT  DISTINCT
+			tcc.id AS 'examCourse.id',
+			tcc.title AS 'examCourse.title',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title',
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.begin_time AS "beginTime",
+			e.end_time AS "endTime",
+			e.create_date AS "time",
+			CASE WHEN e.begin_time <![CDATA[ > ]]> NOW() THEN '0' ELSE IF(e.end_time <![CDATA[ > ]]>  NOW() , '1' , '2') END AS "status",
+			<!-- IF(e.end_time  <![CDATA[ < ]]> NOW() , '1' , '2')AS "status", -->
+			e.exam_mode AS "examMode",
+			e.istemplate AS 'istemplate',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+			<!-- e.publish_answer_time AS 'publishAnswerTime' -->
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_course_vesion tcv,
+			table_course tcc,
+			table_teacher_class_course ttcc
+		<where>
+		    e.del_flag = '0'
+			AND e.id = tec.exam_id
+			AND e.exam_type ='2'
+			AND tec. STATUS IN ('0', '1')
+			AND e.end_time <![CDATA[ > ]]>  NOW()
+			AND tec.class_id = tc.id
+			AND e.version_id = tcv.id
+			AND tcv.course_id = tcc.id
+			AND tcc.id=ttcc.course_id 
+			AND tc.del_flag = '0'
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    and ttcc.teacher_id=#{sqlMap.userId}
+		    and ttcc.verson_id=#{sqlMap.versionId}
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="examType != null and examType != ''">
+				AND e.exam_type = #{examType}
+			</if>
+			<if test="examMode != null and examMode != ''">
+				AND e.exam_mode = #{examMode}
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="getOnLineExam" resultType="Exam">
+		SELECT  DISTINCT
+			course.id AS "examCourse.id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.create_date AS "time",
+			tec. STATUS AS "status"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_teacher_class_course ttcc ON ttcc.class_id = tec.class_id
+		JOIN table_class tc ON tc.id = ttcc.class_id
+		JOIN table_course course ON course.id = ttcc.course_id
+		<where>
+		    AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type ='5'
+		    AND e.end_time <![CDATA[ < ]]> now()
+		    <!-- AND e.istemplate='0' -->
+		    AND tec.isMark  is NULL
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	
+	<!-- 试卷管理的列表 -->
+	<select id="getExam2" resultType="Exam">
+		SELECT  DISTINCT
+			course.id AS "examCourse.id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.id AS "id",
+			e.exam_type AS "examType",
+			e.title AS "title",
+			e.create_date AS "time",
+			tec.STATUS AS "status"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_teacher_class_course ttcc ON ttcc.class_id = tec.class_id
+		JOIN table_class tc ON tc.id = ttcc.class_id
+		JOIN table_course course ON course.id = ttcc.course_id
+		<where>
+			and ttcc.teacher_id=e.teacher_id
+		    and ttcc.verson_id=e.version_id
+		    AND ttcc.teacher_id=#{userId} 
+			AND ttcc.verson_id=#{versionId}
+		    AND e.del_flag ='0'
+		    AND e.exam_type in (2,5)
+		    <!-- AND e.istemplate='0' -->
+		</where>
+	</select>
+	<select id="getExamClass" resultType="Exam">
+		SELECT 
+			DISTINCT
+			tc.title as "examClass.title"
+		FROM table_examination e
+		JOIN table_exam_class tec ON tec.exam_id=e.id
+		JOIN table_class tc ON tc.id=tec.class_id
+		JOIN table_exam_specility tes ON tes.exam_id=e.id
+		JOIN table_specialty ts ON ts.id=tes.specialty_id
+		<where>
+		    AND e.del_flag = 0
+		    AND e.istemplate='0'
+		</where>
+		order by e.create_date desc
+	</select>
+	
+	<!-- 试卷管理的删除功能 -->
+	<update id="deleteExam">
+		delete from table_exam_class where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 试卷管理的保存功能 -->
+	<update id="save">
+		update table_examination set status=0 where id=#{examId};
+		update table_exam_class set status=0 where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 试卷管理的发布功能 -->
+	<update id="publishExam">
+		update table_examination set status=1,begin_time=now() where id=#{examId};
+		update table_exam_class set status=1 where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!--试卷管理的提交 -->
+	<update id="submitTestPaper">
+		update table_examination set status=2 where id=#{examId};
+		update table_exam_class set status=2 where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 课后作业的提交 -->
+	<update id="submitExam">
+		update table_examination set status=2 where id=#{examId};
+		update table_exam_class set status=2,submitTime=now() where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 课堂例题的发布 -->
+	<update id="submitExam2">
+		update table_examination set status=2,begin_time=now() where id=#{examId};
+		update table_exam_class set status=2,submitTime=now() where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 成绩录入完成 -->
+	<update id="submitExamClassId">
+		update table_examination set status=2 where id=#{examId};
+		update table_exam_class set status=2,isMark='1' where exam_id=#{examId} AND class_id=#{examClassId}
+	</update>
+	<!-- 手动出卷的存为模板功能 -->
+	<update id="saveExam">
+		update table_examination set isNew=2,status=0 where id=#{examId}
+	</update>
+	<!-- 试卷管理的存为模板功能 -->
+	<update id="saveExample">
+		update table_examination set istemplate=1 where id=#{examId}
+	</update>
+	<!-- 删除模板功能 -->
+	<update id="deleteExam2">
+		update table_examination set istemplate=0 where id=#{examId}
+	</update>
+	<!-- 获取所有的考试列表（除了线下考试） -->
+	<select id="getAllExam" resultType="Exam">
+		SELECT
+			e.id AS 'id',
+			e.title AS 'title',
+			e.exam_type AS 'examType',
+			e.create_date AS 'time',
+			e.`status` AS 'status',
+			tc.id AS 'examClass.id',
+			tc.title AS 'examClass.title'
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_class tc,
+			table_teacher_class_course ttcc
+		<where>
+			AND e.del_flag = '0'
+			AND	e.id = tec.exam_id
+			AND tec.class_id = tc.id
+			AND ttcc.class_id=tc.id
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+			<!-- AND e.istemplate='0' -->
+			AND ttcc.teacher_id=#{sqlMap.userId}
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND e.exam_type!='2'
+			AND tc.del_flag = '0'
+			AND e.`status`='2'
+			AND tec.isMark='1'
+			<if test="beginTime != null and beginTime != ''">
+				AND e.begin_time=#{beginTime}
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if>
+			
+			<if test="examClass != null and examClass != '' and examClass.id != null and examClass.id != ''">
+				AND tc.id = #{examClass.id}
+			</if>
+			
+			<if test="examType != null and examType != ''">
+				AND tc.exam_type = #{examType}
+			</if>
+			
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		ORDER BY e.create_date desc
+	</select>
+	<select id="getAllUnSubmitExam" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS 'id',
+			tec.class_id AS 'examClass.id',
+			e.title AS 'title',
+			tec.`status` AS 'status'
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_teacher_class_course ttcc
+		WHERE
+			e.end_time  <![CDATA[ < ]]>  now()
+		AND e.id = tec.exam_id
+		AND e.exam_type IN ('3','5')
+		AND ttcc.teacher_id = e.teacher_id
+		AND ttcc.verson_id = e.version_id
+		AND ttcc.teacher_id =#{userId}
+		AND ttcc.verson_id =#{versionId}
+		AND tec.`STATUS` = '1'
+	</select>
+	<select id="getAllUnSubmitExam2" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS 'id',
+			tec.class_id AS 'examClass.id',
+			e.title AS 'title',
+			tec.`status` AS 'status'
+		FROM
+			table_examination e,
+			table_exam_class tec,
+			table_teacher_class_course ttcc
+		WHERE
+			e.exam_type='1'
+		AND e.id = tec.exam_id
+		AND ttcc.teacher_id = e.teacher_id
+		AND ttcc.verson_id = e.version_id
+		AND ttcc.teacher_id =#{userId}
+		AND ttcc.verson_id =#{versionId}
+		AND tec.`STATUS` = '2'
+		AND tec.isMark IS NULL
+	</select>
+	<update id="updateExamClassStatus">
+			update table_exam_class SET status='2',isMark='1' where exam_id = #{id} and class_id=#{examClass.id}
+	</update>
+	<update id="updateExamClassStatus2">
+			update table_examination SET status='2' where id = #{id}
+	</update>
+</mapper>

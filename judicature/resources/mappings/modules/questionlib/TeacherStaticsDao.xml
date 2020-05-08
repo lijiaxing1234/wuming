@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.TeacherStaticsDao">
+ 
+    
+	<select id="getTeacherStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.TeacherDTO">
+		SELECT vv.*,tt.* FROM (SELECT t.teacherId,t.teacherName,COUNT(class_id) classCount,COUNT(course_id) courseCount FROM (
+			SELECT
+			  v.*,
+			  su.id      teacherId,
+			  su.name    teacherName
+			FROM view_course_class v,
+			  table_teacher_class_course ttc,
+			  sys_user su
+			WHERE v.class_id = ttc.class_id
+			    AND ttc.teacher_id = su.id) t
+			     GROUP BY t.teacherId) vv
+			     ,(	SELECT 
+				SUM(CASE exam_type WHEN 1 THEN 1 ELSE 0 END) classTestCount,
+				SUM(CASE exam_type WHEN 2 THEN 1 ELSE 0 END) examCount,
+				SUM(CASE exam_type WHEN 3 THEN 1 ELSE 0 END) homeworkCount,
+				SUM(CASE exam_type WHEN 4 THEN 1 ELSE 0 END) exampleCount,
+				SUM(CASE exam_type WHEN 5 THEN 1 ELSE 0 END) onlineExamCount,
+				teacher_id
+				
+				FROM view_exam_class GROUP BY teacher_id) tt
+				  WHERE vv.teacherId = tt.teacher_id
+				  	<if test="teacherName != null and teacherName != ''">
+						AND vv.teacherName LIKE concat('%',#{teacherName},'%')
+					</if>
+					LIMIT #{start},#{pageSize}
+		        
+	</select>
+	<select id="getTeacherStaticsCount" resultType="int">
+		SELECT count(1) FROM (SELECT t.teacherId,t.teacherName,COUNT(class_id) classCount,COUNT(course_id) courseCount FROM (
+	SELECT
+	  v.*,
+	  su.id      teacherId,
+	  su.name    teacherName
+	FROM view_course_class v,
+	  table_teacher_class_course ttc,
+	  sys_user su
+	WHERE v.class_id = ttc.class_id
+	    AND ttc.teacher_id = su.id) t
+	     GROUP BY t.teacherId) vv
+	     ,(	SELECT 
+		SUM(CASE exam_type WHEN 1 THEN 1 ELSE 0 END) classTestCount,
+		SUM(CASE exam_type WHEN 2 THEN 1 ELSE 0 END) examCount,
+		SUM(CASE exam_type WHEN 3 THEN 1 ELSE 0 END) homeworkCount,
+		SUM(CASE exam_type WHEN 4 THEN 1 ELSE 0 END) exampleCount,
+		SUM(CASE exam_type WHEN 5 THEN 1 ELSE 0 END) onlineExamCount,
+		teacher_id
+		
+		FROM view_exam_class GROUP BY teacher_id) tt
+		  WHERE vv.teacherId = tt.teacher_id
+		  	<if test="teacherName != null and teacherName != ''">
+						AND vv.teacherName LIKE concat('%',#{teacherName},'%')
+					</if>
+				
+	</select>
+
+	<select id="getStaticsPage" resultType="com.thinkgem.jeesite.modules.questionlib.dto.TeacherDTO">
+		SELECT 
+		    a.name as 'teacherName',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_examination z,
+		            table_exam_class tec
+		        WHERE
+		            z.teacher_id = a.id
+		            AND z.id=tec.exam_id
+		            AND tec.status IN ('1','2')
+		             AND z.del_flag='0'
+		                AND z.exam_type = '1') AS 'classTestCount',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_examination z,
+		            table_exam_class tec
+		        WHERE
+		            z.teacher_id = a.id
+		            AND z.id=tec.exam_id
+		            AND tec.status IN ('1','2')
+		             AND z.del_flag='0'
+		                AND z.exam_type = '2') AS 'examCount',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		           table_examination z,
+		            table_exam_class tec
+		        WHERE
+		            z.teacher_id = a.id
+		            AND z.id=tec.exam_id
+		            AND tec.status IN ('1','2')
+		             AND z.del_flag='0'
+		                AND z.exam_type = '3') AS 'homeworkCount',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_examination z,
+		            table_exam_class tec
+		        WHERE
+		            z.teacher_id = a.id
+		            AND z.id=tec.exam_id
+		            AND tec.status IN ('1','2')
+		             AND z.del_flag='0'
+		                AND z.exam_type = '4') AS 'exampleCount',
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_examination z,
+		            table_exam_class tec
+		        WHERE
+		            z.teacher_id = a.id
+		            AND z.id=tec.exam_id
+		            AND tec.status IN ('1','2')
+		             AND z.del_flag='0'
+		                AND z.exam_type = '5') AS 'onlineExamCount',
+		    (SELECT 
+	            COUNT(DISTINCT x.class_id) AS 'classCount'
+	        FROM
+	            table_teacher_class_course x
+	        WHERE
+	            x.teacher_id = a.id) AS 'classCount',
+	    	(SELECT 
+	            COUNT(DISTINCT x.course_id) AS 'classCount'
+	        FROM
+	            table_teacher_class_course x
+	        WHERE
+	            x.teacher_id = a.id) AS 'courseCount'
+		FROM
+		    sys_user a
+		WHERE
+		    a.company_id = #{schoolId}
+		        AND a.user_type = '5'
+		    <if test="teacherName != null and teacherName != ''">
+			    and a.name like concat('%',#{teacherName},'%')
+		    </if>
+	</select>
+	
+</mapper>

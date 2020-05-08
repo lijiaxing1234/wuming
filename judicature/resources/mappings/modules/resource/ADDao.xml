@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.resource.dao.ADDao">
+	<select id="getADList" resultType="com.thinkgem.jeesite.modules.resource.entity.TableAD">
+		SELECT 
+			id,
+			col_id as 'colId',
+			image_url as 'imageUrl',
+			target as 'target',
+			ver_id as 'verId',
+			ad_type as 'adType',
+			seq as 'seq'
+		FROM table_ad
+		<where>
+			<if test="colId != null and colId != ''">
+				and col_id=#{colId}
+			</if>
+		</where>
+		order by seq
+	</select>
+	
+	<select id="selectADById" resultType="com.thinkgem.jeesite.modules.resource.entity.TableAD">
+		SELECT 
+			id,
+			col_id as 'colId',
+			image_url as 'imageUrl',
+			target as 'target',
+			ver_id as 'verId',
+			ad_type as 'adType',
+			seq as 'seq'
+		FROM table_ad
+		where id=#{adId}
+	</select>
+	
+	<insert id="insert">
+	INSERT INTO table_ad
+	  <trim prefix="(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			id,
+		</if>
+		<if test="colId != null and colId !=''">
+			col_id,
+		</if>
+		<if test="imageUrl != null and imageUrl !=''">
+			image_url,
+		</if>
+		<if test="target != null and target !=''">
+			target,
+		</if>
+		<if test="verId != null and verId !=''">
+			ver_id,
+		</if>
+		<if test="adType != null">
+			ad_type,
+		</if>
+		<if test="seq != null">
+			seq,
+		</if>
+	</trim>
+	 <trim prefix="values (" suffix=")" suffixOverrides=",">
+		<if test="id != null and id !=''">
+			#{id},
+		</if>
+		<if test="colId != null and colId !=''">
+			#{colId},
+		</if>
+		<if test="imageUrl != null and imageUrl !=''">
+			#{imageUrl},
+		</if>
+		<if test="target != null and target !=''">
+			#{target},
+		</if>
+		<if test="verId != null and verId !=''">
+			#{verId},
+		</if>
+		<if test="adType != null">
+			#{adType},
+		</if>
+		<if test="seq != null">
+			#{seq},
+		</if>
+	</trim>
+	</insert>
+	
+	<update id="update">
+	UPDATE table_ad 
+	 <set>
+		<if test="colId != null and colId !=''">
+			col_id=#{colId},
+		</if>
+		<if test="imageUrl != null and imageUrl !=''">
+			image_url=#{imageUrl},
+		</if>
+		<if test="target != null and target !=''">
+			target=#{target},
+		</if>
+		<if test="verId != null and verId !=''">
+			ver_id=#{verId},
+		</if>
+		<if test="adType != null">
+			ad_type=#{adType},
+		</if>
+		<if test="seq != null">
+			seq=#{seq},
+		</if>
+    </set>
+    <where>
+    	id=#{id}
+    </where>
+	</update>
+	<delete id="deleteAD" parameterType="com.thinkgem.jeesite.modules.resource.entity.TableAD">
+		DELETE FROM table_ad 
+		WHERE id=#{id}
+	</delete>
+	
+	<select id="selectADCountById" resultType="Integer">
+		select count(1) FROM table_ad where col_id=#{adColumnsId}
+	</select>
+	
+	<select id="getMaxADseq" parameterType="String" resultType="int">
+		select ifnull(max(seq),0) from table_ad
+		where col_id=#{colId}	
+	</select>
+</mapper>

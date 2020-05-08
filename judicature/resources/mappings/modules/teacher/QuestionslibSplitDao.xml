@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.QuestionslibSplitDao">
+	
+	<!--  获得练习题的百分比-->
+	<select id="getPracticePercentByTeacher" resultType="java.lang.Double">
+		SELECT
+		  `percent`
+		FROM `table_teacher_questions_percent`
+		where  teacher_id=#{teacherId}
+		   and version_id=#{versionId}
+		   and school_id =#{schoolId}
+	</select>
+	
+	<!--  插入练习题的百分比-->
+	<insert id="insertPracticePercentByTeacher">
+	   INSERT INTO `table_teacher_questions_percent`(
+	   				 `teacher_id`,
+		             `version_id`,
+		             `percent`,
+		             `school_id`
+		           )
+		VALUES (  
+		          #{teacherId},
+		          #{versionId},
+		          #{sqlMap.percent},
+		          #{schoolId}
+		       );
+	   
+	</insert>
+	
+	<!--  修改练习题的百分比-->
+    <update id="updatePracticePercentByTeacher">
+       UPDATE  `table_teacher_questions_percent`
+		SET `percent` = #{sqlMap.percent}
+		WHERE  teacher_id=#{teacherId}
+		   and version_id=#{versionId}
+		   and school_id =#{schoolId}
+    </update>
+	
+	
+	
+	
+	<!-- 获得所有可用试题的数量 -->
+	<select id="getAllQuestionsNumber" resultType="java.lang.Long">
+	   SELECT  COUNT(*)
+	     FROM  view_available_questionslib vaq
+	    WHERE vaq.school_id=#{schoolId}
+	      AND vaq.knowledge_version_id=#{versionId}
+	</select>
+	
+	<!-- 获得所有可用试题的数量 -->
+	<select id="getAllQuestionsNumberInfo"  resultType="StatisticsQuestionNumber">
+	     SELECT
+	       vaq.`ques_type` AS 'quesType',  
+	       COUNT(*)  AS 'number'
+	     FROM  view_available_questionslib vaq,(
+	         SELECT * FROM sys_dict WHERE TYPE='question_type'
+	      ) dict
+	     WHERE dict.value=vaq.`ques_type`
+	     
+	      AND vaq.school_id=#{schoolId}
+	      AND vaq.knowledge_version_id=#{versionId}
+	      
+	     GROUP BY  vaq.`ques_type`
+	     ORDER BY dict.sort
+	</select>
+	
+	
+	
+	
+	<!-- 根据老师设置的练习题的百分比把老师所在学校的题库和老师自己的题库进行分库 -->
+	<insert id="initQuestionslibSplitByTeacher">
+	   insert ignore into `table_teacher_questionslib_split`
+            (`teacher_id`,
+             `version_id`,
+             `school_id`,
+             `question_id`,
+             `type`
+             )
+	   SELECT #{teacherId} as 'teacher_id',
+	          #{versionId} as 'version_id',
+	          #{schoolId} as 'school_id',
+	          questionId as 'question_id',
+	          #{type} as 'type' 
+	   FROM  view_available_questionslib 
+	   where version_id=#{versionId}
+		    and school_id =#{schoolId}
+		   
+		   <if test="sqlParam.quesType !=null and sqlParam.quesType !=''">
+		     and ques_type=#{sqlParam.quesType}
+		   </if>
+		   
+	   limit ${sqlParam.limitNumber}
+	</insert>
+	<!-- 删除当前老师分库表数据 -->
+	<delete id="deleteQuestionslibSplitByTeacher">
+	       delete from table_teacher_questionslib_split 
+	   where  teacher_id=#{teacherId}
+		   and version_id=#{versionId}
+		   and school_id =#{schoolId}
+	</delete>
+	
+	<!-- 获得老师按百分比分库下所在学校及所教版本下的全部试题 -->
+	
+	<sql id="QuestionslibSplitByteacherWhere">
+       and ttqs.teacher_id=#{teacherId}
+	   and ttqs.version_id=#{versionId}
+	   and ttqs.school_id =#{schoolId}
+	   AND  vaq.`school_id`=#{schoolId}
+       AND  vaq.`version_id`=#{versionId}
+	   <if test="sqlParam.examId !=null">
+         and tek.exam_id=#{sqlParam.examId}
+       </if>
+       <if test="sqlParam.typeArr !=null">
+	     and ttqs.type in
+          <foreach item="item"  index="index"  collection="sqlParam.typeArr"   separator="," open="(" close=")">
+      		#{item}
+  		  </foreach>   
+  	   </if>
+	</sql>
+	
+	<select id="findQuestionslibSplitByteacher"  resultType="QuestionslibSplit">
+	   select 
+	          `vaq`.`id`             AS `id`,
+			  `vaq`.`exam_code`      AS `examCode`,
+			  `vaq`.`ques_type`      AS `quesType`,
+			  `vaq`.`ques_level`     AS `quesLevel`,
+			  
+			   CASE vaq.ques_type 
+				WHEN    (SELECT  b.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=vaq.ques_type )
+				
+				THEN   (SELECT  a.value   FROM  
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+					(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+					WHERE a.label=b.label AND b.value=vaq.ques_type )
+		
+	            ELSE ques_point  END  AS `quesPoint`,
+			  
+			  
+			  `vaq`.`title`          AS `title`,
+			  `vaq`.`question_code`  AS `questionCode`,
+			  `vaq`.`answer0`        AS `answer0`,
+			  `vaq`.`description`    AS `description`,
+			  `vaq`.`writer`         AS `writer`,
+			  `vaq`.`checker`        AS `checker`,
+			  `vaq`.`office_id`      AS `office.id`,
+			  `vaq`.`tearch_id`      AS `tearchId`,
+			  `vaq`.`version_id`     AS `versionId`,
+			  `vaq`.`questionlib_id` AS `questionlibId`,
+			  `vaq`.`create_by`      AS `createBy.id`,
+			  `vaq`.`create_date`    AS `createDate`,
+			  `vaq`.`update_by`      AS `updateBy.id`,
+			  `vaq`.`update_date`    AS `updateDate`,
+			  `vaq`.`del_flag`       AS `delFlag`,
+			  `vaq`.`knowledge_id`   AS `courseKnowledge.id`,
+			   ttqs.school_id as 'schoolId',
+			   ttqs.version_id as 'versionId',
+			   ttqs.type  as 'type'
+			   
+	   from table_teacher_questionslib_split  ttqs 
+	   left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	    LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+		          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id
+	   <if test="sqlParam.examId !=null">
+	      join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+	   </if>
+	   where 1=1
+	       <include refid="QuestionslibSplitByteacherWhere"/>
+	   ORDER BY ttqr.exampaper_count
+	</select>
+	
+	<select id="countQuestionslibSplitByteacher"  resultType="java.lang.Long">
+	   select 
+	          count(vaq.id)
+	   from table_teacher_questionslib_split  ttqs 
+	   left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	    <if test="sqlParam.examId !=null">
+	       join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+	   </if>
+       LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+	          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id
+	   where 1=1
+	       <include refid="QuestionslibSplitByteacherWhere"/>
+	       
+	       <if test="sqlParam.type !=null and sqlParam.type !=''">
+	            AND ttqs.`type` IN  
+	            <foreach collection="sqlParam.type"  item="item"  open="(" close=")" index="i" separator=",">
+	            	#{item}
+	            </foreach>
+	            
+	       </if>
+	    ORDER BY ttqr.exampaper_count
+	</select>
+	
+	<!--  统计分库自动出题有多少分  -->
+	<select id="statisticsQuestionslibSplitScoreInfoByteacher"  resultType="java.util.HashMap">
+	   select 
+	       SUM(CASE vaq.ques_type 
+			WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+			THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+		        ELSE vaq.ques_point  END 
+	       ) AS "totalScore",
+	       vaq.`ques_type`,
+	       COUNT(vaq.`ques_type`) AS  "quesType_count",
+	       GROUP_CONCAT( DISTINCT 
+	        ( CASE vaq.ques_type 
+			 WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+			 THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+		        ELSE vaq.ques_point  END )
+	      
+	        ) AS 'scoreList', 
+	      
+	       GROUP_CONCAT(
+			CASE vaq.ques_type 
+			WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+			THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+		        ELSE vaq.ques_point  END 
+	       ) AS 'scoreListInfo' 
+	   
+	   from table_teacher_questionslib_split  ttqs 
+	   left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	   join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+       LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id
+	   where 1=1
+	      <include refid="QuestionslibSplitByteacherWhere"/>
+	      
+	   group by vaq.ques_type
+	   ORDER BY ttqr.exampaper_count
+	</select>
+	
+	
+		
+	<!-- 查询分库后某种类型可以补题的数量 -->
+	<select id="countQuestionslibSplitByTeacherAndExamIdAndExamDetailIdAndQuesType" resultType="java.lang.Integer">
+	    SELECT 
+		  COUNT(vaq.id)		
+	   from table_teacher_questionslib_split  ttqs 
+	   left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	   join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+	   LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id
+	   where 1=1
+	       <include refid="QuestionslibSplitByteacherWhere"/>
+		    
+		   AND vaq.id NOT IN (
+				SELECT tedq.question_id FROM table_exam_detail_question tedq,table_version_question tvq 
+				WHERE tedq.question_id=tvq.id 
+				AND tedq.exam_detail_id=#{sqlParam.examDetailId}
+				AND tvq.ques_type=#{sqlParam.quesType}	  
+		            
+		    )
+		   AND vaq.ques_type=#{sqlParam.quesType} 
+		GROUP BY vaq.`ques_type`
+		ORDER BY ttqr.exampaper_count
+	</select>
+	
+	<!-- 查询分库后某种类型随机指定数量的的集合-->
+	<select id="findRandomQuestionslibSplitByTeacherAndExamIdAndExamDetailIdAndQuesType" resultType="VersionQuestion">
+	    SELECT 
+		  vaq.id AS "id",
+		  vaq.ques_type AS "quesType"
+	   from table_teacher_questionslib_split  ttqs 
+	   left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	   join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+	   LEFT JOIN  table_teacher_questions_record ttqr  ON  ttqs.teacher_id=ttqr.teacher_id AND ttqs.version_id=ttqr.version_id 
+          AND ttqs.school_id=ttqs.school_id AND ttqs.question_id=ttqr.question_id
+	   where 1=1
+	       <include refid="QuestionslibSplitByteacherWhere"/>
+		   AND vaq.id NOT IN (
+				SELECT tedq.question_id FROM table_exam_detail_question tedq,table_version_question tvq 
+				WHERE tedq.question_id=tvq.id 
+				AND tedq.exam_detail_id=#{sqlParam.examDetailId}
+				AND tvq.ques_type=#{sqlParam.quesType}	  
+		            
+		    )
+		   AND vaq.ques_type=#{sqlParam.quesType} 
+        ORDER BY ttqr.exampaper_count,RAND() LIMIT #{sqlParam.countNumber}
+	</select>
+	
+	
+	
+</mapper>

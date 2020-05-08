@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.ExamPlatformDao">
+ 
+    
+	<select id="getExamStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.ExamDTO">
+		SELECT * FROM (SELECT 
+			v.id,
+			v.title NAME,
+			v.class_id schoolClassId,
+			tc.title schoolClassName,
+			ts.id schoolId,
+			ts.name schoolName,
+			tsp.id specialtyId,
+			tsp.title specialtyName,
+			tcs.id courseId,
+			tcs.title courseName,
+			su.id teacherId,
+			su.name teacherName,
+			v.version_id versionId,
+			tcv.title versionName,
+			v.begin_time createDate
+		FROM view_exam_class v,table_class tc,sys_office ts,table_course tcs,table_specialty tsp,sys_user su,table_course_vesion tcv
+		   WHERE
+		      (v.exam_type = '5' OR v.exam_type = '6') AND v.class_id = tc.id AND tc.company_id = ts.id AND v.course_id = tcs.id AND tcs.specialty_id = tsp.id AND v.teacher_id = su.id AND v.version_id = tcv.id) t
+		      WHERE 1=1 
+		      <if test="schoolId != null and schoolId != ''">
+		      AND t.schoolId = #{schoolId}
+		      </if>
+		      <if test="specialtyId != null and specialtyId != ''">
+		      AND t.specialtyId = #{specialtyId}
+		      </if>
+		      <if test="courseId != null and courseId != ''">
+		      AND t.courseId = #{courseId}
+		      </if>
+		      <if test="versionId != null and versionId != ''">
+		      AND t.versionId = #{versionId}
+		      </if>
+		      
+		      LIMIT #{start},#{pageSize}	
+		        
+	</select>
+	<select id="getExamStaticsCount" resultType="int">
+		SELECT count(1) FROM (SELECT 
+			v.id,
+			v.title NAME,
+			v.class_id schoolClassId,
+			tc.title schoolClassName,
+			ts.id schoolId,
+			ts.name schoolName,
+			tsp.id specialtyId,
+			tsp.title specialtyName,
+			tcs.id courseId,
+			tcs.title courseName,
+			su.id teacherId,
+			su.name teacherName,
+			v.version_id versionId,
+			tcv.title versionName,
+			v.begin_time createDate
+		FROM view_exam_class v,table_class tc,sys_office ts,table_course tcs,table_specialty tsp,sys_user su,table_course_vesion tcv
+		   WHERE
+		      (v.exam_type = '5' OR v.exam_type = '6') AND  v.class_id = tc.id AND tc.company_id = ts.id AND v.course_id = tcs.id AND tcs.specialty_id = tsp.id AND v.teacher_id = su.id AND v.version_id = tcv.id) t
+		      	
+		     WHERE 1=1
+		      <if test="schoolId != null and schoolId != ''">
+		      AND t.schoolId = #{schoolId}
+		      </if>	
+		      <if test="specialtyId != null and specialtyId != ''">
+		      AND t.specialtyId = #{specialtyId}
+		      </if>
+		      <if test="courseId != null and courseId != ''">
+		      AND t.courseId = #{courseId}
+		      </if>
+		      <if test="versionId != null and versionId != ''">
+		      AND t.versionId = #{versionId}
+		      </if>
+	</select>
+	
+	<select id="getExamCountBySchoolId" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM
+			table_examination te ,
+			sys_user su ,
+			sys_office so ,
+			table_course_vesion tcv ,
+			table_course tc
+		WHERE
+			te.teacher_id = su.id
+		AND 	su.company_id = so.id
+		AND 	te.version_id = tcv.id
+		AND 	tcv.course_id = tc.id
+		<if test="schoolId != null and schoolId != ''">
+			AND 	so.id = #{schoolId}
+		</if>
+		<if test="teacherName != null and teacherName != '' ">
+			AND 	su.`name` LIKE concat('%',#{teacherName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			AND 	te.title LIKE concat('%',#{name},'%')
+		</if>
+		<if test="courseName != null and courseName != '' ">
+			AND 	tc.title LIKE concat('%',#{courseName},'%')
+		</if>
+		<if test="versionName != null and versionName != '' ">
+			AND 	tcv.title LIKE concat('%',#{versionName},'%')
+		</if>
+	</select>
+	
+	<select id="getExamListBySchoolId" resultType="com.thinkgem.jeesite.modules.questionlib.dto.ExamDTO">
+		SELECT
+			te.id,
+			te.title NAME,
+			<!-- 
+			te.class_id schoolClassId,
+			tc.title schoolClassName, -->
+			
+			so.id schoolId,
+			so.name schoolName,
+			
+			<!-- tsp.id specialtyId,
+			tsp.title specialtyName, -->
+			
+			tc.id courseId,
+			tc.title courseName,
+			su.id teacherId,
+			su.name teacherName,
+			tcv.id versionId,
+			tcv.title versionName,
+			te.begin_time createDate
+		FROM
+			table_examination te ,
+			sys_user su ,
+			sys_office so ,
+			table_course_vesion tcv ,
+			table_course tc
+		WHERE
+			te.teacher_id = su.id
+		AND 	su.company_id = so.id
+		AND 	te.version_id = tcv.id
+		AND 	tcv.course_id = tc.id
+		<if test="schoolId != null and schoolId != ''">
+			AND 	so.id = #{schoolId}
+		</if>
+		<if test="teacherName != null and teacherName != '' ">
+			AND 	su.`name` LIKE concat('%',#{teacherName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			AND 	te.title LIKE concat('%',#{name},'%')
+		</if>
+		<if test="courseName != null and courseName != '' ">
+			AND 	tc.title LIKE concat('%',#{courseName},'%')
+		</if>
+		<if test="versionName != null and versionName != '' ">
+			AND 	tcv.title LIKE concat('%',#{versionName},'%')
+		</if>
+		LIMIT #{start},#{pageSize}
+	</select>
+	<select id="findExamBySchoolId" resultType="com.thinkgem.jeesite.modules.questionlib.dto.ExamDTO">
+		SELECT
+			te.id,
+			te.title NAME,
+			te.exam_type as 'examType',
+			<!-- 
+			te.class_id schoolClassId,
+			tc.title schoolClassName, -->
+			
+			so.id schoolId,
+			so.name schoolName,
+			
+			<!-- tsp.id specialtyId,
+			tsp.title specialtyName, -->
+			
+			tc.id courseId,
+			tc.title courseName,
+			su.id teacherId,
+			su.name teacherName,
+			tcv.id versionId,
+			tcv.title versionName,
+			te.begin_time createDate
+		FROM
+			table_examination te ,
+			sys_user su ,
+			sys_office so ,
+			table_course_vesion tcv ,
+			table_course tc
+		WHERE
+			te.teacher_id = su.id
+		AND su.company_id = so.id
+		AND te.version_id = tcv.id
+		AND tcv.course_id = tc.id
+		AND te.del_flag = '0'
+		AND te.status IN ('1','2')
+		<if test="schoolId != null and schoolId != ''">
+			AND 	so.id = #{schoolId}
+		</if>
+		<if test="teacherName != null and teacherName != '' ">
+			AND 	su.`name` LIKE concat('%',#{teacherName},'%')
+		</if>
+		<if test="name != null and name != '' ">
+			AND 	te.title LIKE concat('%',#{name},'%')
+		</if>
+		<if test="courseName != null and courseName != '' ">
+			AND 	tc.title LIKE concat('%',#{courseName},'%')
+		</if>
+		<if test="versionName != null and versionName != '' ">
+			AND 	tcv.title LIKE concat('%',#{versionName},'%')
+		</if>
+		<if test="examType != null and examType != '' ">
+			AND 	te.exam_type = #{examType}
+		</if>
+		
+		  <if test="specialtyId != null and specialtyId != ''">
+			AND tc.specialty_id = #{specialtyId}
+	     </if> 
+	     <if test="versionId != null and versionId != ''">
+			AND te.version_id = #{versionId}
+	     </if> 
+	     <if test="courseId != null and courseId != ''">
+			AND tcv.course_id  = #{courseId}
+	     </if> 
+	     
+	     <if test="sqlParam.companyIds !=null">
+	        and so.id in 
+	        <foreach collection="sqlParam.companyIds" open="(" close=")" separator="," item="key" >
+	            #{key}
+	        </foreach>
+	     </if>
+	     order by te.create_date desc
+	</select>
+	<select id="getSchoolName" parameterType="String" resultType="String">
+		select name from sys_office where id = #{schoolId}
+	</select>
+	
+</mapper>

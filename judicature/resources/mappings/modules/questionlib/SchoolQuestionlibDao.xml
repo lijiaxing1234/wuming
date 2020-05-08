@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SchoolQuestionlibDao">
+    
+	<sql id="schoolQuestionlibColumns">
+		a.id AS "id",
+		a.school_id AS "schoolId",
+		a.questionlib_id AS "questionlibId",
+		a.valid_start_date AS "validStartDate",
+		a.valid_end_date AS "validEndDate",
+		a.state AS "state",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="schoolQuestionlibJoins">
+		LEFT JOIN sys_office o1 ON o1.id = a.school_id  
+		 LEFT JOIN table_course_questionlib as tcq on  a.questionlib_id =tcq.id 
+	</sql>
+    
+	<select id="get" resultType="SchoolQuestionlib">
+		SELECT 
+			<include refid="schoolQuestionlibColumns"/>
+		FROM table_school_questionlib a
+		<include refid="schoolQuestionlibJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SchoolQuestionlib">
+		SELECT 
+			<include refid="schoolQuestionlibColumns"/>
+		FROM table_school_questionlib a
+		<include refid="schoolQuestionlibJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="schoolId != null and schoolId != ''">
+				AND a.school_id = #{schoolId}
+			</if>
+			<if test="questionlibId != null and questionlibId != ''">
+				AND a.questionlib_id = #{questionlibId}
+			</if>
+			<if test="validStartDate != null and validStartDate != ''">
+				AND a.valid_start_date = #{validStartDate}
+			</if>
+			<if test="validEndDate != null and validEndDate != ''">
+				AND a.valid_end_date = #{validEndDate}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			
+			<if test="questionlibOwner != null and questionlibOwner != ''">
+				AND tcq.school_id = #{questionlibOwner}
+			</if>
+			
+			
+			<if test="ownerType != null and ownerType != ''">
+				AND tcq.owner_type = #{ownerType}
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.school_id,a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAuthorizedList" resultType="SchoolQuestionlib">
+	    SELECT   ts.`id` as "specialty.id",
+				 ts.`title`as "specialty.title",
+				 
+				 tc.`id` as "course.id",
+				 tc.`title` as "course.title",
+				 
+				 tcv.`id` as "courseVesion.id",
+				 tcv.`title` as "courseVesion.title",
+				 
+				 tcq.`id` as "courseQuestionlib.id",
+				 tcq.`title` as "courseQuestionlib.title",
+				 
+				 tsq.id AS "id",
+				 tsq.school_id AS "schoolId",
+				 tsq.questionlib_id AS "questionlibId",
+				 tsq.valid_start_date AS "validStartDate",
+				 tsq.valid_end_date AS "validEndDate",
+				 tsq.state AS "state",
+				 tsq.create_by AS "createBy.id",
+				 tsq.create_date AS "createDate",
+				 tsq.update_by AS "updateBy.id",
+				 tsq.update_date AS "updateDate",
+				 tsq.del_flag AS "delFlag"
+				 
+		FROM table_school_questionlib tsq
+		 JOIN table_course_questionlib tcq ON tsq.`questionlib_id`=tcq.`id`
+		 JOIN table_course_vesion tcv  ON tcq.`version_id`=tcv.`id`
+		 JOIN  table_course tc ON tcv.`course_id`=tc.`id`
+		 JOIN  table_specialty  ts  ON  tc.`specialty_id`=ts.`id`
+		<!-- WHERE  tsq.`del_flag`='0'
+		  AND  tcq.`owner_type`='1'
+		  AND  tsq.`school_id`=#{schoolId}
+		ORDER BY tsq.`create_date` DESC,tsq.`update_date` DESC -->
+		<where>
+			  tsq.`del_flag`='0'
+			  AND  tcq.`owner_type`='1'
+			  AND  tsq.`school_id`=#{schoolId}
+			  <if test="courseQuestionlib != null and courseQuestionlib!='' and courseQuestionlib.title != null and courseQuestionlib.title!=''">
+			 	AND  tcq.`title` LIKE concat('%',#{courseQuestionlib.title},'%')
+			  </if>
+		</where>
+			ORDER BY tsq.`create_date` DESC,tsq.`update_date` DESC
+	</select>
+	
+	
+	<select id="findAllList" resultType="SchoolQuestionlib">
+		SELECT 
+			<include refid="schoolQuestionlibColumns"/>
+		FROM table_school_questionlib a
+		<include refid="schoolQuestionlibJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_school_questionlib(
+			id,
+			school_id,
+			questionlib_id,
+			valid_start_date,
+			valid_end_date,
+			state,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{schoolId},
+			#{questionlibId},
+			#{validStartDate},
+			#{validEndDate},
+			#{state},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_school_questionlib SET 	
+			school_id = #{schoolId},
+			questionlib_id = #{questionlibId},
+			valid_start_date = #{validStartDate},
+			valid_end_date = #{validEndDate},
+			state = #{state},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE table_school_questionlib SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 查询平台下的所有题库 -->
+	<select id="getQuestionLibs" resultType="SchoolQuestionlib">
+		<!-- SELECT 
+		    a.id, a.title as 'questionLibName'
+		FROM
+		    table_course_questionlib a
+		WHERE
+		    a.owner_type = '1'
+		    and a.del_flag='0' -->
+		SELECT 
+		    a.id,
+		    b.title AS 'questionLibName'
+		FROM
+		    table_school_questionlib a,
+		    table_course_questionlib b,
+		    sys_office c
+		WHERE
+		    a.school_id = c.id
+		        AND a.questionlib_id = b.id
+		        AND a.del_flag = '0'    
+		    
+		    
+	</select>
+	
+</mapper>

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.UAnswerDao">
+    
+	<sql id="uAnswerColumns">
+		a.id AS "id",
+		
+		a.detail AS "detail",
+		a.createtime AS "createtime",
+		a.modifytime AS "modifytime",
+		q.detail as "questionDetail",
+		
+		a.teacher_id AS "teacher.id",
+		t.name as "teacher.name",
+		
+		a.student_id AS "student.id",
+		s.name as "student.name",
+		
+		a.questionid AS "question.id",
+		q.detail AS "question.detail",
+		a.del_flag as "delFlag"
+	</sql>
+	
+	<sql id="uAnswerJoins">
+		left join sys_user t  on  a.teacher_id=t.id 
+		left join table_student s  on  a.student_id=s.id 
+	    join table_question q on q.id=a.questionid
+	</sql>
+    
+    <sql id="uAnswerWhere">
+    	<where>
+    	    
+    	    <if test="delFlag != null and delFlag !=''">
+				and a.del_flag=#{delFlag}
+			</if>
+			
+			 <if test="question !=null and question.id !=null and question.id !=''">
+				and a.questionid=#{question.id}
+			</if>
+			<if test="detail !=null and detail !=''">
+				and a.detail like CONCAT('%',#{detail},'%')
+			</if>
+			<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+			   and a.office_id=#{sqlMap.officeId}
+			</if>
+			<!-- <if test="questionDetail !=null and questionDetail !=''">
+				and q.detail like CONCAT('%',#{questionDetail},'%')
+			</if> -->
+			
+		</where>
+    </sql>
+    
+	<select id="get" resultType="UAnswer">
+		SELECT 
+			<include refid="uAnswerColumns"/>
+		FROM table_answer a
+		<include refid="uAnswerJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- <select id="findList" resultType="UAnswer">
+		SELECT 
+			<include refid="uAnswerColumns"/>
+		FROM table_answer a
+		<include refid="uAnswerJoins"/>
+		
+		<if test="_parameter != null" >
+	      <include refid="uAnswerWhere" />
+	    </if>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			 	ORDER BY a.modifytime desc
+			</otherwise>
+		</choose>
+	</select> -->
+	
+	<select id="findList" resultType="UAnswer">
+		SELECT 
+			p.id AS "id",
+			p.detail AS "detail",
+			p.createtime AS "createtime",
+			p.modifytime AS "modifytime",
+			p.name as "teacher.name",
+			p.id AS "question.id",
+			p.questionDetail AS "question.detail",
+			p.del_flag as "delFlag"
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT DISTINCT
+							a.*,b.name,c.detail AS 'questionDetail'
+						FROM
+							table_answer a,
+							sys_user b,
+							table_question c
+						WHERE
+							a.teacher_id != '' 
+							AND a.teacher_id=b.id
+							AND a.questionId=c.id
+					) AS t1
+				UNION ALL
+					SELECT
+						*
+					FROM
+						(
+							SELECT
+							a.*,b.name,c.detail AS 'questionDetail'
+						FROM
+							table_answer a,
+							table_student b,
+							table_question c
+						WHERE
+							a.student_id != '' 
+							AND a.student_id=b.id
+							AND a.questionId=c.id
+						) AS t2
+			)p 
+			   <where>
+		    	    <if test="delFlag != null and delFlag !=''">
+						and p.del_flag=#{delFlag}
+					</if>
+					 <if test="question !=null and question.id !=null and question.id !=''">
+						and p.questionid=#{question.id}
+					</if>
+					<if test="detail !=null and detail !=''">
+						and p.detail like CONCAT('%',#{detail},'%')
+					</if>
+					<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+					   and p.office_id=#{sqlMap.officeId}
+					</if>
+			</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY p.modifytime desc,p.createTime desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UAnswer">
+		SELECT 
+			<include refid="uAnswerColumns"/>
+		FROM table_answer a
+		<include refid="uAnswerJoins"/>
+		<if test="_parameter != null" >
+	      <include refid="uAnswerWhere" />
+	    </if>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY a.modifytime desc
+			</otherwise>
+		</choose>
+		${sqlMap.limit}
+	</select>
+	
+	<select id="countAllList"  resultType="java.lang.Integer">
+		SELECT  count(*) FROM table_answer a
+		
+		<include refid="uAnswerJoins"/>
+		
+		<if test="_parameter != null" >
+	      <include refid="uAnswerWhere" />
+	    </if>	
+	</select>
+	
+	<insert id="insert">
+	  INSERT INTO  table_answer 
+		 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					id,
+				</if>
+				<if test="detail != null and detail !=''">
+					detail,
+				</if>
+				<if test="createtime != null">
+					createtime,
+				</if>
+				<if test="modifytime != null">
+					modifytime,
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					del_flag,
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   teacher_id,
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   student_id,
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				  office_id,
+				</if>
+				<if test="question !=null and question.id !=null and question.id !=''">
+				   questionId 
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					#{id},
+				</if>
+				<if test="detail != null and detail !=''">
+					#{detail},
+				</if>
+				<if test="createtime != null">
+					#{createtime},
+				</if>
+				<if test="modifytime != null">
+					#{modifytime},
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					#{delFlag},
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   #{teacher.id},
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   #{student.id},
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				   #{sqlMap.officeId},
+				</if>
+				<if test="question !=null and question.id !=null and question.id !=''">
+				    #{question.id}
+				</if>
+			</trim>
+	</insert>
+	
+	<update id="update">
+		UPDATE table_answer 
+		<set>
+			<if test="detail != null and detail !=''">
+				detail=#{detail},
+			</if>
+			<if test="createtime != null">
+				createtime=#{createtime},
+			</if>
+			<if test="modifytime != null">
+				modifytime=#{modifytime},
+			</if>
+			<if test="delFlag != null and delFlag !=''">
+				del_flag=#{delFlag},
+			</if>
+			<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+			   teacher_id=#{teacher.id},
+			</if>
+			<if test="student !=null and student.id !=null and student.id !=''">
+			   student_id=#{student.id},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		update table_answer set del_flag=#{delFlag} where id = #{id}
+	</update>
+	
+</mapper>

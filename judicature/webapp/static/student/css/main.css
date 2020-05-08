@@ -1,0 +1,196 @@
+
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form, 
+fieldset,input,textarea,p,blockquote,th,td,input{ 
+	margin:0; 
+	padding:0; 
+} 
+table { 
+	border-collapse:collapse; 
+	border-spacing:0; 
+} 
+fieldset,img { 
+	border:0; /*有些浏览器默认这些标签有边框，所以要清除默认边框*/
+	display:block;
+} 
+address,caption,cite,code,dfn,em,strong,th,var { 
+	font-style:normal; 
+	font-weight:normal; 
+	/*清除标签默认文本样式和加粗*/
+} 
+ol,ul { 
+	list-style:none; /*清除列表默认样式*/
+} 
+caption,th { 
+	text-align:left; /*清除标签默认文本居中对齐*/
+} 
+h1,h2,h3,h4,h5,h6 { 
+	font-size:100%; 
+	font-weight:normal; /*清除标题标签的默认样式*/
+} 
+a{
+	text-decoration:none;/*大部分页面中的链接没有下划线*/
+}
+body{
+	background: #fff;
+}
+i{font-style: normal;}
+
+
+/* 清除浮动*/
+.clear{ display:block; width:0; height:0; line-height:0; clear:both; overflow:hidden}
+.clearfix:after,.clearfix:before{ content:""; display:table}
+.clearfix:after{ clear:both}
+.clearfix{ *zoom:1; clear:both}
+/*--------*/
+
+/* 版心 */
+.container{
+	width: 1200px;
+	margin: 0 auto;
+}
+
+/*input*/
+input{
+	border:0;
+	outline: none;
+} 
+
+
+body{font: normal 14px 'Microsoft Yahei';}
+
+/*******************************首页***********************************/
+
+/*****************header 部分*********************/
+.main-header{height: 150px;position: relative;}
+.main-header .m-logo{width: 260px;height: 150px;background: #fff;float: left;}
+.main-header h2{width: 180px;height: 65px;margin: 0 auto;padding-top: 45px;}
+.main-header h2 a{width: 180px;height: 65px;display: inline-block;}
+.main-header h2 img{width: 180px;background-size: 100%;}
+.main-right-head{float: left;width: 940px;height: 150px;background: #56a0a1;}
+.main-right-head .mri-left,
+.main-right-head .mri-left p{float: left;}
+.main-right-head .mri-right{float: right;margin-right: 50px;}
+.main-right-head .mri-left,
+.main-right-head .mri-right{margin-top: 70px;}
+.main-right-head .mri-left p{font-size: 14px;color: #fff;margin-left: 50px;}
+.main-right-head .mri-left p span{margin: 0 10px;}
+.main-right-head .mri-right label{float: left;margin-right: 5px;color: #fff;font-size: 14px;}
+
+/*******模拟下拉框********/
+.main-right-head .mri-right .bea-sele{float: left;}
+.mri-right .bea-sele{width: 165px;top: -9px;height: 38px;box-shadow: 2px 1px 9px rgba(0,0,0,.3);}
+.mri-right .e-sele input{width: 165px;height: 35px;border:1px solid #d2d0d3;line-height: 35px;padding: 0;}
+.mri-right .bea-opt{width: 165px;top: 37px;}
+.mri-right .e-sele .click-down{width: 38px;height: 39px;background:#297b79 url(../images/arrow1.png) no-repeat center;position: absolute;top: 0;right: -2px;cursor: pointer;}
+
+
+/********************内容部分****************************/
+.main-content .main-left,
+.main-content .main-right{float: left;}
+
+/************左边部分***************/
+/* .main-content{height: 1034px;} */
+.main-content .main-left{width: 260px;}
+.main-left .main-list{height: 645px;background: url(../images/bg1.png) repeat-x;padding-top: 55px;}
+.main-left .main-menu{width: 260px;margin: 0 auto;height:625px;overflow-y: auto;}
+.main-left .main-menu li{width: 160px;height: 40px;text-align: center;line-height: 40px;background: #fff;font-size: 18px;margin: 0 auto 17px;
+	-moz-border-radius: 25px; /* Firefox */
+ -webkit-border-radius: 25px; /* Safari 和 Chrome */
+  		border-radius: 25px; /* Opera 10.5+, 以及使用了IE-CSS3的IE浏览器 */
+ }
+.main-left .main-menu li a{width: 160px;height: 40px;display: inline-block;color: #666;}
+.main-left .main-menu .active{background: #56a0a1;border: 1px solid #fff;}
+.main-left .main-menu .active a{color: #fff;}
+
+/************右边部分***************/
+.main-content .main-right{width: 940px;height: 700px;background: #fff;}
+.main-right .mari-con{height: 700px;background: #f7f7f7 url(../images/bg2.png) no-repeat right bottom;}
+.main-right .mari-con .ma-list {width: 750px;padding-top: 60px;margin: 0 auto;border-bottom: 1px solid #dfdfdf;padding-bottom: 40px;padding-left: 30px;}
+.main-right .mari-con .ma-list li{float: left;text-align: center;margin-right:50px;position: relative;}
+.main-right .mari-con .ma-list li:last-child{margin-right:0;}
+.main-right .mari-con .ma-list li a{width: 100px;height: 145px;position: absolute;display: inline-block;top: 0;left: 0;}
+.main-right .mari-con .ma-list li img{width: 100px;}
+.main-right .mari-con .ma-list li p{font-size: 16px;color: #404345;line-height: 45px;}
+.main-right .message-warn{margin: 25px 0 0 90px;}
+.main-right .message-warn h2{font-size: 18px;color: #404345;line-height: 60px;}
+.main-right .message-warn h2 i{width: 40px;height: 40px;background: url(../images/warn.png) no-repeat;display: inline-block;margin-right: 10px;position: relative;top: 13px;}
+.main-right .message-warn p{font-size: 14px;color: #666;line-height: 40px;}
+
+/*************底部部分*************/
+.footer{height: 145px;background: #3b4b5d;}
+.footer p{text-align: center;line-height: 75px;}
+.footer p a{font-size: 18px;color: #fff;margin-left: 84px;}
+.footer p a:first-child{margin-left: 0;}
+
+
+
+
+/*************************** 注册页面 ***************************/
+
+/*********头部**********/
+.re-header{height: 220px;}
+.re-header h2,
+.re-header p{float: left;}
+.re-header h2{width: 233px;height: 76px;background: url(../images/logo.jpg) no-repeat;text-indent: -9999px;display: inline-block;border-right: 1px solid #cdcdcd;padding: 5px 65px 5px 0;margin: 100px 0 0 55px;}
+.re-header p{font: bold 50px 'Microsoft Yahei';color: #56a0a1;margin: 100px 0 0 55px;}
+/*********主体部分**********/
+.re-main{height: 530px;background: url(../images/bg.jpg) no-repeat;}
+.re-mcon{position: relative;}
+.reg-con{width: 542px;height: 360px;background: #fff;border:1px solid #cccdcf;position: absolute;top: 55px;right: 170px;border-radius: 5px;box-shadow: 0px 4px 10px rgba(0,0,0,.2);padding-top: 55px;}
+.reg-list {margin-top: 25px;}
+.reg-list label{text-align: right;width: 130px;margin-right: 20px;font-size: 16px;color: #333538;display: inline-block;}
+.reg-list input{width: 282px;height: 38px;border: 1px solid #cdcdcd;text-indent: 24px;}
+.re-login{margin-top: 15px;font-size: 12px;}
+.re-login .auto-login{float: left;margin-left: 155px;cursor: pointer;color: #000;}
+.re-login .auto-login i{width: 13px;height: 13px;background: url(../images/a1.jpg) no-repeat; display: inline-block;margin-right: 5px;position: relative;top: 2px;}
+.re-login .auto-login .act{background: url(../images/a2.jpg) no-repeat;}
+.re-login .forget{float: right;margin-right: 100px;}
+.re-login .forget a{color: #7697c4;}
+.click-login{width: 285px;height: 40px;text-align: center;line-height: 40px;background: #f39801;margin: 30px 0 0 158px;box-shadow: 0 2px 2px rgba(0,0,0,.2);}
+.click-login a{width: 285px;height: 40px;display: inline-block;color: #fff;font-size: 16px;}
+.person label{float: left;margin-top: 10px;}
+
+/********模拟下拉框********/
+.bea-sele{ width: 282px;height: 38px;line-height:38px; position:relative;float: left;margin-left: 4px;}
+.e-sele .click-down{width: 39px;height: 38px;background: #cdcdcd url(../images/arrow.png) no-repeat center;position: absolute;top: 1px;right: -1px;cursor: pointer;}
+.bea-opt{position: absolute;top: 39px;background: #fff;width: 282px;height: 160px;border:1px solid #cdcdcd;border-top: 0 none;cursor: pointer;z-index: 9;display: none;}
+.bea-opt li{height: 38px;line-height:38px;border-top:1px solid #cdcdcd;text-indent: 14px;}
+
+/***********底部**************/
+.re-footer p{text-align: center;line-height: 75px;}
+.re-footer p a{font-size: 18px;color: #56a0a1;margin-left: 83px;}
+.re-footer p a:first-child{margin-left: 0;}
+
+
+
+
+
+/********改变颜色*********/
+.changeColor{position: absolute;left: -115px;top: 10px;}
+
+/***********************颜色大集合**************************/
+/* 
+.main-right-head{background:#56a0a1;}
+.mri-right .e-sele .click-down{background:#56a0a1 url(../images/arrow1.png) no-repeat center;}
+.main-left .main-menu .active{background:#56a0a1;}
+.btn-primary{background-color:#56a0a1;
+	background-image:-webkit-gradient(linear, 0 0, 0 100%, from(#56a0a1), to(#56a0a1));
+	background-image:-webkit-linear-gradient(top, #56a0a1, #56a0a1);
+	background-image:linear-gradient(to bottom, #56a0a1, #56a0a1);
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.disabled,
+.btn-primary[disabled] {
+  color: #fff;
+  background-color: #56a0a1;
+  *background-color: #56a0a1;
+}
+select{border:1px solid #56a0a1;}
+.table-bordered th, .table-bordered td{border-left:1px solid #56a0a1;}
+.table th, .table td{border-color:#56a0a1;}
+.pagination ul > .disabled > a{color: #56a0a1;}
+.pagination ul > li > a{border-color:#56a0a1;} */
+

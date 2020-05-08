@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamClassDao">
+	
+	<!--  试卷适用的班级内学生的列表 -->
+	<select id="findExamStudent" resultType="ExamStudentDTO">
+		SELECT DISTINCT
+			ts.id AS 'student.id',
+			ts.name AS 'student.name',
+			ts.std_code AS 'student.stdCode',
+			ts.std_phone AS 'student.stdPhone',
+			tc.title AS 'student.schoolClass.title',
+			tc.id AS 'student.schoolClass.id'
+		FROM
+			table_student ts
+		JOIN table_exam_class tec ON tec.class_id = ts.class_id
+		JOIN table_class tc ON tc.id = tec.class_id
+		JOIN table_examination te ON te.id = tec.exam_id
+		<where>
+			AND ts.del_flag ='0'
+		    AND te.del_flag ='0'
+			<if test="exam != null and exam.id != null and exam.id != ''">
+				AND te.id=#{exam.id}
+			</if>
+			<if test="tableClassId!= null and tableClassId != '' ">
+				AND tc.id = #{tableClassId}
+			</if>
+		</where>
+		order by ts.std_code
+	</select>
+	
+	
+	<!-- 查询试卷所适用的班级 -->
+	<select id="getExamClassByExamId" resultType="ExamClass" >
+		SELECT a.exam_id as "exam.id",
+		       b.id as "schoolClass.id",
+		       b.title as "schoolClass.title"
+		FROM table_exam_class a
+		LEFT JOIN table_class  b ON a.class_id=b.id
+		WHERE a.exam_id=#{examId}
+	</select>
+	
+	
+	<!-- 批量添加适用专业表 -->
+	<insert id="batchAdd" >
+	    DELETE  FROM table_exam_class  WHERE exam_id=#{examId};
+		INSERT INTO table_exam_class (exam_id,class_id,status) 
+	    <foreach item="item" index="index" collection="classArr"   separator="union all">
+	        select #{examId},
+	        	   #{item},
+	        	   #{status}
+	        from dual
+	    </foreach>
+	</insert>
+	<!-- 批量添加随堂例题的适用班级 -->
+	<insert id="addClassExample">
+	    DELETE  FROM table_exam_class  WHERE exam_id=#{examId};
+	    INSERT INTO table_knowledge_question (knowledge_id,question_id) VALUES(#{knowId},#{questionId});
+	    INSERT INTO table_exam_knowledge (exam_id,course_knowledge_id) VALUES(#{examId},#{knowId});
+		INSERT INTO table_exam_class (exam_id,class_id) 
+	    <foreach item="item" index="index" collection="classArr"   separator="union all">
+	        select #{examId},
+	        	   #{item}
+	        from dual
+	    </foreach>
+	</insert>
+	<!-- 批量添加随堂测试的适用班级 -->
+	<insert id="addExercise" >
+	    DELETE  FROM table_exam_class  WHERE exam_id=#{examId};
+	  <!--   INSERT INTO table_knowledge_question (knowledge_id,question_id) VALUES(#{knowId},#{questionId}); 
+	   INSERT INTO table_exam_detail_question (question_id,exam_detail_id) VALUES(#{questionId},#{examDetailId});
+	    INSERT INTO table_exam_knowledge (exam_id,course_knowledge_id) VALUES(#{examId},#{knowId});-->
+		INSERT INTO table_exam_class (exam_id,class_id,status) 
+	    <foreach item="item" index="index" collection="classArr"   separator="union all">
+	        select #{examId},
+	        	   #{item},#{status}
+	        from dual
+	    </foreach>
+	</insert>
+	<!-- 添加随堂测试的问题 -->
+	<delete id="deleteExamClass">
+		DELETE  FROM table_exam_detail_question  WHERE exam_detail_id=#{examDetailId};
+	</delete>
+	<insert id="insertQuestion">
+	 	 INSERT INTO table_exam_detail_question (question_id,exam_detail_id,sort,quesType) value(#{questionId},#{examDetailId},#{sort},#{questionType});
+	   <!--  <foreach item="item" index="index" collection="questionIds"   separator="union all">
+	        select #{item},
+	        	   #{examDetailId}
+	        from dual
+	    </foreach> -->
+	   <!--  INSERT INTO table_exam_detail_question (question_id,exam_detail_id) VALUES(#{questionId},#{examDetailId}); -->
+	</insert>
+	<!-- 添加随堂测试的知识点 -->
+	<insert id="insertKnowId">
+		  DELETE  FROM table_exam_knowledge  WHERE exam_id=#{examId};
+		   INSERT INTO table_exam_knowledge (exam_id,course_knowledge_id)
+	    <foreach item="item" index="index" collection="knowIds"   separator="union all">
+	        select #{examId},
+	        	   #{item}
+	        from dual
+	    </foreach>
+<!-- 	     INSERT INTO table_exam_knowledge (exam_id,course_knowledge_id) VALUES(#{examId},#{knowId});
+ -->	</insert>
+	<!-- 批量添加随堂例题的适用班级 -->
+	<insert id="addExerciseExam" >
+	    INSERT INTO table_exam_detail (id,exam_id,type) VALUES(#{detailId},#{examId},0);
+	</insert>
+	<select id="queryIdByExamId"  resultType="String">
+		select id from table_exam_detail where exam_id=#{examId}
+	</select>
+	<!-- 随堂练习中根据examID查询随堂监控的详情 -->
+	<select id="selectStudentByExamId" resultType="TeacherVersionQuestion" >
+		<!-- SELECT DISTINCT
+			student.id AS 'student.id',
+			student.name AS 'student.name',
+			student.std_code AS 'student.stdCode',
+			student.std_phone AS 'student.stdPhone',
+			
+			tst.submitTime AS 'submitTime'
+		FROM
+			table_student student
+		JOIN table_exam_class tec ON tec.class_id =student.class_id
+		JOIN table_exam_knowledge tek ON tek.exam_id = tec.exam_id
+		JOIN table_knowledge_question tkq ON tkq.knowledge_id = tek.course_knowledge_id
+		JOIN table_version_question tvq ON tvq.id = tkq.question_id
+		JOIN table_student_task tst ON tst.student_id=student.id -->
+		SELECT DISTINCT
+			ts.id AS "student.id",
+			ts.name AS "student.name",
+			ts.std_code AS "student.stdCode",
+			ts.std_phone AS "student.stdPhone"
+		FROM 
+			table_student ts 
+		JOIN table_class tc ON tc.id=ts.class_id
+		JOIN table_exam_class tec ON tec.class_id=tc.id
+		<where>
+			AND ts.del_flag ='0'
+			AND tec.exam_id=#{sqlMap.examId}
+			<if test="sqlMap!=null and sqlMap.classId!=null and sqlMap.classId!=''">
+			AND	ts.class_id=#{sqlMap.classId}
+			</if>
+		</where>
+		order by ts.std_code
+	</select>
+	
+	<!-- 查询某个学生对应某个测试的提交时间 -->
+	<select id="findStudnetSubmitTime" resultType="Date">
+		SELECT
+			submitTime
+		FROM
+			table_student_task
+		WHERE
+			exam_detail_id IN (
+				SELECT
+					id
+				FROM
+					table_exam_detail
+				WHERE
+					exam_id = #{examId}
+			)
+		AND student_id = #{studentId}
+	</select>
+	<!-- 查询某个学生在某个测试时需回答的总题数 -->
+	<select id="findStudentRight" resultType="Integer">
+		SELECT count(b.question_id)
+			FROM table_exam_detail a,
+			table_exam_detail_question b,
+			table_student_task c
+		WHERE a.id=b.exam_detail_id
+			AND a.id=c.exam_detail_id
+			AND a.exam_id=#{examId}
+			AND c.student_id=#{studentId}
+	</select>
+	<!-- 查询某个学生对应某个测试各个题目的正确数 -->
+	<select id="findStudentTotalTitle" resultType="Integer">
+		SELECT
+			count(id)
+		FROM
+			table_student_answer a
+		WHERE
+			a.student_id=#{studentId} 
+		AND a.exam_id=#{examId} 
+		AND a.is_correct = '1'
+	</select>
+	<!-- 查询某个学生对应某个测试 学生的答案 -->
+	<select id="findDetailQuestion" resultType="String">
+		SELECT 
+			answer0,answer1,answer2,answer3,answer4,answer5,answer6,answer7,answer8,answer9
+		FROM table_student_answer 
+		WHERE student_id=#{studentId} 
+			and exam_id=#{examId} 
+			and question_id=#{questionId}
+	</select>
+	
+	<update id="updateExamClassStatusByExamId">
+	  UPDATE  table_exam_class SET STATUS='1' WHERE  exam_id=#{exam.id}
+	</update>
+</mapper>

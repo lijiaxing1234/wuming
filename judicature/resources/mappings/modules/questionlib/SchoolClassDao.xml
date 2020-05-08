@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SchoolClassDao">
+    
+	<sql id="schoolClassColumns">
+		a.id          AS "id",
+        a.title       AS "title",
+        a.specialty_title AS "specialtyTitle",
+        a.company_id  AS "school.id",
+        a.create_by   AS "createBy.id",
+        a.create_date AS "createDate",
+        a.update_by   AS "updateBy.id",
+        a.update_date AS "updateDate",
+        a.del_flag    AS "delFlag",
+		a.start_date  AS "startDate",
+		a.end_date    AS "endDate"
+	</sql>
+	
+	<sql id="schoolClassJoins">
+	</sql>
+	
+	<sql id="studentColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.class_id AS "schoolClass.id",
+		a.std_code AS "stdCode",
+		a.std_sex AS "stdSex",
+		a.std_age AS "stdAge",
+		a.std_phone AS "stdPhone",
+		a.std_email AS "stdEmail",
+		a.std_password AS "stdPassword",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		z.title AS "schoolClass.title"
+	</sql>
+	
+	<sql id="studentJoins">
+		LEFT JOIN table_class z ON z.id = a.class_id
+	</sql>
+	
+    
+	<select id="get" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+			<include refid="schoolClassJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+		<include refid="schoolClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="specialtyTitle != null and specialtyTitle != ''">
+				and a.specialty_title like concat('%',#{specialtyTitle},'%')
+			</if>
+			<if test="sqlMap.userId !=null and sqlMap.userId !='' and sqlMap.versionId !=null and sqlMap.versionId !=''">
+			  and a.id in ( SELECT class_id FROM  table_teacher_class_course 
+			          WHERE verson_id=#{sqlMap.versionId} AND teacher_id=#{sqlMap.userId}
+			      )
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+		<include refid="schoolClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查询学校班级专业名称 -->
+	<select id="findSchollClassSpecialtyTitle" resultType="SchoolClass">
+	  select specialty_title from table_class  
+	  where del_flag='0' and company_id=#{schoolId}
+	  group by specialty_title 
+	  <if test="specialtyTitle !=null and specialtyTitle !=''">
+	     HAVING specialty_title LIKE concat('%',#{specialtyTitle},'%')
+	  </if>
+	  order by specialty_title
+	</select>
+	
+	<!-- 查询学校专业下班级 -->
+	<select id="findSchoolClassBySpecTitle" resultType="SchoolClass">
+	  select 
+	     <include refid="schoolClassColumns"/>
+	  from table_class  a
+	  where a.del_flag='0' and a.company_id=#{schoolId}
+	  and a.specialty_title LIKE #{specialtyTitle}
+	  order by a.create_date desc,a.specialty_title
+	</select>
+	
+	
+	
+	
+	
+	<insert id="insert">
+		INSERT INTO table_class(
+			id,
+			title,
+			specialty_title,
+			company_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			start_date,
+			end_date
+		) VALUES (
+			#{id},
+			#{title},
+			#{specialtyTitle},
+			#{school.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{startDate},
+			#{endDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_class SET 	
+			title = #{title},
+			specialty_title = #{specialtyTitle},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			start_date = #{startDate},
+			end_date = #{endDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE table_class SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getClassBySchoolId" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+		<include refid="schoolClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND company_id = #{school.id}
+		</where>
+	</select>
+	
+	<select id="findClassStudentByClassId">
+		SELECT 
+			<include refid="studentColumns"/>
+		FROM table_student a
+		<include refid="studentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND class_id = #{schoolClass.id}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="schoolClass != null and schoolClass.id != null and schoolClass.id != ''">
+				AND a.class_id = #{schoolClass.id}
+			</if>
+			<if test="stdCode != null and stdCode != ''">
+				AND a.std_code LIKE 
+					<if test="dbName == 'oracle'">'%'||#{stdCode}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{stdCode}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{stdCode},'%')</if>
+			</if>
+			<if test="stdPhone != null and stdPhone != ''">
+				AND a.std_phone = #{stdPhone}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertStudents" parameterType="map">
+		insert into table_student (
+			id,
+			name,
+			class_id,
+			std_code,
+			std_sex,
+			std_age,
+			std_phone,
+			std_email,
+			std_password,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) values
+		<foreach collection="studentList" item="item" index="index" separator=",">
+    		(#{item.id},#{item.name},#{item.schoolClass.id},#{item.stdCode},#{item.stdSex},#{item.stdAge},#{item.stdPhone},#{item.stdEmail},#{item.stdPassword},#{item.createBy.id},#{item.createDate},#{item.updateBy.id},#{item.updateDate},'0')
+    	</foreach>
+	</insert>
+	
+	<insert id="importSchoolClass" parameterType="map" >
+		insert into table_class(
+			id,
+			title,
+			specialty_title,
+			company_id,
+			create_by,
+			create_date,
+			start_date,
+			end_date,
+			del_flag
+		) values 
+		<foreach collection="classList" item="item" index="index" separator=",">
+			(
+				#{item.id},
+				#{item.title},
+				#{item.specialtyTitle},
+				#{item.school.id},
+				#{item.createBy.id},
+				#{item.createDate},
+				#{item.startDate},
+				#{item.endDate},
+				#{item.delFlag}
+			)
+		</foreach>
+	</insert>
+	
+	<select id="findClassPageByCompanyId" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+		<include refid="schoolClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.company_id = #{sqlMap.companyId}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="specialtyTitle != null and specialtyTitle != ''">
+				and a.specialty_title like concat('%',#{specialtyTitle},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByCompanyId" resultType="SchoolClass">
+		SELECT 
+			<include refid="schoolClassColumns"/>
+		FROM table_class a
+		<include refid="schoolClassJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.company_id = #{school.id}
+		</where>
+	</select>
+	
+	<select id="getSchoolClassListBySchoolId" parameterType="String" resultType="SchoolClass">
+			SELECT 
+				<include refid="schoolClassColumns"/>
+			FROM table_class a
+			<include refid="schoolClassJoins"/>
+			<where>
+				a.del_flag = '0'
+				and a.company_id = #{schoolId}
+			</where>	
+	</select>
+	
+	<select id="getStudentListBySchoolId" parameterType="String" resultType="Student">
+		SELECT 
+		    a.id AS "id",
+			a.name AS "name",
+			a.class_id AS "schoolClass.id",
+			a.std_code AS "stdCode",
+			a.std_sex AS "stdSex",
+			a.std_age AS "stdAge",
+			a.std_phone AS "stdPhone",
+			a.std_email AS "stdEmail",
+			a.std_password AS "stdPassword",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.del_flag AS "delFlag"	
+		FROM
+		    table_student a,
+		    table_class b
+		WHERE
+		    a.class_id = b.id AND a.del_flag = '0'
+		    and b.company_id = #{schoolId}
+	</select>
+	
+	<delete id="deleteStudentByClassId" parameterType="String">
+		UPDATE table_student 
+		SET 
+		    del_flag = '1'
+		WHERE
+		    class_id = #{classId}
+	</delete>
+	
+	<select id="getSchoolClassByName" resultType="SchoolClass">
+		select id from table_class where title = #{title} and del_flag = '0' and company_id = #{schoolId}
+	</select>
+	
+	<select id="getClassTitleByTitle" resultType="String">
+		SELECT 
+		    title
+		FROM
+		    table_class
+		WHERE
+		    title = #{classTitle} AND company_id = #{schoolId}
+	</select>
+	
+</mapper>

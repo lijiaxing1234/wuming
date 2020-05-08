@@ -1,0 +1,1180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamDao">
+	
+	<!-- 根据教师id及版本id获取作业列表 -->
+	<select id="getExam" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			IF(e.end_time <![CDATA[ < ]]> NOW() , '2' , '1') AS "status",
+			<!-- CASE WHEN e.begin_time IS NULL THEN '0' ELSE IF(e.end_time <![CDATA[ < ]]> NOW() , '2' , '1') END AS "status", -->
+			e.begin_time as 'beginTime',
+			e.end_time as 'endTime',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+			<!-- e.publish_answer_time as 'publishAnswerTime' -->
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type='3'
+		    <!-- AND e.istemplate='0' -->
+		    AND tec.status in ('1','2')
+		    AND e.end_time <![CDATA[ < ]]> now()
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d') = DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d') = DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			<!-- <if test="beginTime != null and endTime != null">
+				 and  DATE_FORMAT(e.create_date,'%Y-%m-%d') between DATE_FORMAT(#{beginTime},'%Y-%m-%d') and DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if> -->
+			
+			
+			<!-- <if test="beginTime !=null and endTime !=null">AND e.end_time <![CDATA[ < ]]>  NOW()
+			      and  DATE_FORMAT(e.create_date,'%Y-%m-%d') between DATE_FORMAT(#{beginTime},'%Y-%m-%d') and DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if> -->
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	
+	<select id="getExam2" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			tec.status as "status",
+			tec.submitTime as 'updateDate',	<!-- 教师停止收作业时间 -->
+			e.begin_time as 'beginTime',
+			e.end_time as 'endTime',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type='3'
+		    <!-- AND e.istemplate='0' -->
+		    AND tec.status IN ('0','1')
+			AND (e.end_time <![CDATA[ > ]]> NOW() OR e.end_time IS NULL)
+		 <!--  	AND e.end_time <![CDATA[ > ]]> now() -->
+			<!-- <if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d') = DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if> -->
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.create_date,'%Y-%m-%d') = DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d') = DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="getStudentExam" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			tec.status as "status"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type='3'
+		    AND tec.status='2'
+		    AND tec.isMark  is NULL
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.begin_time,'%Y-%m-%d')=DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d')=DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<!-- 超时未发布的试卷 -->
+	<select id="getOvertimeExam" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			IF(e.begin_time is null , '0' , '1') AS "status",
+			e.begin_time as 'beginTime',
+			e.end_time as 'endTime',
+			IF((DATE_FORMAT(e.publish_answer_time,'%Y')-DATE_FORMAT(NOW(),'%Y')) <![CDATA[ > ]]> 50,null,e.publish_answer_time) AS 'publishAnswerTime'
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type='3'
+		    <!-- AND e.istemplate='0' -->
+		    AND tec.status ='0'
+		    AND e.end_time <![CDATA[ < ]]> now()
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(e.create_time,'%Y-%m-%d') = DATE_FORMAT(#{beginTime},'%Y-%m-%d')
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(e.end_time,'%Y-%m-%d') = DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	
+	
+	<select id="getClass" resultType="Exam">
+		SELECT
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title"
+		FROM
+			table_class tc
+		JOIN table_teacher_class_course ttcc ON ttcc.class_id = tc.id
+		<where>
+			<if test="userId != null and userId != '' ">
+				AND ttcc.teacher_id=#{userId}
+			</if>
+			<if test="versionId != null and versionId != '' ">
+				AND ttcc.verson_id=#{versionId}
+			</if>
+		</where>
+		
+	</select>
+	
+	
+	<select id="get" resultType="Exam">
+		SELECT 
+			e.id as "id",
+			e.title as "title",
+			e.exam_type as "examType",
+			e.status as "status",
+			e.begin_time as "beginTime",
+			e.end_time as "endTime"
+		FROM table_examination e
+		WHERE e.id = #{id}
+	</select>
+	
+	<!-- 获取班级内的题目 -->
+	<select id="queryTitledetail" resultType="StudentQuestionDTO">
+			SELECT DISTINCT
+				tvq.id AS "teacherVersionQuestion.id",
+				tvq.title AS "teacherVersionQuestion.title"
+			FROM
+				table_exam_class tec
+			JOIN table_exam_detail ted ON tec.exam_id = ted.exam_id
+			JOIN table_exam_detail_question tedq ON tedq.exam_detail_id = ted.id
+			JOIN (
+				SELECT
+					id,
+					title,
+					answer0,
+					ques_type
+				FROM
+					table_version_question
+				GROUP BY
+					id
+				HAVING
+					count(id) = 1
+			) tvq ON tvq.id = tedq.question_id
+		<where>
+			<if test="sqlMap != null and sqlMap != '' and sqlMap.examId != null and sqlMap.examId != ''">
+				AND ted.exam_id=#{sqlMap.examId}
+			</if>
+			<if test="sqlMap != null and sqlMap != '' and sqlMap.examClassId != null and sqlMap.examClassId != ''">
+				AND tec.class_id=#{sqlMap.examClassId}
+			</if>
+		</where>
+		order by tvq.ques_type,tedq.sort
+	</select>
+	
+	
+	
+	<!-- 对应题目的个人完成情况 -->
+	<select id="queryPersondetail" resultType="StudentAnswer">
+			SELECT DISTINCT
+				tsa.id,
+				tsa.is_correct AS "isCorrect",
+					tsa.answer0 AS 'answer0',
+					tsa.answer1 AS 'answer1',
+					tsa.answer2 AS 'answer2',
+					tsa.answer3 AS 'answer3',
+					tsa.answer4 AS 'answer4',
+					tsa.answer5 AS 'answer5',
+					tsa.answer6 AS 'answer6',
+					tsa.answer7 AS 'answer7',
+					tsa.answer8 AS 'answer8',
+					tsa.answer9 AS 'answer9',
+					tsa.question_type AS 'questionType'
+			FROM table_student_answer tsa
+		<where>
+			<if test="examId != null and examId != '' ">
+				AND tsa.exam_id=#{examId}
+			</if>
+			<if test="questionId != null and questionId != '' ">
+				AND tsa.question_id=#{questionId}
+			</if>
+			<if test="studentId != null and studentId != '' ">
+				AND tsa.student_id=#{studentId}
+			</if>
+		</where>
+	</select>
+	<!-- 作业管理中班级内的学生对某个特定题的回答情况 -->
+	<select id="queryClassQuestiondetail" resultType="StudentQuestionDTO">
+		SELECT DISTINCT
+			ts.id AS "student.id",
+			ts.name AS "student.name",
+			tsa.is_correct AS "studentAnswer.isCorrect",
+			ts.std_code AS "student.stdCode",
+			ts.std_phone AS "student.stdPhone"
+		FROM table_student_answer tsa
+		JOIN table_student ts ON ts.id=tsa.student_id
+		JOIN table_class tc ON tc.id=ts.class_id
+		JOIN table_exam_class tec ON tec.class_id=tc.id
+		JOIN table_examination te ON te.id=tec.exam_id
+		JOIN table_version_question tvq ON tvq.id=tsa.question_id
+	  <where>
+			AND ts.del_flag ='0'
+		<if test="examId != null and examId != '' ">
+			AND te.id=#{examId}
+		</if>
+		<if test="examClassId != null and examClassId != '' ">
+			AND tc.id=#{examClassId}
+		</if>
+		<if test="questionId != null and questionId != '' ">
+			AND tvq.id=#{questionId}
+		</if>
+	</where>
+  </select>
+	
+	<!-- 获取班级内所有学生的id值 -->
+	<select id="getStudentByClassId" resultType="String">
+		SELECT id FROM table_student WHERE class_id=#{examClassId} AND del_flag='0'
+  </select>
+  <!-- 获取班级内所有学生的信息 -->
+	<select id="findAllStudent" resultType="StudentTaskDTO">
+		SELECT 
+			id AS 'studentId',
+			name AS 'name',
+			std_code AS 'stdCode',
+			std_phone AS 'stdPhone'
+		FROM 
+			table_student 
+	<where>
+		AND del_flag='0'
+		<if test=" examClassId!= null and examClassId != ''">
+			AND class_id=#{examClassId}
+		</if>
+	</where>
+  </select>
+  <select id="findAllStudent3" resultType="ExamStudentDTO">
+		SELECT 
+			id AS 'student.id',
+			name AS 'student.name',
+			std_code AS 'student.stdCode',
+			std_phone AS 'student.stdPhone'
+		FROM 
+			table_student 
+	<where>
+		AND del_flag='0'
+		<if test="sqlMap.classId != null and sqlMap.classId != ''">
+			AND class_id=#{sqlMap.classId}
+		</if>
+	</where>
+	order by std_code
+  </select>
+  <select id="findAllStudent2" resultType="Student">
+		SELECT 
+			id AS 'id',
+			name AS 'name',
+			std_code AS 'stdCode',
+			std_phone AS 'stdPhone'
+		FROM 
+			table_student 
+	<where>
+		AND del_flag='0'
+		<if test="schoolClass != null and schoolClass.id != null and schoolClass.id != ''">
+			AND class_id=#{schoolClass.id}
+		</if>
+	</where>
+	order by std_code
+  </select>
+    <!-- 获取班级内所有学生的信息 -->
+	<select id="findStudentByClassId" resultType="Student">
+		SELECT 
+			id AS 'id',
+			name AS 'name',
+			std_code AS 'stdCode'
+		FROM 
+			table_student 
+	<where>
+		AND del_flag='0'
+		<if test="classId != null and classId != ''">
+			AND class_id=#{classId}
+		</if>
+	</where>
+  </select>
+  <!-- 获取学生对某道的回答情况 -->
+  <select id="queryClassPersondetail" resultType="String">
+  		SELECT is_correct FROM table_student_answer where exam_id=#{id} AND student_id=#{studentId} AND question_id=#{questionId}
+  </select>
+  
+  <!-- 作业列表中班级内所有学生 -->
+  <select id="findExamStudent" resultType="ExamStudentDTO">
+  		SELECT
+			ts.id AS 'student.id',
+			ts. NAME AS 'student.name',
+			ts.std_code AS 'student.stdCode',
+			ts.std_phone AS 'student.stdPhone',
+			tc.title AS 'student.schoolClass.title',
+			tc.id AS 'student.schoolClass.id'
+		FROM
+			table_student ts
+		JOIN table_exam_class tec ON tec.class_id = ts.class_id
+		JOIN table_class tc ON tc.id = tec.class_id
+		JOIN table_examination te ON te.id = tec.exam_id
+	<where>
+		AND ts.del_flag='0'
+		<if test="exam != null and exam.id!=null and exam.id != ''">
+			AND te.id =#{exam.id}
+		</if>
+		<if test="student != null and student.schoolClass != null and student.schoolClass.id != null and student.schoolClass.id != ''">
+			AND tc.id=#{student.schoolClass.id}
+		</if>
+		AND te.del_flag = '0'
+	</where>
+  </select>
+  
+<!--   获取班级内的提交作业的总人数 -->
+  <select id="getPersonTotal" resultType="Integer">
+  		SELECT 
+				count(c.submitTime)
+			FROM table_exam_detail a,
+			table_student_task c,
+			table_student d
+		WHERE 
+			 a.id=c.exam_detail_id
+			 AND d.del_flag ='0'
+			AND a.exam_id=#{examId}
+			AND d.class_id=#{examClassId}
+  </select>
+ <!--  查询随堂测试中的未交卷 -->
+  <select id="findUnSubmit" resultType="String">
+  		SELECT
+			isSubmit
+		FROM
+			table_student_task
+		WHERE
+			exam_detail_id IN (
+				SELECT
+					id
+				FROM
+					table_exam_detail
+				WHERE
+					exam_id = #{examId}
+			)
+		AND student_id = #{studentId}
+  </select>
+  
+  <!--  根据班级id以及测试id获取随堂测题目 -->
+  <select id="findQuestion" resultType="StudentQuestionDTO">
+			SELECT DISTINCT
+				tvq.id AS "teacherVersionQuestion.id",
+				tvq.title AS "teacherVersionQuestion.title"
+			FROM 
+			 table_class tc 
+			JOIN table_exam_class tec ON tec.class_id=tc.id
+			JOIN table_examination te ON te.id=tec.exam_id
+			JOIN table_exam_knowledge tek ON tek.exam_id=te.id
+			JOIN table_knowledge_question tkq ON tkq.knowledge_id=tek.course_knowledge_id
+			JOIN table_version_question tvq ON tvq.id=tkq.question_id
+		<where>
+		 	 te.del_flag ='0'
+			 AND te.exam_type='1'
+			<if test="examId != null and examId != '' ">
+				AND te.id=#{examId}
+			</if>
+			<if test="classId != null and classId != '' ">
+				AND tc.id=#{classId}
+			</if>
+		</where>
+	</select>
+	<!-- 根据学生id以及试卷id得到exam_detail_id -->
+  <select id="queryExamDetailId" resultType="String">
+			SELECT a.id FROM table_exam_detail a,
+				table_student_task b,
+				table_examination c
+		<where>
+		 	  a.id = b.exam_detail_id  
+		 	 AND a.exam_id=c.id 
+		 	 <if test="studentId != null and studentId != '' ">
+				AND b.student_id=#{studentId}
+			</if>
+			<if test="examId != null and examId != '' ">
+				AND c.id=#{examId}
+			</if>
+		</where>
+	</select>
+	<select id="queryStudentTaskId" resultType="String">
+			SELECT id FROM 
+				table_student_task b
+			where
+		 		 b.student_id=#{studentId}
+				AND b.exam_detail_id =(select id from table_exam_detail where exam_id=#{examId})
+	</select>
+	<!-- 根据查询详情 -->
+  <select id="queryStudentAnswerDetail" resultType="StudentAnswer">
+			SELECT 
+				id AS 'id',
+				answer0 AS 'answer0',
+				answer1 AS 'answer1',
+				answer2 AS 'answer2',
+				answer3 AS 'answer3',
+				answer4 AS 'answer4',
+				answer5 AS 'answer5',
+				answer6 AS 'answer6',
+				answer7 AS 'answer7',
+				answer8 AS 'answer8',
+				answer9 AS 'answer9'
+			FROM table_student_answer
+		<where>
+		 	 <if test="studentId != null and studentId != '' ">
+				AND student_id=#{studentId}
+			</if>
+			<if test="examId != null and examId != '' ">
+				AND exam_id=#{examId}
+			</if>
+		 	 <if test="questionId != null and questionId != '' ">
+				AND question_id=#{questionId}
+			</if>
+		</where>
+	</select>
+	<!--  老师判卷进行修改answer表中的分数 -->
+	<update id="answerQuestion">
+		update table_student_answer set score=#{score},is_correct =#{isCorrect}
+		<where>
+		 	 <if test="studentId != null and studentId != '' ">
+				AND student_id=#{studentId}
+			</if>
+			<if test="examId != null and examId != '' ">
+				AND exam_id=#{examId}
+			</if>
+		 	 <if test="questionId != null and questionId != '' ">
+				AND question_id=#{questionId}
+			</if>
+			
+		</where>
+	</update>
+	<update id="answerQuestionIsCorrect">
+		update table_student_answer set is_correct=#{isCorrect}
+		<where>
+		 	 <if test="studentId != null and studentId != '' ">
+				AND student_id=#{studentId}
+			</if>
+			<if test="examId != null and examId != '' ">
+				AND exam_id=#{examId}
+			</if>
+		 	 <if test="questionId != null and questionId != '' ">
+				AND question_id=#{questionId}
+			</if>
+		</where>
+	</update>
+	<!-- 计算学生总分 -->
+	<select id="totalStudentScore" resultType="String">
+		SELECT
+			sum(a.score)
+		FROM
+			table_student_answer a
+		<where>
+			<if test="studentId !=null and studentId!= ''">
+				AND a.student_id=#{studentId}
+			</if>
+			<if test="examId !=null and examId!= ''">
+				AND a.exam_id=#{examId}
+			</if>
+		</where>
+	</select>
+	
+	<!--  修改task表中的分数 -->
+	<update id="updateTask">
+		update table_student_task set score=#{totalStudentScore},state='1'
+		<where>
+		 	 <if test="studentId != null and studentId != '' ">
+				AND student_id=#{studentId}
+			</if>
+		 	 <if test="examDetailId != null and examDetailId != '' ">
+				AND exam_detail_id=#{examDetailId}
+			</if>
+		</where>
+	</update>
+
+	<!-- 根据教师id及版本id获取所有正在进行的在线考试的试卷 -->
+	<select id="findAllOnlineExam" resultType="ExamClass">
+		SELECT  DISTINCT
+			b.id AS 'exam.id',
+			b.title AS 'exam.title',
+			a.id AS 'schoolClass.id',
+			a.title AS 'schoolClass.title'
+		FROM
+			table_teacher_class_course ttcc
+		JOIN table_class a ON ttcc.class_id = a.id
+		JOIN table_exam_class tec ON tec.class_id = ttcc.class_id
+		JOIN (
+			SELECT
+				id,
+				title
+			FROM
+				table_examination
+			WHERE
+				exam_type = '5'
+			
+			AND teacher_id=#{sqlMap.userId}
+				AND version_id=#{sqlMap.versionId}
+				AND begin_time &lt; now()
+				AND end_time &gt; now()
+		) b ON tec.exam_id = b.id
+		<!-- WHERE  tec.STATUS = '1' -->
+	</select>
+	  <!-- 获取班级内所有学生的信息 -->
+	<select id="findAllStudentByClassId" resultType="ExamStudentDTO">
+		SELECT
+			a.id AS 'student.id',
+			a. NAME AS 'student.name',
+			a.std_code AS 'student.stdCode',
+			a.std_phone AS 'student.stdPhone'
+		FROM
+			table_student a
+		WHERE
+			a.id NOT IN (
+				SELECT
+					c.id
+				FROM
+					table_student_task b
+				JOIN (
+					SELECT
+						id,
+						NAME,
+						std_code,
+						std_phone
+					FROM
+						table_student
+					WHERE
+						del_flag = '0'
+					AND class_id =#{sqlMap.classId}
+				) c
+				WHERE
+					b.student_id = c.id
+				AND b.exam_detail_id = (
+					SELECT
+						id
+					FROM
+						table_exam_detail
+					WHERE
+						exam_id = #{sqlMap.examId}
+				)
+			)
+		AND a.del_flag = '0'
+		AND a.class_id =#{sqlMap.classId}
+	order by a.std_code
+  </select>
+  <select id="queryStudentSubmit" resultType="Date">
+  	SELECT
+		a.submitTime
+	FROM
+		table_student_task a
+	JOIN table_exam_detail b ON b.id = a.exam_detail_id
+	WHERE
+		b.exam_id =#{examId}
+		AND a.student_id=#{studentId}
+  </select>
+  <select id="studentTotalScore" resultType="String">
+  	SELECT
+		a.score
+	FROM
+		table_student_task a
+	JOIN table_exam_detail b ON b.id = a.exam_detail_id
+	WHERE
+		b.exam_id =#{examId}
+		AND a.student_id=#{studentId}
+  </select>
+  
+  
+  <select id="studentExamDetailId" resultType="String">
+  	SELECT
+		a.exam_detail_id
+	FROM
+		table_student_task a
+	JOIN table_exam_detail b ON b.id = a.exam_detail_id
+	WHERE
+		b.exam_id =#{examId}
+		AND a.student_id=#{studentId}
+  </select>
+  
+   <select id="getStudentSubmitPerson" resultType="Integer">
+  	SELECT
+		count(a.id)
+	FROM
+		table_student_task a 
+	JOIN table_exam_detail b 
+	JOIN table_exam_class c 
+	JOIN table_student s 
+	WHERE
+		 s.del_flag='0'
+		AND b.exam_id =#{examId}
+		AND c.class_id=#{classId}
+		AND b.id = a.exam_detail_id
+		and c.exam_id=b.exam_id
+		AND s.class_id=c.class_id
+		AND a.student_id=s.id
+		AND a.isSubmit='1'
+  </select>
+  <select id="getStudentSubmitPerson2" resultType="Integer">
+  	SELECT
+		count(a.id)
+	FROM
+		table_student_task a 
+	JOIN table_exam_detail b 
+	JOIN table_exam_class c 
+	JOIN table_student s 
+	WHERE
+		 s.del_flag='0'
+		AND b.exam_id =#{examId}
+		AND c.class_id=#{classId}
+		AND b.id = a.exam_detail_id
+		and c.exam_id=b.exam_id
+		AND s.class_id=c.class_id
+		AND a.student_id=s.id
+  </select>
+  <!-- 根据教师id及版本id获取试卷列表（可以根据试卷类型,班级,试卷名称进行查询） -->
+	<select id="getExamByTeacherIdAndVersionId" resultType="Exam">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			tec.status as "status",
+			e.exam_mode as "examMode"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.isMark='1'
+		    AND tec.status='2'
+	    	AND e.exam_type IN ('2','5')
+	    	<if test="examType != null and examType != ''">
+				AND e.exam_type = #{examType}
+			</if>
+	    	<if test="examMode != null and examMode != ''">
+				AND e.exam_mode = #{examMode}
+			</if>
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<select id="getExamByTeacherIdAndVersionId2" resultType="com.thinkgem.jeesite.modules.teacher.dto.Exam2">
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			tec.status as "status",
+			e.exam_mode as "examMode"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		JOIN table_student ts ON ts.class_id = tc.id
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ts.id=#{sqlMap.studentId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND tec.status='2'
+		    <!-- AND e.istemplate='0' -->
+		    AND tec.isMark='1'
+	    	AND e.exam_type IN ('2','5')
+	    	<if test="beginTime != null and endTime != null">
+				 and  DATE_FORMAT(e.end_time,'%Y-%m-%d') between DATE_FORMAT(#{beginTime},'%Y-%m-%d') and DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<if test="beginTime != null and endTime == null">
+				and  DATE_FORMAT(e.end_time,'%Y-%m-%d') between DATE_FORMAT(#{beginTime},'%Y-%m-%d') and DATE_FORMAT(now(),'%Y-%m-%d')
+			</if>
+			
+			<if test="beginTime == null and endTime != null">
+				and  DATE_FORMAT(e.end_time,'%Y-%m-%d') &lt; DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+		</where>
+		order by e.create_date ASC
+	</select>
+	<select id="getExamDetailId" resultType="String">
+		SELECT 
+			id
+		FROM
+			table_exam_detail
+		WHERE 
+			exam_id=#{examId}
+			AND type=#{examDetailType}
+	</select>
+	<select id="getExamDetailId2" resultType="String">
+		SELECT 
+			id
+		FROM
+			table_exam_detail
+		WHERE 
+			exam_id=#{examId}
+	</select>
+	<select id="queryStudentTask" resultType="String">
+		SELECT 
+			id
+		FROM
+			table_student_task
+		WHERE 
+			student_id=#{studentId}
+			and exam_detail_id=#{examDetailId}
+	</select>
+	<update id="updateExamClass">
+		update table_exam_class set isMark='1' where exam_id=#{examId} and class_id=#{examClassId}
+	</update>
+	<select id="getTableClassByExamId" resultType="TableClass">
+		SELECT 
+			b.id,b.title
+		FROM
+			table_exam_class a,table_class b
+		WHERE 
+			a.class_id=b.id
+			and a.exam_id=#{examId}
+	</select>
+	<select id="getExamDetailIdByExamId" resultType="String">
+		SELECT 
+			id
+		FROM
+			table_exam_detail
+		WHERE 
+			exam_id=#{examId}
+	</select>
+	<select id="queryQuestionScore" resultType="String">
+		SELECT 
+			ques_point
+		FROM
+			table_version_question
+		WHERE 
+			id=#{questionId}
+	</select>
+	<select id="getExamClassMark" resultType="String">
+		SELECT 
+			isMark
+		FROM
+			table_exam_class
+		WHERE 
+			exam_id=#{examId}
+			AND class_id=#{examClassId}
+	</select>
+	<select id="getStudentState" resultType="String">
+		SELECT 
+			state
+		FROM
+			table_student_task a,
+			table_exam_detail b
+		WHERE 
+			a.exam_detail_id=b.id
+			AND	b.exam_id=#{examId}
+			AND a.student_id=#{studentId}
+	</select>
+	
+	
+	
+	<sql id="preRemoveData">
+	    SELECT id FROM ( 
+	    	SELECT  a.id  FROM table_examination a WHERE NOT EXISTS( 
+	    	  SELECT  b.exam_id  FROM   table_exam_class b   WHERE b.exam_id = a.id    AND b.STATUS IN ('0', '1', '2')
+	    	) AND  a.`create_date`  <![CDATA[  < ]]>  DATE_SUB(NOW(), INTERVAL 2 HOUR)
+	    	 and a.istemplate='0'
+	    ) t
+	</sql>
+	
+	<select id="batchRemove">
+	
+		DELETE FROM table_exam_specility WHERE exam_id IN ( <include refid="preRemoveData" />  );
+		
+		DELETE FROM table_exam_knowledge WHERE exam_id IN (  <include refid="preRemoveData" /> );
+		
+		DELETE FROM table_exam_detail_question WHERE exam_detail_id IN ( SELECT id FROM table_exam_detail WHERE exam_id IN (  <include refid="preRemoveData" /> ));
+		
+		DELETE FROM table_exam_detail WHERE exam_id IN (  <include refid="preRemoveData" /> );
+		
+		DELETE FROM table_exam_class WHERE  exam_id IN( <include refid="preRemoveData" />  ) AND  STATUS NOT IN ('0', '1', '2');
+		
+		DELETE FROM table_examination WHERE id IN( <include refid="preRemoveData" /> )
+	
+	</select>
+	<select id="getAllExamAndAllStudentScore" resultType="com.thinkgem.jeesite.modules.teacher.dto.ExamScoreDTO">
+		SELECT DISTINCT
+			e.id AS 'examId',
+			e.title AS 'examTitle',
+			ts.id AS 'studentTask.student.id',
+			ts.name AS 'studentTask.student.name',
+			c.score AS 'score'
+		FROM
+			table_examination e
+		left JOIN table_exam_class b ON e.id = b.exam_id
+		left JOIN table_exam_detail d ON d.exam_id=e.id
+		left JOIN table_student ts ON ts.class_id=b.class_id
+		left JOIN (
+		SELECT a.* FROM table_student_task a WHERE a.student_id IN ( SELECT id FROM table_student ts WHERE ts.del_flag='0' and ts.class_id =#{examClassId})
+		AND a.exam_detail_id IN ( SELECT id FROM table_exam_detail ted WHERE ted.exam_id=#{examId})
+			) c ON c.exam_detail_id =d.id AND c.student_id=ts.id
+		WHERE
+		 e.id=#{examId}
+		AND ts.class_id=#{examClassId}
+		AND ts.del_flag='0'
+		ORDER BY c.score DESC,ts.std_code
+
+	</select>
+	<select id="getCountByExamIdAndExamClassIdAndScoreRange" resultType="String">
+		SELECT
+			count(tst.id)
+		FROM
+			table_student_task tst
+		JOIN table_student ts ON ts.id = tst.student_id
+		JOIN table_exam_detail ted ON ted.id=tst.exam_detail_id
+		WHERE
+			ts.class_id = #{examClassId}
+		AND ted.exam_id=#{examId}
+		AND ts.del_flag='0'
+		AND  tst.score BETWEEN #{min} AND #{max}
+	</select>
+	<select id="getExamTotalScore" resultType="Integer">
+		SELECT
+			total_score
+		FROM
+			table_examination
+		WHERE id=#{examId}
+	</select>
+	<select id="getAllStudentScore" resultType="StudentTask">
+	SELECT
+		tst.score,
+		ts.id,
+		ts.`name`
+	FROM
+		table_student_task tst,
+		table_exam_detail ted,
+		table_student ts
+	WHERE
+	tst.exam_detail_id=ted.id
+	AND tst.student_id=ts.id
+	AND ted.exam_id=#{examId}
+	AND ts.class_id=#{classId}
+	AND ts.del_flag='0'
+	ORDER BY tst.score DESC
+	</select>
+	<select id="getStudent" resultType="Student">
+		SELECT
+			id,
+			name,
+			std_code AS 'stdCode'
+		FROM
+			table_student
+		WHERE
+			std_code=#{studentCode}
+			AND del_flag='0'
+			AND class_id IN (
+				SELECT
+					id
+				FROM
+					table_class
+				WHERE
+					company_id = #{schoolId}
+			)
+	</select>
+	<select id="getExamType" resultType="String">
+	SELECT
+		quesType
+	FROM
+		table_exam_detail_question
+	WHERE
+		exam_detail_id IN (
+			SELECT
+				id
+			FROM
+				table_exam_detail
+			WHERE
+				exam_id =#{examId}
+		)
+	GROUP BY
+		quesType
+	</select>
+	<select id="getExamTotalScoreByExamDetailId" resultType="Float">
+		SELECT
+			e.total_score
+		FROM
+			table_examination e,
+			table_exam_detail ted
+		WHERE
+			ted.exam_id=e.id
+			AND ted.id=#{examDetailId}
+	</select>
+	<select id="getQuestionlibCount" resultType="Integer">
+		SELECT
+			COUNT(a.question_id)
+		FROM
+			table_exam_detail_question a
+		JOIN table_exam_detail b ON a.exam_detail_id = b.id
+		WHERE
+			b.exam_id =#{examId}
+	</select>
+	<select id="getAllSubmitStudent" resultType="StudentTask">
+		SELECT
+			tst.id AS 'id',
+			tst.student_id AS 'student.id',
+			tst.exam_detail_id AS 'examDetail.id',
+			tst.isSubmit AS 'isSubmit',
+			tst.totalFraction AS 'totalfraction',
+			tst.score AS 'score',
+			tst.startTime AS 'starttime',
+			tst.submitTime AS 'submittime',
+			tst.state AS 'state'
+		FROM
+			table_exam_detail ted,
+			table_student_task tst,
+			table_student ts
+		WHERE
+			ted.id = tst.exam_detail_id
+		AND ts.id=tst.student_id
+		AND ts.del_flag='0'
+		AND ted.exam_id = #{sqlMap.examId}
+		AND ts.class_id= #{sqlMap.examClassId}
+	</select>
+	<select id="getExamByExamDetailId" resultType="Exam">
+		select 
+			e.id AS "id",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			e.begin_time as 'beginTime',
+			e.end_time as 'endTime',
+			e.publish_answer_time as 'publishAnswerTime' 
+		from 
+			table_examination e,
+			table_exam_detail ted 
+		where 
+				e.id=ted.exam_id 
+			and ted.id=#{quesDetailId}
+	</select>
+	<select id="getExamDetail" resultType="Exam">
+		select 
+			e.id AS "id",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			e.begin_time as 'beginTime',
+			e.end_time as 'endTime',
+			e.publish_answer_time as 'publishAnswerTime',
+			e.endHours as 'endHours',
+			e.answerHours as 'answerHours'
+		from 
+			table_examination e
+		where 
+			e.id=#{examId}
+	</select>
+	<select id="getTeacherCompanyId" resultType="String">
+		SELECT company_id from sys_user WHERE id=#{userId}
+	</select>
+	<select id="getTeacherLogin" resultType="com.thinkgem.jeesite.modules.teacher.dto.LoginDTO">
+		SELECT DISTINCT
+		(
+			SELECT
+				count(1)
+			FROM
+				table_examination a,
+				table_exam_class b
+			WHERE
+				a.id = b.exam_id
+			AND a.exam_type = '5'
+			AND b.isMark IS NULL
+			AND a.teacher_id = #{userId}
+			AND a.version_id = #{versionId}
+			AND b.`STATUS` IN ('1', '2')
+			AND a.end_time <![CDATA[ < ]]> NOW()
+		) AS 'onlineCount',
+		(
+			SELECT
+				count(1)
+			FROM
+				table_examination a,
+				table_exam_class b
+			WHERE
+				a.id = b.exam_id
+			AND a.exam_type = '1'
+			AND b.isMark IS NULL
+			AND a.teacher_id = #{userId}
+			AND a.version_id = #{versionId}
+			AND b.`STATUS` = '2'
+		) AS 'testCount',
+		(
+			SELECT
+				count(1)
+			FROM
+				table_examination a,
+				table_exam_class b
+			WHERE
+				a.id = b.exam_id
+			AND a.exam_type = '3'
+			AND b.isMark IS NULL
+			AND a.teacher_id = #{userId}
+			AND a.version_id = #{versionId}
+			AND b.`STATUS` IN ('1', '2')
+			AND a.end_time <![CDATA[ < ]]> NOW()
+		) AS 'homeWorkCount',
+		(
+			SELECT
+				count(1)
+			FROM
+				table_examination a,
+				table_exam_class b
+			WHERE
+				a.id = b.exam_id
+			AND a.exam_type = '3'
+			AND b.isMark IS NULL
+			AND a.teacher_id = #{userId}
+			AND a.version_id = #{versionId}
+			AND b.`STATUS` ='0'
+			AND a.begin_time is NULL
+		) AS 'unPublishHomeWork',
+		(
+			SELECT
+				count(1)
+			FROM
+				table_examination a,
+				table_exam_class b
+			WHERE
+				a.id = b.exam_id
+			AND a.exam_type = '1'
+			AND b.isMark IS NULL
+			AND a.teacher_id = #{userId}
+			AND a.version_id = #{versionId}
+			AND b.`STATUS` = '1'
+		) AS 'unFinishTest'
+		FROM
+			table_examination
+	</select>
+	<select id="getExamStudentTaskState" resultType="StudentTask">
+		SELECT
+			tst.student_id as 'student.id',
+			tst.id as 'id',
+			tst.exam_detail_id as 'exam_detail_id',
+			tst.isSubmit as 'isSubmit',
+			tst.state as 'state'
+		FROM
+			table_student_task tst,
+			table_student ts
+		WHERE
+			ts.id = tst.student_id
+		AND ts.class_id =#{examClassId}
+		AND tst.state is NULL
+		AND tst.isSubmit='1'
+		AND tst.exam_detail_id IN (
+			SELECT
+				id
+			FROM
+				table_exam_detail
+			WHERE
+				exam_id =#{examId}
+		)
+	</select>
+</mapper>

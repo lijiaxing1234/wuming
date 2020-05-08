@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.student.dao.SExamDao">
+	
+	<sql id="onlyExaminationColumns">
+		a.id AS 'id',
+		a.title AS 'title',
+		a.exam_type AS 'examType',
+		a.teacher_id AS 'teacher.id',
+		a.version_id AS 'version.id',
+		a.exam_place AS 'examPlace',
+		a.begin_time AS 'beginTime',
+		a.end_time AS 'endTime',
+		a.isab AS 'isab',
+		a.total_score AS 'totalScore',
+		a.isNew AS 'isNew',
+		a.exam_mode AS 'examMode',
+		a.question_radio AS 'questionRadio',
+		a.question_multiple AS 'questionMultiple',
+		a.question_blank AS 'questionBlank',
+		a.question_short_answer AS 'questionShortAnswer',
+		a.question_compute AS 'questionCompute',
+		a.remarks AS 'remarks',
+		a.difficult AS 'difficult',
+		a.simple AS 'simple',
+		a.general AS 'general',
+		a.exam_hours AS 'examHours',
+		a.create_date AS 'createDate'
+	</sql>
+	
+	<sql id="examinationColumns">
+		a.id AS 'id',
+		a.title AS 'title',
+		a.exam_type AS 'examType',
+		a.teacher_id AS 'teacher.id',
+		a.version_id AS 'version.id',
+		a.exam_place AS 'examPlace',
+		a.begin_time AS 'beginTime',
+		a.end_time AS 'endTime',
+		a.isab AS 'isab',
+		a.total_score AS 'totalScore',
+		a.isNew AS 'isNew',
+		a.exam_mode AS 'examMode',
+		a.question_radio AS 'questionRadio',
+		a.question_multiple AS 'questionMultiple',
+		a.question_blank AS 'questionBlank',
+		a.question_short_answer AS 'questionShortAnswer',
+		a.question_compute AS 'questionCompute',
+		a.remarks AS 'remarks',
+		a.difficult AS 'difficult',
+		a.simple AS 'simple',
+		a.general AS 'general',
+		a.exam_hours AS 'examHours',
+		a.create_date AS 'createDate',
+		TIMESTAMPDIFF(SECOND,NOW(),a.begin_time) AS 'residueTime',
+		TIMESTAMPDIFF(MINUTE,a.begin_time,a.end_time) AS 'durationTime',
+		IF (a.end_time <![CDATA[ < ]]> NOW(), '2', '3') AS 'examStatus',
+		e.name as 'teacher.name'
+	</sql>
+	
+	<sql id="examinationColumnsJoins">
+		
+	</sql>
+	
+	<select id="getStudentNotExam" parameterType="map" resultType="SExam">
+		SELECT
+			<include refid="examinationColumns" />
+		FROM
+			table_examination a
+		LEFT JOIN table_exam_class b ON a.id = b.exam_id
+		LEFT JOIN table_class c ON c.id = b.class_id
+		LEFT JOIN table_student d ON d.class_id = c.id
+		LEFT JOIN sys_user e ON e.id = a.teacher_id
+		WHERE
+			d.id = #{studentId}
+		AND a.del_flag = '0'
+		AND a.exam_type = #{examType}
+		AND a.id NOT IN (
+			SELECT
+				e.id
+			FROM
+				table_examination e
+			LEFT JOIN table_exam_detail f ON f.exam_id = e.id
+			LEFT JOIN table_student_task g ON g.exam_detail_id = f.id
+			WHERE
+				g.student_id = #{studentId}
+			AND e.del_flag = '0'
+			AND g.isSubmit = '1'
+		)
+	</select>
+	
+	<select id="getExamDetailIdByExamId" parameterType="String" resultType="String">
+		SELECT
+			id
+		FROM
+			table_exam_detail
+		WHERE
+			exam_id = #{examId}	
+	</select>
+	
+	<select id="getSExamEntityById" parameterType="String" resultType="SExam"> 
+		SELECT 
+			a.id AS 'id',
+			a.title AS 'title',
+			a.exam_type AS 'examType',
+			a.teacher_id AS 'teacher.id',
+			a.version_id AS 'version.id',
+			a.exam_place AS 'examPlace',
+			a.begin_time AS 'beginTime',
+			a.end_time AS 'endTime',
+			a.isab AS 'isab',
+			a.total_score AS 'totalScore',
+			a.isNew AS 'isNew',
+			a.exam_mode AS 'examMode',
+			a.question_radio AS 'questionRadio',
+			a.question_multiple AS 'questionMultiple',
+			a.question_blank AS 'questionBlank',
+			a.question_short_answer AS 'questionShortAnswer',
+			a.question_compute AS 'questionCompute',
+			a.remarks AS 'remarks',
+			a.difficult AS 'difficult',
+			a.simple AS 'simple',
+			a.general AS 'general',
+			a.exam_hours AS 'examHours',
+			a.create_date AS 'createDate',
+			TIMESTAMPDIFF(SECOND,a.begin_time,a.end_time) AS 'residueTime',
+			TIMESTAMPDIFF(SECOND,NOW(),a.end_time) AS 'durationTime'
+		FROM
+			table_examination a
+		WHERE
+			a.id = #{examId}
+	</select>
+	
+	<!-- 根据学生id获取课程版本 -->
+	<select id="getCourseVersionByStudentId" parameterType="String" resultType="CourseVesion">
+		SELECT
+			a.id AS 'id',
+			a.title AS 'title',
+			b.id AS 'course.id',
+			b.title AS 'course.title',
+			b.specialty_id AS 'course.specialtyId',
+			b.`level` AS 'course.level',
+			b.phase AS 'course.phase',
+			b.couse_system AS 'couseSystem'
+		FROM
+			table_course_vesion a,
+			table_course b,
+			table_teacher_class_course c,
+			table_class d,
+			table_student e
+		WHERE
+			a.course_id = b.id
+		AND a.id = c.verson_id
+		AND c.class_id = d.id
+		AND d.id = e.class_id
+		AND e.id = #{studentId}
+	</select>
+	
+	<!-- 根据学生id 版本id  测试类型 examType 查询学生还没有参加的测试  -->
+	<select id="getNotExamByStudentIdVersionIdExamType" parameterType="map" resultType="SExam">
+		SELECT 
+			a.id AS 'id',
+			a.title AS 'title',
+			a.exam_type AS 'examType',
+			a.teacher_id AS 'teacher.id',
+			a.version_id AS 'version.id',
+			a.exam_place AS 'examPlace',
+			a.begin_time AS 'beginTime',
+			a.end_time AS 'endTime',
+			a.isab AS 'isab',
+			a.total_score AS 'totalScore',
+			a.isNew AS 'isNew',
+			a.exam_mode AS 'examMode',
+			a.question_radio AS 'questionRadio',
+			a.question_multiple AS 'questionMultiple',
+			a.question_blank AS 'questionBlank',
+			a.question_short_answer AS 'questionShortAnswer',
+			a.question_compute AS 'questionCompute',
+			a.remarks AS 'remarks',
+			a.difficult AS 'difficult',
+			a.simple AS 'simple',
+			a.general AS 'general',
+			a.exam_hours AS 'examHours',
+			a.create_date AS 'createDate',
+			TIMESTAMPDIFF(SECOND,NOW(),a.begin_time) AS 'residueTime',
+			TIMESTAMPDIFF(MINUTE,a.begin_time,a.end_time) AS 'durationTime',
+			IF (a.end_time <![CDATA[ < ]]> NOW(), '2', '3') AS 'examStatus',
+			e.name as 'teacher.name',
+			j.title as 'courseName'
+		FROM
+			table_examination a,
+			table_exam_class b,
+			table_class c,
+			table_student d,
+			sys_user e,
+	    table_course_vesion f,
+	    table_course j
+		WHERE
+			a.id = b.exam_id
+		AND f.id = a.version_id
+        AND j.id = f.course_id
+		AND b.class_id = c.id
+		AND b.`status` = '1'
+		and a.istemplate = '0'
+		AND c.id = d.class_id
+		AND d.id = #{studentId}
+		and a.version_id = #{versionId}
+		AND a.exam_type = #{examType}
+		AND e.id = a.teacher_id
+		AND a.`status` != '0'
+		AND a.id NOT IN (
+			SELECT
+				a.exam_id AS 'id'
+			FROM
+				table_exam_detail a,
+				table_student_task b
+			WHERE
+				a.id = b.exam_detail_id
+			AND b.student_id = #{studentId}
+			AND b.isSubmit = '1'
+		)
+		ORDER BY a.create_date desc
+	</select>
+	
+	<select id="getExamCount" parameterType="String" resultType="map">
+		SELECT 
+		    COUNT(a.id) AS 'examCount'
+		FROM
+		    table_examination a,
+		    table_exam_class b,
+		    table_class c,
+		    table_student d
+		WHERE
+		    a.id = b.exam_id AND b.class_id = c.id
+		        AND c.id = d.class_id
+		        AND d.id = #{studentId}
+		        AND a.exam_type IN ('5' , '3')
+		GROUP BY a.exam_type
+	</select>
+	
+	<select id="selectStudentTask" parameterType="map" resultType="studentTask">
+		SELECT 
+		    a.id
+		FROM
+		    table_student_task a,
+		    table_exam_detail b
+		WHERE
+		    a.student_id = #{studentId}
+		        AND a.exam_detail_id = b.id
+		        AND b.exam_id = #{examId}
+		        AND a.isSubmit = '1'
+	</select>
+	
+	<select id="getLatelyExampleQuestionsCount" parameterType="map" resultType="Long">
+		select 
+		    count(a.id) as exampleQuestionsCount
+		from
+		    table_examination a
+		where
+		    a.version_id = #{versionId}
+		        and a.teacher_id in (select 
+		            b.id
+		        from
+		            sys_user b,
+		            table_class c,
+		            table_teacher_class_course d,
+		            table_student e
+		        where
+		            b.id = d.teacher_id
+		                and c.id = d.class_id
+		                and d.class_id = e.class_id
+		                and e.id = #{studentId})
+				and a.exam_type = '4' 
+				and DATE_SUB(CURDATE(), INTERVAL 7 DAY) <![CDATA[ <= ]]> date(a.create_date)
+				and a.del_flag = '0'
+				order by a.create_date desc
+	</select>
+	
+</mapper>

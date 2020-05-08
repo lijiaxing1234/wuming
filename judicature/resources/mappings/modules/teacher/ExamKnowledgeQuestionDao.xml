@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamKnowledgeQuestionDao">
+
+
+
+    <!-- 
+       	 ROUND(AVG(
+		  
+		    CASE tvq.ques_type 
+			WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=tvq.ques_type )
+			
+			THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=tvq.ques_type )
+			
+			ELSE tvq.ques_point  END 
+		  
+		  )) AS "question.quesPoint"
+     -->
+	<select id="findList" resultType="ExamKnowledgeQuestion">
+	 
+	     select 
+                  tek.exam_id as "exam.id",
+		  vaq.knowledge_id as "courseKnowledge.id",
+		  tck.title as "courseKnowledge.title",
+		  vaq.ques_type as "question.quesType",
+		  vaq.ques_level as "question.quesLevel",
+		 COUNT(vaq.ques_type) AS "question.count", 
+		 group_concat(vaq.id ) as 'idss',
+		
+	     MAX(
+		    CASE vaq.ques_type 
+			WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			
+			THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=vaq.ques_type )
+			ELSE vaq.ques_point  END 
+            ) AS "question.quesPoint"           
+           
+           from table_teacher_questionslib_split  ttqs 
+	       left join view_available_questionslib vaq on ttqs.question_id=vaq.questionId
+	       join  table_exam_knowledge  tek on vaq.knowledge_id =tek.course_knowledge_id 
+           join  table_course_knowledge tck on tck.id =tek.course_knowledge_id
+           where 1=1
+           
+           and ttqs.teacher_id =#{sqlMap.teacherId} 
+		   and ttqs.version_id =#{sqlMap.versionId} 
+		   and ttqs.school_id =#{sqlMap.schoolId}
+		   and tek.exam_id =#{exam.id} 
+          
+           and ttqs.type in ('0','1') 
+
+         GROUP BY  tek.exam_id,vaq.knowledge_id,tck.title,vaq.ques_type ,vaq.ques_level  
+         ORDER BY  tek.exam_id, vaq.knowledge_id,tck.title,vaq.ques_type ,vaq.ques_level
+	
+	
+		<!-- SELECT 
+		  tek.exam_id as "exam.id",
+		  tdq.knowledge_id as "courseKnowledge.id",
+		  tck.title as "courseKnowledge.title",
+		  tvq.ques_type as "question.quesType",
+		  tvq.ques_level as "question.quesLevel",
+		 COUNT(tvq.ques_type) AS "question.count",  
+		
+	     MAX(
+		  
+		    CASE tvq.ques_type 
+			WHEN    (SELECT  b.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=tvq.ques_type )
+			
+			THEN   (SELECT  a.value   FROM  
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_score') a,
+				(SELECT * FROM  sys_dict  WHERE TYPE='question_type') b
+				WHERE a.label=b.label AND b.value=tvq.ques_type )
+			
+			ELSE tvq.ques_point  END 
+		  
+		  
+		  ) AS "question.quesPoint"
+		FROM table_exam_knowledge tek,table_course_knowledge tck,table_knowledge_question tdq , table_version_question tvq,table_school_questionlib tsq
+		WHERE  tek.course_knowledge_id=tck.id
+		  AND  tek.course_knowledge_id=tdq.knowledge_id 
+		  AND  tdq.question_id=tvq.id 
+		  AND tvq.`questionlib_id`= tsq.`questionlib_id` 
+		  AND  tvq.`del_flag`='0' AND tsq.`del_flag`='0'
+		  AND NOW() BETWEEN tsq.valid_start_date AND tsq.valid_end_date  
+		  AND tsq.school_id=#{sqlMap.schoolId}
+		  AND tek.exam_id=#{exam.id}
+		  
+		  
+		 <if test="sqlMap.isHomeWork !=null and sqlMap.isHomeWork=='false'">
+		    AND     tvq.id  NOT IN (
+		      SELECT question_id FROM table_exam_detail_question WHERE exam_detail_id IN(
+				SELECT id FROM table_exam_detail WHERE exam_id IN (
+					SELECT id FROM table_examination  WHERE del_flag='0'  
+					 AND exam_type !=2 OR exam_type !=5
+			     )
+			  )
+			)
+		 </if>
+		 <if test="sqlMap.isHomeWork !=null and sqlMap.isHomeWork=='true'">
+		    AND     tvq.id  NOT IN (
+		      SELECT question_id FROM table_exam_detail_question WHERE exam_detail_id IN(
+				SELECT id FROM table_exam_detail WHERE exam_id IN (
+					SELECT id FROM table_examination  WHERE del_flag='0'  
+					 AND exam_type =2 OR exam_type =5
+			     )
+			  )
+			)
+		 </if>
+		GROUP BY  tek.exam_id,tdq.knowledge_id,tck.title,tvq.ques_type ,tvq.ques_level   
+		ORDER BY  tek.exam_id, tdq.knowledge_id,tck.title,tvq.ques_type ,tvq.ques_level  -->
+	</select>
+	
+	
+	<insert id="batchInsertKnowledgeQuestionDetail">
+	     
+	     delete from table_knowledge_question_detail where teacher_id=#{teacherId} and exam_id=#{examId};
+	     
+	    INSERT INTO table_knowledge_question_detail(id,
+              knowledge_id,
+              question_type,
+              question_degree,
+              question_number,
+              question_score,
+              exam_id,
+              teacher_id)
+		<foreach item="item" index="index" collection="list"   separator="union all">
+	        select #{item.id},
+	               #{item.knowledgeId},
+	        	   #{item.questionType},
+	        	   #{item.questionDegree},
+	        	   #{item.questionNumber},
+	        	   #{item.questionScore},
+	        	   #{item.examId},
+	        	   #{item.teacherId}
+	        from dual
+	    </foreach>
+	</insert>
+	
+	<select id="findExamKnowledgeQuestionByExamId"  resultType="KnowledgeQuestionDetail">
+		SELECT
+		   id as "id",
+		  `knowledge_id` as "knowledgeId",
+		  `question_type` as "questionType",
+		  `question_degree`as "questionDegree",
+		  `question_number` as "questionNumber",
+		  `question_score` as "questionScore",
+		  `exam_id` as "examId",
+		  `teacher_id` as "teacherId"
+		FROM table_knowledge_question_detail
+	    <where>
+	        <if test="examId!=null and examId !=''">
+	          and exam_id=#{examId}
+	        </if>
+	        <if test="teacherId !=null and teacherId !=''">
+	          and teacher_id=#{teacherId}
+	        </if>
+	    </where>
+	</select>
+</mapper>

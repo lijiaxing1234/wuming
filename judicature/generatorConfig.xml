@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+	<classPathEntry
+		location="D:/plugs/mysql-connector-java-5.1.13.jar" />
+	<context id="context1">
+		<commentGenerator>
+			<property name="suppressAllComments" value="true" />
+		</commentGenerator>
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://localhost:3306/judicature?useUnicode=true&amp;characterEncoding=UTF-8"
+			 userId="root"
+			 password="" />
+			 
+		<javaModelGenerator targetPackage="com.thinkgem.jeesite.modules.resource.entity"
+			targetProject="judicature/java" />
+		<sqlMapGenerator targetPackage="mappings.modules.resource"
+			targetProject="judicature/resources" />
+		<javaClientGenerator targetPackage="com.thinkgem.jeesite.modules.resource.dao"
+			targetProject="judicature/java"
+			type="XMLMAPPER"></javaClientGenerator>
+		
+		
+		
+	 <!--  <table schema="" tableName="lv_course_self" domainObjectName="LVCourse"></table>
+	  <table schema="" tableName="lv_course_implement" domainObjectName="LVCourseImplement"></table> -->
+	  <table schema="" tableName="pay_user_order" domainObjectName="UserOrder"></table> 
+	
+	</context>
+</generatorConfiguration>

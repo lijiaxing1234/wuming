@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.GCCVTTDao">
+
+	<sql id="schoolClassColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.company_id AS "companyId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+    
+	<sql id="teacherColumns">
+    	a.id,
+    	a.company_id AS "company.id",
+    	a.office_id AS "office.id",
+    	a.login_name,
+    	a.password,
+    	a.no,
+		a.name,
+		a.email,
+		a.phone,
+		a.mobile,
+		a.login_ip,
+		a.login_date,
+		a.remarks,
+		a.photo,
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag
+    </sql>
+    
+    <sql id="teacherJoins">
+		LEFT JOIN sys_office c ON c.id = a.company_id
+		LEFT JOIN sys_office o ON o.id = a.office_id
+    </sql>
+    
+    <select id="findList" resultType="User">
+    	SELECT
+			<include refid="teacherColumns"/>
+		FROM sys_user a
+		<include refid="teacherJoins"/>
+    	WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+    	<if test="name != null and name != ''">
+			AND a.name like 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{name}, '%')</if>
+		</if>
+    	<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.name
+			</otherwise>
+		</choose>
+    </select>
+	
+	<select id="classCourseList" parameterType="map" resultType="ClassCourseListVo">
+		SELECT 
+			g.id,g.teacher_id teacherId,g.class_id classId,g.course_id courseId,
+			(SELECT b.name FROM sys_user b WHERE b.id=g.teacher_id) teacherName,
+			(SELECT c.title FROM table_class c WHERE c.id=g.class_id)  className,
+			(SELECT e.title FROM table_course e WHERE e.id=g.course_id) courseName
+		FROM table_teacher_class_course g WHERE g.teacher_id=#{teacherId}
+	</select>
+
+	<delete id="deleteClassCourse" parameterType="map">
+		delete from table_teacher_class_course where id = #{id}
+	</delete>
+	
+	<select id="getClassCourseListVo" parameterType="String" resultType="ClassCourseListVo">
+		select a.id,a.teacher_id teacherId,a.class_id classId,a.course_id courseId FROM table_teacher_class_course a where a.id=#{id}
+	</select>
+	
+	<insert id="insertCCTT" parameterType="list">
+		insert into table_teacher_class_course values
+		<foreach collection="list" item="item" index="index" separator=",">
+    		(#{item.id},#{item.teacherId},#{item.classId},#{item.courseId},#{item.versionId})
+    	</foreach>
+	</insert>
+	
+	<select id="getGivedClassId" parameterType="String" resultType="String">
+		select class_id from table_teacher_class_course where teacher_id = #{teacherId}
+	</select>
+	
+	<select id="getNotClass" parameterType="map" resultType="SchoolClass">
+		select id,title from table_class where company_id=#{schoolId} and id not in
+		<foreach item="item" index="index" collection="classIdList" open="(" separator="," close=")">
+            #{item}
+       </foreach>
+	</select>
+	
+	<select id="getAllCourse" parameterType="String" resultType="Course">
+		SELECT
+			id,
+			title
+		FROM
+			table_course
+		WHERE
+			id IN (
+				SELECT
+					course_id
+				FROM
+					table_course_vesion b
+				WHERE
+					b.id IN (
+						SELECT
+							a.version_id
+						FROM
+							table_school_version a
+						WHERE
+							a.school_id = #{schoolId}
+						AND b.del_flag = '0'
+					)
+			)
+	</select>
+	
+	<select id="getClassIdsList" parameterType="map" resultType="String">
+		select class_id from table_teacher_class_course where course_id=#{courseId} or verson_id = #{versionId}
+	</select>
+	<select id="getClassList" parameterType="map" resultType="SchoolClass">
+		select 
+			<include refid="schoolClassColumns"/>
+		from table_class a where del_flag='0' and id not in
+		<foreach item="item" index="index" collection="classIdList" open="(" separator="," close=")">
+            #{item}
+       </foreach> 
+       AND a.company_id = #{companyId}
+       AND NOW() <![CDATA[ >= ]]> a.start_date
+       AND NOW() <![CDATA[ <= ]]> a.end_date
+       
+       <if test="spectitles!=null and spectitles !=''">
+          and  specialty_title like concat(#{spectitles})
+        </if>
+	</select>
+	
+	<select id="getAllClass" parameterType="java.util.Map" resultType="SchoolClass">
+		select 
+			<include refid="schoolClassColumns"/>
+		from table_class a 
+		where del_flag='0' 
+		and company_id=#{schoolId}
+		AND NOW() <![CDATA[ >= ]]> a.start_date
+        AND NOW() <![CDATA[ <= ]]> a.end_date
+        <if test="spectitle!=null and spectitle !=''">
+          and  specialty_title like concat(#{spectitle})
+        </if>
+	</select>
+		
+</mapper>

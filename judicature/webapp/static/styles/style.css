@@ -1,0 +1,21 @@
+* {
+	margin: 0;
+	padding: 0;
+	border: none;
+	outline: none;
+}
+#wrapper,#demo {
+	width:500px;
+}
+/* DEMO START */
+#demo {}
+#demo ul{margin:0px; padding:0px; list-style: none;}
+#demo li {	
+	width: 70px;
+	height:60px;	}
+
+
+
+
+
+

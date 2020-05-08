@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.TeacherDao">
+    
+	<sql id="teacherColumns">
+		a.id AS "id",
+		a.company_id AS "school.id",
+		a.office_id AS "office.id",
+		a.login_name AS "loginName",
+		a.password AS "password",
+		a.no AS "no",
+		a.name AS "name",
+		a.email AS "email",
+		a.phone AS "phone",
+		a.mobile AS "mobile",
+		a.user_type AS "userType",
+		a.photo AS "photo",
+		a.login_ip AS "loginIp",
+		a.login_date AS "loginDate",
+		a.login_flag AS "loginFlag",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		o3.name AS "office.name"
+	</sql>
+	
+	<sql id="teacherJoins">
+		LEFT JOIN sys_office o3 ON o3.id = a.office_id
+	</sql>
+    
+	<select id="get" resultType="Teacher">
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM sys_user a
+		<include refid="teacherJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Teacher">
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM sys_user a
+		<include refid="teacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginName},'%')</if>
+			</if>
+			<if test="no != null and no != ''">
+				AND a.no LIKE 
+					<if test="dbName == 'oracle'">'%'||#{no}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{no}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{no},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Teacher">
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM sys_user a
+		<include refid="teacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user(
+			id,
+			company_id,
+			office_id,
+			login_name,
+			password,
+			no,
+			name,
+			email,
+			phone,
+			mobile,
+			user_type,
+			photo,
+			login_ip,
+			login_date,
+			login_flag,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{school.id},
+			#{office.id},
+			#{loginName},
+			#{password},
+			#{no},
+			#{name},
+			#{email},
+			#{phone},
+			#{mobile},
+			#{userType},
+			#{photo},
+			#{loginIp},
+			#{loginDate},
+			#{loginFlag},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user SET 	
+			office_id = #{office.id},
+			login_name = #{loginName},
+			password = #{password},
+			no = #{no},
+			name = #{name},
+			email = #{email},
+			phone = #{phone},
+			mobile = #{mobile},
+			login_flag = #{loginFlag},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sys_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="insertTeachers" parameterType="java.util.List">
+		insert into sys_user 
+		(
+			id,
+			company_id,
+			office_id,
+			login_name,
+			password,
+			no,
+			name,
+			email,
+			phone,
+			mobile,
+			user_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			login_flag,
+			del_flag
+		)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+    		(
+    			#{item.id},
+    			#{item.school.id},
+    			#{item.office.id},
+    			#{item.loginName},
+    			#{item.password},
+    			#{item.no},
+    			#{item.name},
+    			#{item.email},
+    			#{item.phone},
+    			#{item.mobile},
+    			'5',
+    			#{item.createBy.id},
+    			#{item.createDate},
+    			#{item.updateBy.id},
+    			#{item.updateDate},
+    			#{item.remarks},
+    			#{item.loginFlag},
+    			'0'
+    		)
+    	</foreach>
+	</insert>
+	
+	<select id="getOfficeIdByOfficeCode" parameterType="String" resultType="String">
+		SELECT
+			so.id
+		FROM
+			sys_office so
+		WHERE
+			so.del_flag = '0'
+		AND so.`code` = #{officeCode}
+	</select>
+	
+	<!-- 根据登录人所在机构的id查询所有教师 -->
+	<select id="findTeacherPageByCompanyId" resultType="Teacher">
+		SELECT 
+			<include refid="teacherColumns"/>
+		FROM sys_user a
+		<include refid="teacherJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND 	a.company_id = #{sqlMap.companyId}
+			AND 	a.user_type = '5'
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginName},'%')</if>
+			</if>
+			<if test="no != null and no != ''">
+				AND a.no LIKE 
+					<if test="dbName == 'oracle'">'%'||#{no}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{no}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{no},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="getOfficeIdAndCodeList" resultType="map">
+		SELECT id,`code` as 'officeCode' from sys_office
+	</select>
+	
+	<select id="getTeacherListBySchoolId" parameterType="String" resultType="Teacher">
+		SELECT 
+		    a.id AS 'id',
+		    a.company_id AS 'school.id',
+		    a.office_id AS 'office.id',
+		    a.login_name AS 'loginName',
+		    a.password AS 'password',
+		    a.no AS 'no',
+		    a.name AS 'name',
+		    a.email AS 'email',
+		    a.phone AS 'phone',
+		    a.mobile AS 'mobile',
+		    a.user_type AS 'userType',
+		    a.photo AS 'photo',
+		    a.login_ip AS 'loginIp',
+		    a.login_date AS 'loginDate',
+		    a.login_flag AS 'loginFlag',
+		    a.create_by AS 'createBy.id',
+		    a.create_date AS 'createDate',
+		    a.update_by AS 'updateBy.id',
+		    a.update_date AS 'updateDate',
+		    a.remarks AS 'remarks',
+		    a.del_flag AS 'delFlag'
+		FROM
+		    sys_user a
+		WHERE
+		    a.user_type = '5'
+		    and a.del_flag = '0'
+	</select>
+	
+	<select id="getOfficeIdAndOfficeNameBySchoolId" parameterType="String" resultType="Teacher">
+		SELECT 
+		     a.id AS 'officeId', a.name AS 'officeName'
+		FROM
+		    sys_office a
+		WHERE
+		    a.parent_ids LIKE  concat('%',#{schoolId},'%')
+	</select>
+	
+	<select id="getUserByLoginName" parameterType="String" resultType="User">
+		SELECT
+		    *
+		FROM
+		    sys_user
+		WHERE
+		    login_name = #{loginName}
+	</select>
+	
+</mapper>

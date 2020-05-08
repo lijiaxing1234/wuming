@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.MessageStudentDao">
+    
+	<sql id="messageStudentColumns">
+		a.id AS "id",
+		a.message AS "message",
+		a.teacher_id AS "teacherId",
+		a.student_id AS "studentId",
+		a.create_date AS "createDate",
+		a.exam_id as "examId",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="messageStudentJoins">
+	</sql>
+    
+	<select id="get" resultType="MessageStudent">
+		SELECT 
+			<include refid="messageStudentColumns"/>
+		FROM table_message_student a
+		<include refid="messageStudentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="MessageStudent">
+		SELECT 
+			<include refid="messageStudentColumns"/>
+		FROM table_message_student a
+		<include refid="messageStudentJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MessageStudent">
+		SELECT 
+			<include refid="messageStudentColumns"/>
+		FROM table_message_student a
+		<include refid="messageStudentJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_message_student(
+			id,
+			message,
+			teacher_id,
+			student_id,
+			create_date,
+			status,
+			exam_id
+		) VALUES (
+			#{id},
+			#{message},
+			#{teacherId},
+			#{studentId},
+			#{createDate},
+			#{status},
+			#{examId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_message_student SET 	
+			message = #{message},
+			teacher_id = #{teacherId},
+			student_id = #{studentId},
+			status = #{status},
+			exam_id=#{examId}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_message_student
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

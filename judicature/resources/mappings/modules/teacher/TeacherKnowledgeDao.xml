@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.TeacherKnowledgeDao">
+    
+	<sql id="teacherKnowledgeColumns">
+		   a.teacher_id as "teacher.id",
+		   a.level as "level",
+		   
+		   b.id as "courseKnowledge.id",
+		   b.title as "courseKnowledge.title",
+		   b.version_id as "courseKnowledge.versionId",
+		   b.level as "courseKnowledge.level",
+		   b.parent_id as "courseKnowledge.parent.id",
+		   b.parent_ids as "courseKnowledge.parentIds"
+	</sql>
+	
+	<select id="findTeacherKnowledgeList" resultType="TeacherKnowledge">
+		SELECT
+			<include refid="teacherKnowledgeColumns"/>
+		FROM (
+		   SELECT * FROM table_course_knowledge 
+		   WHERE  del_flag=#{DEL_FLAG_NORMAL}  AND id  NOT IN ( 
+		    SELECT  course_knowledge_id  FROM  table_teacher_knowledge WHERE teacher_id=#{teacher.id} AND LEVEL=4 
+		   )
+		)b
+		LEFT JOIN (
+		   SELECT * FROM  table_teacher_knowledge WHERE teacher_id=#{teacher.id}
+		)AS a  ON b.id=a.course_knowledge_id
+		<where>
+			<if test="sqlMap != null and sqlMap != '' and sqlMap.versionId !=null and sqlMap.versionId != ''">
+				b.version_id=#{sqlMap.versionId}
+			</if>
+		</where>
+	    ORDER BY b.sort,b.create_date
+	</select>
+	
+	
+	<select id="findTeacherKnowledgeByCourseKnowledgeIdOrLikeParentIds" resultType="TeacherKnowledge">
+		
+		SELECT
+		   <include refid="teacherKnowledgeColumns"/>,
+		   b.create_date as "courseKnowledge.createDate"
+		FROM table_course_knowledge b
+		LEFT JOIN (
+		
+		   SELECT * FROM table_teacher_knowledge   
+		   WHERE teacher_id=#{teacher.id}
+		   
+		) as a  ON b.id=a.course_knowledge_id
+		
+		WHERE  b.del_flag = #{DEL_FLAG_NORMAL}
+		
+		<if test="courseKnowledge !=null and  courseKnowledge.id !=null and courseKnowledge.id !=''">
+			AND (b.id=#{courseKnowledge.id} OR b.parent_ids LIKE CONCAT('%,',#{courseKnowledge.id},',%'))
+		</if>
+		<if test="sqlParam.mapFilter!=null and sqlParam.mapFilter.versionId != null and sqlParam.mapFilter.versionId != ''">
+			AND b.version_id = #{sqlParam.mapFilter.versionId}
+		</if>
+		  ORDER BY b.sort,b.create_date
+	</select>
+	<select id="findTeacherKnowledgesListWithPassingRate" resultType="TeacherKnowledge">
+		SELECT
+		   <include refid="teacherKnowledgeColumns"/>,
+		   (
+		     ifnull(ROUND((<include refid="findCorrectCountByKnowledgeId"/>)/(<include refid="findTotalCountByKnowledgeId"/>),2),0)*100
+		   )as 'passingRate',
+		   (<include refid="findCorrectCountByKnowledgeId"/>) as "correctCount",
+		   (<include refid="findTotalCountByKnowledgeId"/>) as "totalCount"
+		   
+		FROM table_course_knowledge b
+		LEFT JOIN (
+		   SELECT * FROM table_teacher_knowledge   
+		   WHERE teacher_id=#{teacher.id}
+		   
+		) as a  ON b.id=a.course_knowledge_id
+		
+		WHERE  b.del_flag = #{DEL_FLAG_NORMAL}
+		
+		<if test="courseKnowledge !=null and  courseKnowledge.id !=null and courseKnowledge.id !=''">
+			AND (b.id=#{courseKnowledge.id} OR b.parent_ids LIKE CONCAT('%,',#{courseKnowledge.id},',%'))
+		</if>
+		<if test="sqlParam.mapFilter!=null and sqlParam.mapFilter.versionId != null and sqlParam.mapFilter.versionId != ''">
+			AND b.version_id = #{sqlParam.mapFilter.versionId}
+		</if>
+		<if test="passingRate !=null and passingRate !=''">
+		 and ((ifnull(ROUND((<include refid="findCorrectCountByKnowledgeId"/>)/(<include refid="findTotalCountByKnowledgeId"/>),2),0)*100)
+		   <![CDATA[   <  ]]> #{passingRate})
+		</if>
+		  ORDER BY b.sort,b.create_date
+	</select>
+	
+	
+	<!-- 查询知识点下学生回答正确的试题数量 -->
+	<sql id="findCorrectCountByKnowledgeId">
+	      select  count(tedq.question_id) 
+			from 
+		 table_exam_detail ted,
+		 table_exam_detail_question tedq,
+		 table_exam_knowledge tek,
+		 table_student_answer tsa,
+		 table_exam_class tec,
+		 table_examination te
+		where ted.`id`=tedq.exam_detail_id
+		 and  ted.exam_id=tek.exam_id
+		 and  tedq.question_id=tsa.question_id
+		 and  tec.exam_id=tek.exam_id
+		 and  te.id=tek.exam_id
+		 and tec.isMark='1'  <!--老师判过卷 -->
+	     and (tsa.is_correct=1 or tsa.score>0)
+		 and  tek.course_knowledge_id=b.id   
+		 and  te.teacher_id=#{sqlParam.mapFilter.userId}
+		 and  te.version_id=#{sqlParam.mapFilter.versionId}
+		 <if test="sqlParam.beginDate !=null and sqlParam.endTime !=null">
+		   and (now() between te.begin_time  and te.end_time)
+		 </if>
+		 <if test="sqlParam.beginDate !=null and sqlParam.endTime !=null">
+		   and (now() between te.begin_time  and te.end_time)
+		 </if>
+		   <if test="classId !=null and classId !=''">
+		   and  tec.class_id=#{classId}
+		 </if>
+		 
+	</sql>
+	
+	<!-- 查询知识点下试题总数量 -->
+	<sql id="findTotalCountByKnowledgeId">
+	      select  count(tedq.question_id)*(select count(id) from table_student where class_id=tec.class_id AND del_flag='0' ) 
+			from 
+			 table_exam_detail ted,
+			 table_exam_detail_question tedq,
+			 table_exam_knowledge tek,
+			 table_exam_class tec,
+			 table_examination te
+			where ted.`id`=tedq.exam_detail_id
+			 and  ted.exam_id=tek.exam_id
+			 and  tec.exam_id=tek.exam_id
+			 and  te.id=tek.exam_id
+			 and  tek.course_knowledge_id=b.id
+			 and  te.teacher_id=#{sqlParam.mapFilter.userId}
+		     and  te.version_id=#{sqlParam.mapFilter.versionId} 
+	      <if test="sqlParam.beginDate !=null and sqlParam.endTime !=null">
+		   and (now() between te.begin_time  and te.end_time)
+		 </if>
+	      <if test="classId !=null and classId !=''">
+		   and  tec.class_id=#{classId}
+		 </if>
+	</sql>
+	
+	
+	
+	
+	
+		
+	<!--先删除后批量添加老师标识过知识点表 -->
+	<insert id="batchAddTeacherKnowledge">
+		INSERT INTO table_teacher_knowledge(teacher_id,course_knowledge_id,level)
+		<foreach item="item" index="index" collection="list"   separator="union all">
+	        select #{item.teacher.id},
+	        	   #{item.courseKnowledge.id},
+	        	   #{item.level}
+	        from dual
+	    </foreach>
+	</insert>
+	
+	<!-- 批量删除老师标识过的知识点 -->
+	<delete id="batchDeleteTeacherKnowledge">
+		DELETE  FROM table_teacher_knowledge  WHERE teacher_id=#{teacherId} and
+		course_knowledge_id IN 
+		<foreach item="item"  index="index"  collection="ckIdArr"   separator="," open="(" close=")">
+       		#{item}
+   		</foreach>
+	</delete>
+	
+	
+	<select id="staticKnowledgeByexamIdAndClassId" resultType="StaticKnowledge">
+	
+		SELECT  tck.id as "knowId",
+        tck.title as "knowTitle",
+        tck.parent_id as "knowParentId",
+        (
+		  ifnull(ROUND((<include refid="staticKnowByexamIdAndClassIdCorrectCount"/>)/(<include refid="staticKnowByexamIdAndClassIdCount"/>),2),0)*100
+		)as 'correctRate',
+		(<include refid="staticKnowByexamIdAndClassIdCorrectCount"/>) as "correctCount",
+		(<include refid="staticKnowByexamIdAndClassIdCount"/>) as "totalCount"
+		FROM  table_exam_knowledge tek,table_course_knowledge tck 
+		where tek.course_knowledge_id=tck.id
+		and  tek.exam_id=#{sqlParam.examId}
+		order by tck.sort,tck.create_date
+	</select>
+	
+	<select id="staticKnowledgeByexamIdAndClassId2" resultType="StaticKnowledge">
+		select 
+			t.knowledgeId as 'knowId',
+		    t.title as 'knowTitle',
+			t.parentId as 'knowParentId',
+		    round((((count(case
+		                when tt.isCorrent = '1' then 1
+		                else null
+		            end)) / count(t.questionId)) * 100),
+		            2) as 'correctRate',
+			count(t.questionId) as 'totalCount'
+		from
+		    (select distinct
+		        d.knowledge_id as 'knowledgeId',
+		            e.title,
+		            d.question_id as 'questionId',
+					e.parent_id as 'parentId'
+		    from
+		        table_examination a, table_exam_detail b, table_exam_detail_question c, table_knowledge_question d, table_course_knowledge e
+		    where
+		        a.id = #{sqlParam.examId}
+		            and a.id = b.exam_id
+		            and b.id = c.exam_detail_id
+		            and c.question_id = d.question_id
+		            and d.knowledge_id = e.id
+		    order by e.level , e.create_date) t
+		        left join
+		    (select 
+		        tsa.question_id as 'questionId',
+		            tsa.is_correct as 'isCorrent'
+		    from
+		        table_student_answer tsa
+		    where
+		        tsa.student_id in (select 
+		                ts.id
+		            from
+		                table_student ts, table_class tc, table_teacher_class_course ttcc
+		            where
+		                ts.class_id = tc.id
+		                    and tc.id = ttcc.class_id
+		                    and ttcc.teacher_id = #{sqlParam.teacherId})) tt ON tt.questionId = t.questionId
+		group by t.knowledgeId
+	</select>
+	
+	
+	<sql id="staticKnowByexamIdAndClassIdCount">
+		select  count(tedq.question_id)*(select count(id) from   table_student where class_id=tec.class_id AND del_flag='0') 
+		from 
+		 table_exam_detail ted,
+		 table_exam_detail_question tedq,
+		 table_exam_class tec,
+		 table_knowledge_question tkq
+		where  ted.`id`=tedq.exam_detail_id
+		and  tec.exam_id=ted.exam_id
+	    and  tedq.question_id =tkq.question_id
+	    and  tkq.knowledge_id
+	    in (
+			select id from table_course_knowledge where del_flag='0' and (id =tck.id or parent_ids like concat('%,',tck.id,',%'))
+	    )
+	    
+		and ted.exam_id=#{sqlParam.examId}
+		and tec.class_id=#{sqlParam.classId}
+	</sql>
+	<sql id="staticKnowByexamIdAndClassIdCorrectCount">
+		select  count(tedq.question_id) 
+		from 
+		 table_exam_detail ted,
+		 table_exam_detail_question tedq,
+		 table_student_answer tsa,
+		 table_student ts, 
+		 table_exam_class tec,
+		 table_knowledge_question tkq
+		where  ted.`id`=tedq.exam_detail_id
+		and  tedq.question_id=tsa.question_id
+	    and  tedq.question_id =tkq.question_id
+	    and  tkq.knowledge_id in (
+			select id from table_course_knowledge where del_flag='0' and (id =tck.id or parent_ids like concat('%,',tck.id,',%'))
+	    )
+	    and tec.isMark='1'  <!--老师判过卷 -->
+	    and (tsa.is_correct=1 or tsa.score>0)
+		and  ted.exam_id=tec.exam_id
+		and  tsa.exam_id=tec.exam_id
+		and  ts.id=tsa.student_id
+		AND ts.del_flag='0'
+		AND ted.exam_id=#{sqlParam.examId}
+		and ts.class_id=#{sqlParam.classId}
+	</sql>
+	
+	<!-- 获得某次所考的知识点 -->
+	<select id="findCourseKnowledgeByExamId" resultType="CourseKnowledge">
+	   SELECT    
+	    tck.id AS "id",
+		tck.knowledge_code AS "knowledgeCode",
+		tck.title AS "title",
+		tck.credit_hours AS "creditHours",
+		tck.version_id AS "versionId",
+		tck.level AS "level",
+		tck.parent_id AS "parent.id",
+		tck.parent_ids AS "parentIds",
+		tck.create_by AS "createBy.id",
+		tck.create_date AS "createDate",
+		tck.update_by AS "updateBy.id",
+		tck.update_date AS "updateDate",
+		tck.del_flag AS "delFlag"
+	    FROM table_course_knowledge  tck,table_exam_knowledge tek
+		WHERE tck.id=tek.course_knowledge_id
+		AND  tek.exam_id=#{examId}
+	</select>
+	
+	<select id="selectQuestionBykonwId" resultType="TeacherVersionQuestion">
+		select tkq.knowledge_id as "courseKnowledge.id",
+		       tvq.id as "id",
+		        tvq.title as "title",
+		       	tvq.title AS 'title',
+				tvq.create_date AS 'createTime',
+				tvq.answer0 AS 'answer',
+				tvq.answer1 AS 'answer1',
+				tvq.answer2 AS 'answer2',
+				tvq.answer3 AS 'answer3',
+				tvq.answer4 AS 'answer4',
+				tvq.answer5 AS 'answer5',
+				tvq.answer6 AS 'answer6',
+				tvq.answer7 AS 'answer7',
+				tvq.answer8 AS 'answer8',
+				tvq.answer9 AS 'answer9',
+				tvq.description AS 'description'
+		from  table_knowledge_question tkq,
+		      table_version_question tvq
+		where  tkq.question_id=tvq.id
+		and tkq.knowledge_id in (
+		    select  id from  table_course_knowledge  
+		    where  del_flag='0' 
+		      and ( id=#{courseKnowledge.id} or  parent_ids like concat('%,',#{courseKnowledge.id},',%')) 
+		    order by create_date
+		)
+		and tvq.id in(
+			 select  distinct question_id from table_exam_detail ted , table_exam_detail_question tedq,table_examination te
+				where ted.id=tedq.exam_detail_id 
+				and te.id=ted.exam_id
+				and te.id=#{sqlParam.examId}
+			    and te.teacher_id=#{sqlParam.mapFilter.userId} 
+				and te.version_id=#{sqlParam.mapFilter.versionId}
+		)
+	</select>
+	
+	
+	<!--   SELECT ts.`id` as "stuId",
+		  ts.`name` as "stuName",
+		  ts.std_code as "stuCode",
+		  tsn.`question_id` as "stuQuesId"
+		FROM table_student ts
+		 left join table_student_answer tsn  on tsn.student_id=ts.id
+		WHERE 1=1
+		 AND (tsn.`is_correct` != '1' OR tsn.score =0 OR  tsn.score IS NULL ) 
+		  and tsn.exam_id=#{examId} 
+		 and ts.class_id=#{classId} -->
+   <!-- 查询班级中答错的学生集合 -->
+	<select id="findWrongAnswerStudents" resultType="java.util.Map">
+		 select ts.stuName as "stuName"  FROM(
+			 SELECT ts.`id` as "stuId",
+			  ts.`name` as "stuName",
+			  ts.std_code as "stuCode",
+			  tsn.`question_id` as "stuQuesId"
+			 FROM table_student ts
+			 left join table_student_answer tsn  on tsn.student_id=ts.id 
+			    and (tsn.`is_correct` = '1' and  tsn.score >0) 
+				and tsn.exam_id=#{examId} 
+				and tsn.question_id=#{quesId} 
+			 WHERE 1=1
+			   and ts.class_id=#{classId}
+			   AND ts.del_flag='0'
+		 ) ts 	
+		 where ts.stuQuesId is null 
+	</select>
+	
+	<select id="getKnowledgesPassingRate" parameterType="map" resultType="TeacherKnowledge">
+		select 
+		    t.title as 'knowledgeTitle',
+		    round((((count(case
+		                when tt.isCorrent = '1' then 1
+		                else null
+		            end)) / count(t.questionId)) * 100),
+		            2) as 'passingRate'
+		from
+		    (select 
+		        a.id as 'knowledgeId',
+		            a.title,
+		            b.question_id as 'questionId'
+		    from
+		        table_course_knowledge a, table_knowledge_question b
+		    where
+		        a.version_id = #{versionId}
+		            and a.id = b.knowledge_id
+		    order by a.level , a.create_date) t
+		        left join
+		    (select 
+		        tsa.question_id as 'questionId',
+		            tsa.is_correct as 'isCorrent'
+		    from
+		        table_student_answer tsa
+		    where
+		        tsa.student_id in (select 
+		                ts.id
+		            from
+		                table_student ts, table_class tc, table_teacher_class_course ttcc
+		            where
+		                ts.class_id = tc.id
+		                    and tc.id = ttcc.class_id
+		                    and ttcc.teacher_id = #{teacherId})) tt ON tt.questionId = t.questionId
+		group by t.knowledgeId
+	</select>
+	
+	<select id="getKnowledgesPassingRate2" parameterType="map" resultType="TeacherKnowledge">
+		select 
+		    t.title as 'knowledgeTitle',
+		    round((((count(case
+		                when tt.isCorrent = '1' then 1
+		                else null
+		            end)) / count(t.questionId)) * 100),
+		            2) as 'passingRate'
+		from
+		    (select 
+		        a.id as 'knowledgeId',
+		            a.title,
+		            b.question_id as 'questionId'
+		    from
+		        table_course_knowledge a, table_knowledge_question b
+		    where
+		       (a.id = #{knowledgeId} or a.parent_ids LIKE CONCAT('%,',#{knowledgeId},',%')) and a.id = b.knowledge_id
+		    order by a.sort) t
+		        left join
+		    (select 
+		        tsa.question_id as 'questionId',
+		            tsa.is_correct as 'isCorrent'
+		    from
+		        table_student_answer tsa
+		    where
+		        tsa.student_id in (select
+		                ts.id
+		            from
+		                table_student ts, table_class tc, table_teacher_class_course ttcc
+		            where
+		                ts.class_id = tc.id
+		                    and tc.id = ttcc.class_id
+		                    and ttcc.teacher_id = #{teacherId})) tt ON tt.questionId = t.questionId
+		group by t.knowledgeId
+	</select>
+	
+</mapper>

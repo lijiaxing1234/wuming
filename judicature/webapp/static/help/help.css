@@ -1,0 +1,100 @@
+
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form, 
+fieldset,input,textarea,p,blockquote,th,td,input{ 
+	margin:0; 
+	padding:0; 
+} 
+table { 
+	border-collapse:collapse; 
+	border-spacing:0; 
+} 
+fieldset,img { 
+	border:0; /*有些浏览器默认这些标签有边框，所以要清除默认边框*/
+	display:block;
+} 
+address,caption,cite,code,dfn,em,strong,th,var { 
+	font-style:normal; 
+	font-weight:normal; 
+	/*清除标签默认文本样式和加粗*/
+} 
+ol,ul { 
+	list-style:none; /*清除列表默认样式*/
+} 
+caption,th { 
+	text-align:left; /*清除标签默认文本居中对齐*/
+} 
+h1,h2,h3,h4,h5,h6 { 
+	font-size:100%; 
+	font-weight:normal; /*清除标题标签的默认样式*/
+} 
+a{
+	text-decoration:none;/*大部分页面中的链接没有下划线*/
+}
+body{
+	background: #fff;
+}
+i{font-style: normal;}
+
+
+/* 清除浮动*/
+.clear{ display:block; width:0; height:0; line-height:0; clear:both; overflow:hidden;}
+.clearfix:after,.clearfix:before{ content:""; display:table;}
+.clearfix:after{ clear:both;}
+.clearfix{ *zoom:1; clear:both;}
+/*--------*/
+
+/* 版心 */
+.container{
+	width: 1200px;
+	margin: 0 auto;
+}
+/*input*/
+input,textarea{
+	border:0;
+	outline: none;
+} 
+body{font: normal 16px 'Microsoft yahei';color: #4d4d4d;color: #666;}
+a{color: #666;}
+
+
+.h-header {height: 100px;box-shadow: 0 2px 6px rgba(0,0,0,.3);position: relative;z-index: 2;}
+.h-header .img-left{float: left;margin-top: 10px;margin-left: 20px;}
+.h-header .h-nav{float: right;margin-top: 40px;}
+.h-header .h-nav li{float: left;margin-right: 35px;}
+.h-header .h-nav li.active{border-bottom: 2px solid #00b4ce;padding-bottom: 15px;}
+
+
+.h-content{background: #f6f6f6;position: relative;}
+.h-content .container{padding: 170px 0;}
+.h-content .about-img{margin-left: 100px;float: left;}
+.h-content .about-main{width: 533px;background: #fff;float: left;margin-left: -200px;margin-top: 50px;padding: 0 35px 45px;}
+.h-content .about-main p{margin-top: 20px;font-size: 14px;line-height: 24px;}
+
+.contact{background: none;}
+.contact .container{padding: 250px 0;}
+.contact .contact-img{width: 100%;height: 100%;position: absolute;z-index: -1;}
+.contact .about-img{margin-left: 200px;}
+.contact .contact-main{float: left;margin-left: 75px;color: #333;}
+.contact .contact-main h2{font-size: 28px;margin-top: 30px;}
+.contact .contact-main p{font-size: 14px;line-height: 30px;}
+.contact .contact-main .gray{color: #cdcbcb;}
+
+.footer-p {height: 125px;padding-top: 30px;background: #242833;color: #fff;}
+.footer-p p{text-align:center;font-size:16px;}
+.footer-p p a{color:#99a5a9;margin-left:170px;}
+.footer-p p a:first-child {margin-left:0;}
+.footer-p p i{width:30px;height:20px;background:url(/static/img/about.png) no-repeat;background-size:100%;display:inline-block;position:relative;top:6px;margin-right:10px;}
+.footer-p p a:nth-child(2) i{height:22px;background:url(/static/img/tg.png) no-repeat;background-size:100%;}
+.footer-p p a:nth-child(3) i{height:25px;background:url(/static/img/dj.png) no-repeat;background-size:100%;}
+.footer-p p a:nth-child(4) i{height:27px;background:url(/static/img/fw.png) no-repeat;background-size:100%;}
+
+
+@media screen and (max-width: 1200px){
+	html{min-width: 980px;} 
+	.container{width: 95%;}
+	.h-content .about-img{width: 60%;margin-left: 6%;} 
+	.h-content .about-main{margin-left: -300px;}
+	.contact .about-img{width: auto;}
+	.contact .about-img{margin-left: 10%;}
+	.contact .contact-main{margin-left: 5%;}
+}

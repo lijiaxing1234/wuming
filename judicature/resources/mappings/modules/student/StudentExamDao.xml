@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.student.dao.StudentExamDao">
+
+	<sql id="examColumns">
+		a.id AS 'id',
+		a.title AS 'title',
+		a.exam_type AS 'examType',
+		a.teacher_id AS 'teacher.id',
+		a.version_id AS 'version.id',
+		a.exam_place AS 'examPlace',
+		a.begin_time AS 'beginTime',
+		a.end_time AS 'endTime',
+		a.isab AS 'isab',
+		a.total_score AS 'totalScore',
+		a.isNew AS 'isNew',
+		a.exam_mode AS 'examMode',
+		a.question_radio AS 'questionRadio',
+		a.question_multiple AS 'questionMultiple',
+		a.question_blank AS 'questionBlank',
+		a.question_short_answer AS 'questionShortAnswer',
+		a.question_compute AS 'questionCompute',
+		a.remarks AS 'remarks',
+		a.difficult AS 'difficult',
+		a.simple AS 'simple',
+		a.general AS 'general',
+		a.exam_hours AS 'examHours',
+		a.create_date AS 'createDate',
+		b.name AS 'teacher.name',
+		d.title AS 'version.course.title',
+		e.type AS 'testPaperType',
+		TIMESTAMPDIFF(MINUTE,a.begin_time,a.end_time) AS 'durationTime'
+	</sql>
+	
+	<sql id="examColumsJoins">
+		left join sys_user b on a.teacher_id = b.id
+		left join table_course_vesion c on c.id = a.version_id
+		left join table_course d on c.course_id = d.id
+		LEFT JOIN table_exam_detail e ON e.exam_id = a.id
+	</sql>
+	
+	<sql id="versionQuestionColumns">
+		a.id AS "id",
+		a.exam_code AS "examCode",
+		a.ques_type AS "quesType",
+		a.ques_level AS "quesLevel",
+		a.ques_point AS "quesPoint",
+		a.title AS "title",
+		a.choice0 AS "choice0",
+		a.choice1 AS "choice1",
+		a.choice2 AS "choice2",
+		a.choice3 AS "choice3",
+		a.choice4 AS "choice4",
+		a.choice5 AS "choice5",
+		a.choice6 AS "choice6",
+		a.choice7 AS "choice7",
+		a.choice8 AS "choice8",
+		a.choice9 AS "choice9",
+		a.answer0 AS "answer0",
+		a.answer1 AS "answer1",
+		a.answer2 AS "answer2",
+		a.answer3 AS "answer3",
+		a.answer4 AS "answer4",
+		a.answer5 AS "answer5",
+		a.answer6 AS "answer6",
+		a.answer7 AS "answer7",
+		a.answer8 AS "answer8",
+		a.answer9 AS "answer9",
+		a.count AS "count",
+		a.description AS "description",
+		a.writer AS "writer",
+		a.checker AS "checker",
+		a.office_id AS "office.id",
+		a.tearch_id AS "tearchId",
+		a.version_id AS "versionId",
+		a.questionlib_id AS "questionlibId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+    
+    <!-- 根据学生id 版本id  测试类型 examType 查询学生所有的测试 -->
+    <select id="findList" resultType="SExam">
+    	SELECT
+			a.id AS 'id' ,
+			a.title AS 'title' ,
+			a.exam_type AS 'examType' ,
+			a.teacher_id AS 'teacher.id' ,
+			a.version_id AS 'version.id' ,
+			a.exam_place AS 'examPlace' ,
+			a.begin_time AS 'beginTime' ,
+			a.end_time AS 'endTime' ,
+			a.isab AS 'isab' ,
+			a.total_score AS 'totalScore' ,
+			a.isNew AS 'isNew' ,
+			a.exam_mode AS 'examMode' ,
+			a.question_radio AS 'questionRadio' ,
+			a.question_multiple AS 'questionMultiple' ,
+			a.question_blank AS 'questionBlank' ,
+			a.question_short_answer AS 'questionShortAnswer' ,
+			a.question_compute AS 'questionCompute' ,
+			a.remarks AS 'remarks' ,
+			a.difficult AS 'difficult' ,
+			a.simple AS 'simple' ,
+			a.general AS 'general' ,
+			a.exam_hours AS 'examHours' ,
+			a.create_date AS 'createDate' ,
+			TIMESTAMPDIFF(SECOND , NOW() , a.begin_time) AS 'residueTime' ,
+			TIMESTAMPDIFF(MINUTE , a.begin_time , a.end_time) AS 'durationTime' ,
+			IF(a.end_time  <![CDATA[ < ]]> NOW() , '2' , '3') AS 'examStatus' ,
+		 	e. NAME AS 'teacher.name',
+		 	null as 'score',
+		 	'' AS 'examDetailId',
+		 	b.STATUS as 'quizExamStatus',
+		 	'' as 'rightCount',
+		 	'' as 'totalCount',
+		 	'' as 'isMark'
+		FROM
+			table_examination a ,
+			table_exam_class b ,
+			table_class c ,
+			table_student d ,
+			sys_user e 
+		WHERE
+			a.id = b.exam_id
+		AND b.`status` in ('1','2')
+		and a.istemplate = '0'
+		AND b.class_id = c.id
+		AND c.id = d.class_id
+		AND d.id = #{studentId}
+		AND a.exam_type = #{examType}
+		AND a.version_id = #{versionId}
+		AND e.id = a.teacher_id
+		AND a.del_flag = '0'
+		AND a.id NOT in(
+			SELECT
+				y.exam_id
+			FROM
+				table_student_task z ,
+				table_exam_detail y
+			WHERE
+				z.exam_detail_id = y.id
+			AND z.student_id = #{studentId}
+			AND z.issubmit = '1'
+		)
+		<if test="title != null and title != ''">
+   			and A.title like concat('%',#{title},'%')
+   		</if>
+   		<if test="teacher != null and teacher.id != null and teacher.id != ''">
+   			and e.id = #{teacher.id}
+   		</if>
+   		<if test="firstTime != null and firstTime != '' ">
+   			<if test="examType != 4 ">
+	   			AND <![CDATA[ #{firstTime} <= a.begin_time ]]>
+   			</if>
+   			<if test="examType == 4">
+   				AND <![CDATA[ #{firstTime} <= a.create_date ]]>
+   			</if>
+   		</if>
+   		<if test="secondTime != null and secondTime != '' ">
+   			<if test="examType != 4 ">
+	   			AND <![CDATA[#{secondTime} >= a.begin_time ]]>
+   			</if>
+   			<if test="examType == 4">
+   				AND <![CDATA[ #{secondTime} >= a.create_date ]]>
+   			</if>
+   		</if>
+   		<if test="examType != null and examType != ''">
+   			and a.exam_type = #{examType}
+   		</if>
+		UNION ALL
+		SELECT
+			j.id AS 'id' ,
+			j.title AS 'title' ,
+			j.exam_type AS 'examType' ,
+			j.teacher_id AS 'teacher.id' ,
+			j.version_id AS 'version.id' ,
+			j.exam_place AS 'examPlace' ,
+			j.begin_time AS 'beginTime' ,
+			j.end_time AS 'endTime' ,
+			j.isab AS 'isab' ,
+			j.total_score AS 'totalScore' ,
+			j.isNew AS 'isNew' ,
+			j.exam_mode AS 'examMode' ,
+			j.question_radio AS 'questionRadio' ,
+			j.question_multiple AS 'questionMultiple' ,
+			j.question_blank AS 'questionBlank' ,
+			j.question_short_answer AS 'questionShortAnswer' ,
+			j.question_compute AS 'questionCompute' ,
+			j.remarks AS 'remarks' ,
+			j.difficult AS 'difficult' ,
+			j.simple AS 'simple' ,
+			j.general AS 'general' ,
+			j.exam_hours AS 'examHours' ,
+			j.create_date AS 'createDate' ,
+			TIMESTAMPDIFF(SECOND , NOW() , j.begin_time) AS 'residueTime' ,
+			TIMESTAMPDIFF(MINUTE , j.begin_time , j.end_time) AS 'durationTime' ,
+			'1' AS 'examStatus' ,
+			k.NAME AS 'teacher.name' ,
+			i.score,
+			h.id as 'examDetailId',
+			'4' as 'quizExamStatus', <!-- 4:学生已经做完随堂测评 -->
+		    (SELECT 
+		            COUNT(*)
+		        FROM
+		            table_student_answer tsa
+		        WHERE
+		            tsa.student_id = i.student_id
+		                AND tsa.exam_id = h.exam_id
+		                AND tsa.is_correct = '1') AS 'rightCount',
+		    (select count(*) from table_exam_detail_question tedq
+		    where tedq.exam_detail_id = h.id) AS 'totalCount',
+		   l.isMark as 'isMark'
+		FROM
+			table_exam_detail h,
+			table_student_task i,
+			table_examination j,
+			sys_user k,
+			table_exam_class l,
+			table_class m,
+			table_student n
+		WHERE
+			j.teacher_id = k.id
+		and j.istemplate = '0'
+		and l.class_id = m.id
+		and m.id = n.class_id 
+		and n.id = #{studentId}
+		and l.exam_id = h.exam_id
+		and j.id = h.exam_id
+		and h.id = i.exam_detail_id
+		and i.isSubmit = '1'
+		and j.del_flag = '0'
+		and j.exam_type = #{examType}
+		and i.student_id = #{studentId}
+		and j.version_id = #{versionId}
+		<if test="title != null and title != ''">
+   			and j.title like concat('%',#{title},'%')
+   		</if>
+   		<if test="teacher != null and teacher.id != null and teacher.id != ''">
+   			and k.id = #{teacher.id}
+   		</if>
+   		<if test="firstTime != null and firstTime != '' ">
+   			<if test="examType != 4 ">
+	   			AND <![CDATA[ #{firstTime} <= j.begin_time ]]> 
+   			</if>
+   			<if test="examType == 4">
+   				AND <![CDATA[ #{firstTime} <= j.create_date ]]>
+   			</if>
+   		</if>
+   		<if test="secondTime != null and secondTime != '' ">
+   			<if test="examType != 4 ">
+	   			AND <![CDATA[#{secondTime} >= j.begin_time ]]> 
+   			</if>
+   			<if test="examType == 4">
+   				AND <![CDATA[ #{secondTime} >= j.create_date ]]>
+   			</if>
+   		</if>
+   		<if test="examType != null and examType != ''">
+   			and j.exam_type = #{examType}
+   		</if>
+   		ORDER BY examStatus desc,createDate desc
+    </select>
+    
+	<select id="getStudentJoinedExam" resultType="SExam">
+    	SELECT 
+			c.id AS 'id',
+			c.title AS 'title',
+			c.exam_type AS 'examType',
+			c.teacher_id AS 'teacher.id',
+			c.version_id AS 'version.id',
+			c.exam_place AS 'examPlace',
+			c.begin_time AS 'beginTime',
+			c.end_time AS 'endTime',
+			c.isab AS 'isab',
+			c.total_score AS 'totalScore',
+			c.isNew AS 'isNew',
+			c.exam_mode AS 'examMode',
+			c.question_radio AS 'questionRadio',
+			c.question_multiple AS 'questionMultiple',
+			c.question_blank AS 'questionBlank',
+			c.question_short_answer AS 'questionShortAnswer',
+			c.question_compute AS 'questionCompute',
+			c.remarks AS 'remarks',
+			c.difficult AS 'difficult',
+			c.simple AS 'simple',
+			c.general AS 'general',
+			c.exam_hours AS 'examHours',
+			c.create_date AS 'createDate',
+			TIMESTAMPDIFF(SECOND,NOW(),c.begin_time) AS 'residueTime',
+			TIMESTAMPDIFF(SECOND,c.begin_time,c.end_time) AS 'durationTime',
+			'1' AS 'examStatus',
+			e.name as 'teacher.name'
+		FROM
+				table_exam_detail a,
+				table_student_task b,
+				table_examination c,
+				sys_user e
+			<where>
+				a.id = b.exam_detail_id
+				AND a.exam_id = c.id
+				AND c.teacher_id = e.id
+				AND b.student_id = #{studentId}
+				AND b.isSubmit = '1'
+				AND c.exam_type = #{examType}
+				AND	c.del_flag = '0'
+	    		<if test="title != null and title != ''">
+	    			and c.title like concat('%',#{title},'%')
+	    		</if>
+	    		<if test="teacher != null and teacher.id != null and teacher.id != ''">
+	    			and e.id = #{teacher.id}
+	    		</if>
+	    		<if test="firstTime != null and firstTime != '' and secondTime != null and secondTime != '' ">
+	    			AND <![CDATA[#{secondTime} >= c.begin_time ]]> AND <![CDATA[ #{firstTime} <= c.begin_time ]]> 
+	    		</if>
+	    		<if test="examType != null and examType != ''">
+	    			and c.exam_type = #{examType}
+	    		</if>
+			</where>
+    </select>
+    
+    
+    
+    <!-- 查询学生学习的所有课程 -->
+    <select id="getCourseByStudentId" parameterType="String" resultType="Course">
+    	SELECT
+			a.id,
+			a.title
+		FROM
+			table_course a
+		LEFT JOIN table_course_vesion b ON a.id = b.course_id
+		LEFT JOIN table_teacher_class_course c ON c.verson_id = b.id
+		LEFT JOIN table_class d ON d.id = c.class_id
+		LEFT JOIN table_student e ON e.class_id = d.id
+		WHERE
+			e.id = #{studentId} 
+    </select>
+    
+    <!-- 查询学生的老师 -->
+    <select id="getTeachersByStudentId" parameterType="String" resultType="User">
+    	SELECT
+    		DISTINCT
+			a.id,
+			a.`name`
+		FROM
+			sys_user a
+		LEFT JOIN table_teacher_class_course b ON a.id = b.teacher_id
+		LEFT JOIN table_class c ON c.id = b.class_id
+		LEFT JOIN table_student d ON d.class_id = c.id
+		WHERE
+			d.id = #{studentId} AND a.del_flag = '0'
+    </select>
+    
+    <!-- 我的题库 我做过的所有的题 -->
+    <select id="findMyQuestionLib" resultType="VersionQuestion">
+    	SELECT 
+		    <include refid="versionQuestionColumns"/>
+		FROM
+		    table_version_question a,
+		    table_knowledge_question b,
+		    table_course_knowledge c
+		WHERE
+		    a.id IN (SELECT 
+		            z.question_id
+		        FROM
+		            table_teacher_questionslib_split z,
+		            table_class y,
+		            table_student x
+		        WHERE
+		            a.version_id = #{sqlMap.versionId}
+		                AND z.type IN ('0' , '2')
+		                and z.version_id = #{sqlMap.versionId}
+		                AND y.company_id = z.school_id
+		                AND x.class_id = y.id
+		                AND x.id = #{sqlMap.studentId})
+		        AND a.id = b.question_id
+		        AND b.knowledge_id = c.id
+		        AND 
+		        <if test="sqlMap.id != null and sqlMap.id != '' ">
+		        	(
+		        </if>
+		        c.parent_ids LIKE concat('%',#{sqlMap.parentIds},'%') 
+		        <if test="sqlMap.id != null and sqlMap.id != '' ">
+			        or c.id = #{sqlMap.id})  
+		        </if>
+		        <if test="examCode != null and examCode != ''">
+					AND a.exam_code LIKE concat('%',#{examCode},'%')
+				</if>
+		ORDER BY a.exam_code
+    </select>
+    
+    <select id="getStudentAnswer" resultType="StudentAnswer">
+    	select * from table_student_answer where
+    	student_id = #{studentId}
+    	and exam_id = #{examId}
+    	and question_id = #{questionId}
+    </select>
+    
+    <select id="getStudentAnswerByQuestionIdAndStudentId" resultType="StudentAnswer">
+    	select * from table_student_answer where
+    	student_id = #{studentId}
+    	and question_id = #{questionId}
+    </select>
+    
+    <select id="getJoinAndSubmitExamIdList" parameterType="String" resultType="String">
+    	SELECT
+			DISTINCT a.exam_id
+		FROM
+			table_exam_detail a
+		LEFT JOIN table_student_task b ON a.id = b.exam_detail_id
+		LEFT JOIN table_student c ON c.id = b.student_id
+		WHERE
+			c.id = #{studentId}
+    </select>
+    
+    <select id="getNotJoinNotOverTimeExamIdList" parameterType="String" resultType="String">
+		SELECT
+			DISTINCT a.id
+		FROM
+			table_examination a
+		LEFT JOIN table_exam_detail b ON b.exam_id = a.id
+		LEFT JOIN table_student_task c ON c.exam_detail_id = b.id
+		LEFT JOIN table_student d ON c.student_id = d.id
+		WHERE
+			d.id = #{studentId}
+		AND <![CDATA[a.end_time >= NOW()]]> 
+    </select>
+    
+    <select id="getNotJoinOverTimeExamIdList" parameterType="String" resultType="String">
+    	SELECT
+			DISTINCT a.id
+		FROM
+			table_examination a
+		LEFT JOIN table_exam_detail b ON b.exam_id = a.id
+		LEFT JOIN table_student_task c ON c.exam_detail_id = b.id
+		LEFT JOIN table_student d ON c.student_id = d.id
+		WHERE
+			d.id = #{studentId}
+		AND <![CDATA[a.end_time <= NOW()]]> 
+    </select>
+    
+    <select id="findMyWrongQuestionLib" resultType="VersionQuestion">
+    	SELECT 
+		    b.id AS "id",
+			b.exam_code AS "examCode",
+			b.ques_type AS "quesType",
+			b.ques_level AS "quesLevel",
+			b.ques_point AS "quesPoint",
+			b.title AS "title",
+			b.choice0 AS "choice0",
+			b.choice1 AS "choice1",
+			b.choice2 AS "choice2",
+			b.choice3 AS "choice3",
+			b.choice4 AS "choice4",
+			b.choice5 AS "choice5",
+			b.choice6 AS "choice6",
+			b.choice7 AS "choice7",
+			b.choice8 AS "choice8",
+			b.choice9 AS "choice9",
+			b.answer0 AS "answer0",
+			b.answer1 AS "answer1",
+			b.answer2 AS "answer2",
+			b.answer3 AS "answer3",
+			b.answer4 AS "answer4",
+			b.answer5 AS "answer5",
+			b.answer6 AS "answer6",
+			b.answer7 AS "answer7",
+			b.answer8 AS "answer8",
+			b.answer9 AS "answer9",
+			b.count AS "count",
+			b.description AS "description",
+			b.writer AS "writer",
+			b.checker AS "checker",
+			b.office_id AS "office.id",
+			b.tearch_id AS "tearchId",
+			b.version_id AS "versionId",
+			b.questionlib_id AS "questionlibId",
+			b.create_by AS "createBy.id",
+			b.create_date AS "createDate",
+			b.update_by AS "updateBy.id",
+			b.update_date AS "updateDate",
+			b.del_flag AS "delFlag"
+		FROM
+		    table_student_answer a,
+		    table_version_question b,
+		    table_exam_class c,
+    		table_examination d
+		WHERE
+		    a.student_id = #{sqlMap.studentId}
+		       	AND ( a.is_correct != '1' OR a.is_correct IS NULL)
+		        AND a.question_id = b.id
+		        AND c.exam_id = a.exam_id
+		        AND c.isMark = '1'
+		        and b.version_id = #{sqlMap.versionId}
+		        AND d.id = c.exam_id
+		        <if test="examCode != null and examCode != ''">
+					AND b.exam_code LIKE concat('%',#{examCode},'%')
+				</if>
+				<if test="examType != null and examType != ''">
+					AND d.exam_type = #{examType}
+				</if>
+		ORDER BY b.exam_code
+    	<!-- SELECT 
+		    <include refid="versionQuestionColumns"/>
+		FROM
+		    table_version_question a,
+		    table_student_answer b,
+		    table_examination c
+		WHERE
+		    a.id = b.question_id
+		    	and b.exam_id = c.id
+		    	AND b.is_correct != '1'
+		        AND b.student_id = #{sqlMap.studentId}
+		        AND a.version_id = #{sqlMap.versionId}
+		        <if test="examCode != null and examCode != ''">
+					AND a.exam_code LIKE concat('%',#{examCode},'%')
+				</if>
+				<if test="examType != null and examType != ''">
+					AND c.exam_type = #{examType}
+				</if>
+		order by a.exam_code -->
+    </select>
+    
+    <!-- 根据学生id获取学生所学的课程版本 -->
+    <select id="getCourseVersionListByStudentId" parameterType="String" resultType="CourseVesion">
+    	SELECT
+			a.id AS 'id',
+			a.title AS 'title',
+			b.id AS 'course.id',
+			b.title AS 'course.title',
+			b.specialty_id AS 'course.specialtyId',
+			b.`level` AS 'course.level',
+			b.phase AS 'course.phase',
+			b.couse_system AS 'couseSystem'
+		FROM
+			table_course_vesion a,
+			table_course b,
+			table_teacher_class_course c,
+			table_class d,
+			table_student e
+		WHERE
+			a.course_id = b.id
+		AND a.id = c.verson_id
+		AND c.class_id = d.id
+		AND d.id = e.class_id
+		AND e.id = #{studentId}
+    </select>
+    
+    <select id="getCongenericQuestions" parameterType="map" resultType="VersionQuestion">
+    	SELECT 
+		    <include refid="versionQuestionColumns"/>
+		FROM
+		    table_version_question a
+		WHERE
+		    a.id IN (SELECT 
+		            question_id
+		        FROM
+		            table_knowledge_question z,
+		            table_version_question y
+		        WHERE
+		            knowledge_id = (SELECT distinct
+		                    knowledge_id 
+		                FROM
+		                    table_knowledge_question
+		                WHERE
+		                    question_id = #{questionId})
+		                AND z.question_id = y.id
+		                AND y.ques_type = (SELECT 
+		                    ques_type
+		                FROM
+		                    table_version_question
+		                WHERE
+		                    id = #{questionId})
+		                AND y.questionlib_id = (SELECT 
+		                    questionlib_id
+		                FROM
+		                    table_version_question
+		                WHERE
+		                    id = #{questionId}))
+		        and a.del_flag = '0'
+				order by rand() limit #{count}
+    </select>
+    
+    <select id="getResourceFilePath" parameterType="String" resultType="String">
+    	SELECT 
+		    res_file
+		FROM
+		    table_resource
+		WHERE
+		    id = #{resourceId}
+    </select>
+    
+    <select id="getAllSchool" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.StudentVo">
+    	SELECT 
+		    a.id AS 'schoolId', a.name AS 'schoolName'
+		FROM
+		    sys_office a
+		WHERE
+		    a.type = '1' AND a.id NOT IN ('1' , '2')
+		        AND a.del_flag = '0'
+    </select>
+    
+</mapper>

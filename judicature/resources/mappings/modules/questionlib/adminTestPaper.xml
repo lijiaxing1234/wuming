@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.AdminTestPaperDao">
+
+    <select id="findList" resultType="TestPaper">
+		SELECT
+			b.create_date AS 'createTime',
+			f.`name` AS 'schoolName',
+			b.title AS 'testPaperName',
+			a.type AS 'testPaperType',
+			g.id AS 'state',
+			j.title AS 'courseName'
+		FROM
+			table_exam_detail a
+		LEFT JOIN table_examination b ON a.exam_id = b.id
+		LEFT JOIN table_exam_class c ON c.exam_id = a.exam_id
+		LEFT JOIN table_class d ON d.id = c.class_id
+		LEFT JOIN table_teacher_class_course e ON d.id = e.class_id
+		LEFT JOIN sys_office f ON f.id = d.company_id
+		LEFT JOIN table_student_task g ON g.exam_detail_id = a.id
+		LEFT JOIN table_exam_specility h ON h.exam_id = b.id
+		LEFT JOIN table_specialty i ON i.id = h.specialty_id
+		LEFT JOIN table_course j ON j.specialty_id = i.id
+		<where>
+			<if test="testPaperName != null and testPaperName != ''" >
+				and b.title LIKE concat('%',#{testPaperName},'%')
+			</if>
+		</where>
+	</select>
+	
+</mapper>

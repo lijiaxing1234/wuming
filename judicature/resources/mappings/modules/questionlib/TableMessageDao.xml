@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.TableMessageDao">
+    
+	<sql id="tableMessageColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.content AS "content",
+		a.createtime AS "createtime",
+		a.is_top AS "isTop",
+		a.office_id AS "office.id",
+		o6.name AS "office.name"
+	</sql>
+	
+	<sql id="tableMessageJoins">
+		LEFT JOIN sys_office o6 ON o6.id = a.office_id
+	</sql>
+    
+	<select id="get" resultType="TableMessage">
+		SELECT 
+			<include refid="tableMessageColumns"/>
+		FROM table_message a
+		<include refid="tableMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TableMessage">
+		SELECT 
+			<include refid="tableMessageColumns"/>
+		FROM table_message a
+		<include refid="tableMessageJoins"/>
+		<where>
+			<if test="office != null and office.id != null">
+				a.office_id=#{office.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			
+			<if test="sqlParam.startTime !=null and sqlParam.endTime !=null">
+				and a.createtime  BETWEEN #{sqlParam.startTime} AND #{sqlParam.endTime} 
+			</if>
+			
+			<if test="createtime !=null">
+			    <![CDATA[
+			     and a.createtime <=#{createtime}
+			      ]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    order by createtime desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TableMessage">
+		SELECT 
+			<include refid="tableMessageColumns"/>
+		FROM table_message a
+		<include refid="tableMessageJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_message(
+			id,
+			title,
+			content,
+			createtime,
+			is_top,
+			office_id
+		) VALUES (
+			#{id},
+			#{title},
+			#{content},
+			#{createtime},
+			#{isTop},
+			#{office.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_message SET 	
+			title = #{title},
+			content = #{content},
+			createtime = #{createtime},
+			is_top = #{isTop},
+			office_id = #{office.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_message
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

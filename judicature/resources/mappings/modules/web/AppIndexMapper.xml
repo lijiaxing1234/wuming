@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.AppIndexMapper">
+
+   <resultMap type="com.thinkgem.jeesite.modules.web.entity.Questions" id="questionMap">
+      <id   column="id"  property="id"  jdbcType="VARCHAR"/>
+   	  <result  column="exam_code"  property="examCode" jdbcType="VARCHAR" />
+   	  <result  column="ques_type"  property="quesType" jdbcType="VARCHAR"/>
+   	  <result  column="ques_level"  property="quesLevel" jdbcType="VARCHAR"/>
+   	  <result  column="ques_point"  property="quesPoint" jdbcType="VARCHAR"/>
+   	  <result  column="title"  property="title" jdbcType="VARCHAR"/>
+   	  <result  column="question_code"  property="questionCode" jdbcType="VARCHAR"/>
+   	  
+   	  <result  column="choice0"  property="choice0" jdbcType="VARCHAR"/>
+   	  <result  column="choice1"  property="choice1" jdbcType="VARCHAR"/>
+   	  <result  column="choice2"  property="choice2" jdbcType="VARCHAR"/>
+   	  <result  column="choice3"  property="choice3" jdbcType="VARCHAR"/>
+   	  <result  column="choice4"  property="choice4" jdbcType="VARCHAR"/>
+   	  <result  column="choice5"  property="choice5" jdbcType="VARCHAR"/>
+   	  <result  column="choice6"  property="choice6" jdbcType="VARCHAR"/>
+   	  <result  column="choice7"  property="choice7" jdbcType="VARCHAR"/>
+   	  <result  column="choice8"  property="choice8" jdbcType="VARCHAR"/>
+   	  <result  column="choice9"  property="choice9" jdbcType="VARCHAR"/>
+   	  
+   	  
+   	  <result  column="answer0"  property="answer0" jdbcType="VARCHAR"/>
+   	  <result  column="answer1"  property="answer1" jdbcType="VARCHAR"/>
+   	  <result  column="answer2"  property="answer2" jdbcType="VARCHAR"/>
+   	  <result  column="answer3"  property="answer3" jdbcType="VARCHAR"/>
+   	  
+   	  
+   	  <result  column="description"  property="description" jdbcType="VARCHAR"/>
+   	  <result  column="count"  property="count" jdbcType="VARCHAR"/>
+   	  <result  column="writer"  property="writer" jdbcType="VARCHAR"/>
+   	  <result  column="checker"  property="checker" jdbcType="VARCHAR"/>
+   	  <result  column="office_id"  property="office.id" jdbcType="VARCHAR"/>
+   	  <result  column="tearch_id"  property="tearchId" jdbcType="VARCHAR"/>
+   	  
+   	  <result  column="version_id"  property="versionId" jdbcType="VARCHAR"/>
+   	  <result  column="questionlib_id"  property="questionlibId" jdbcType="VARCHAR"/>
+   	  <result  column="questionlib_id"  property="questionlibId" jdbcType="VARCHAR"/>
+   	  <result  column="material"  property="material" jdbcType="VARCHAR"/>
+   	 
+   	   	  <!--<result  column="create_by"  property="createBy.id" jdbcType="VARCHAR"/>
+   	  <result  column="create_date"  property="createDate" jdbcType="TIMESTAMP"/>
+   	  <result  column="update_by"  property="updateBy.id" jdbcType="VARCHAR"/>
+   	  <result  column="update_date"  property="updateDate" jdbcType="TIMESTAMP"/>
+   	  <result  column="del_flag"  property="delFlag" jdbcType="VARCHAR"/>
+     <result  column="seq"  property="questionlibId" jdbcType="VARCHAR"/> -->
+   	  
+   	  
+   	  
+   </resultMap>
+  
+
+ 
+  <!-- 
+     table_course_knowledge   tck   //课程知识点表 ,通过version_id(表示课程Id) 字段关联.
+     table_knowledge_question tkq   //课程知识点和试题的关系表   
+     table_version_question   tvq   //试题表
+     
+     AND tkq.`knowledge_id`='05261ade02e7490c90d092d9c118681d' 
+   -->
+  <select id="getRandomQuestionListByCourseId"    resultMap="questionMap">
+  
+   SELECT * from (
+	   SELECT * from (
+		   SELECT tvq.* 
+		   FROM (table_course_knowledge  tck  JOIN  table_knowledge_question tkq  ON tck.`id`=tkq.`knowledge_id`) 
+		   LEFT JOIN  table_version_question tvq  ON tkq.`question_id`=tvq.`id`
+		   WHERE  tvq.`del_flag`=0 
+		    and tck.`version_id`=#{courseId} 
+		    
+		    <if test="quesType!=null and quesType !=''"> 
+		      and tvq.ques_type=#{quesType}
+		    </if>
+	   ) t
+	   ORDER BY   RAND()   LIMIT #{randomNumber}
+    ) tp ORDER BY   CAST( ques_type AS SIGNED INTEGER) 
+  </select>
+
+ 
+  <select id="getQuestionById"  parameterType="java.lang.String"  resultMap="questionMap">
+    SELECT  * FROM table_version_question WHERE id=#{quesId};
+  </select>
+
+
+  <!-- 
+        查询随机出的试题的题型
+   -->
+  <select id="getRandomQuestionTypeListByCourseId"    resultType="java.util.Map"  >
+    SELECT DISTINCT tvq.ques_type as "id",
+           sd.label as "name"
+	 FROM ( (table_course_knowledge  tck  JOIN  table_knowledge_question tkq  ON tck.`id`=tkq.`knowledge_id`) 
+	        LEFT JOIN  table_version_question tvq  ON tkq.`question_id`=tvq.`id`
+	      )
+		  LEFT JOIN (SELECT * FROM sys_dict  WHERE TYPE='question_type') sd ON  tvq.ques_type=sd.value
+	
+	 WHERE  tvq.`del_flag`=0 
+	      and  tck.`version_id`=#{courseId}  
+	        
+	 ORDER BY  CAST( tvq.ques_type AS SIGNED INTEGER) 
+  </select>
+  
+  
+  
+  
+  
+   <!-- 历年真题知识点列表查询
+   
+              课程下所有知识点
+    -->
+    
+    
+    <resultMap type="com.thinkgem.jeesite.modules.web.entity.Knowledge" id="KnowledgeMap" >
+        <id  column="id"  property="id"  jdbcType="VARCHAR"/>
+        <result  column="knowledge_code"  property="knowledgeCode"  jdbcType="VARCHAR"/>
+        <result  column="title"  property="title"  jdbcType="VARCHAR"/>
+        <result  column="credit_hours"  property="creditHours"  jdbcType="VARCHAR"/>
+        <result  column="version_id"  property="versionId"  jdbcType="VARCHAR"/>
+        
+        <result  column="level"  property="level"  jdbcType="VARCHAR"/>
+        <result  column="parent_id"  property="parentId"  jdbcType="VARCHAR"/>
+        <!-- <result  column="parent_ids"  property="parentIds"  jdbcType="VARCHAR"/> -->
+        <result  column="create_by"  property="createBy"  jdbcType="VARCHAR"/>
+        
+        <result  column="create_date"  property="createBy"  jdbcType="TIMESTAMP"/>
+        <result  column="update_by"  property="updateBy"  jdbcType="VARCHAR"/>
+        <result  column="update_date"  property="updateDate"  jdbcType="TIMESTAMP"/>
+        <result  column="del_flag"  property="delFlag"  jdbcType="VARCHAR"/>
+        
+        <result  column="sort"  property="sort"  jdbcType="INTEGER"/>
+        
+        <result  column="parentId"   property="parent.id" jdbcType="VARCHAR"/>
+        <result  column="parentTitle"   property="parent.title" jdbcType="VARCHAR"/>
+        
+        <result column="totalQuestion" property="totalQuestion"  jdbcType="INTEGER"/>
+        
+       <!--  <association property="totalQuestion"  javaType="java.lang.Integer"  column="{courseId=version_id,knowId=id}"  select="countQuestionByKnowIdList"  /> -->
+    </resultMap>
+    
+    <!-- 课程下所有知识点查询 -->
+   <select id="selectKnowledgeByCourseIdList"  resultMap="KnowledgeMap">
+     select * from (
+      SELECT tck.*,
+             ptck.id as "parentId",
+             ptck.title as "parentTitle",
+             
+             ( SELECT count(1) 
+			   FROM (table_course_knowledge  a  JOIN  table_knowledge_question b  ON a.`id`=b.`knowledge_id`) 
+			   LEFT JOIN  table_version_question c  ON b.`question_id`=c.`id`
+			   WHERE  c.`del_flag`=0 
+			    AND a.`version_id`=tck.version_id
+			    AND b.`knowledge_id`=tck.id
+		      ORDER BY  CAST(c.ques_type AS SIGNED INTEGER),c.create_date  
+		     )as "totalQuestion"
+             
+      FROM  table_course_knowledge tck 
+      LEFT JOIN  table_course_knowledge ptck  ON  tck.parent_id=ptck.id
+      WHERE tck.version_id=#{courseId}
+      AND tck.del_flag=0
+      <if test="treelevel !=null">
+       AND (LENGTH(tck.parent_ids)-LENGTH(REPLACE(tck.parent_ids,',','')))=#{treelevel}
+      </if>
+      order by ptck.title,tck.title,ptck.sort,tck.sort  ) t  where totalQuestion > 0
+   </select>
+   
+    <select id="selectRecomZhentiList"  resultMap="KnowledgeMap">
+    
+     select * from (
+      SELECT tck.*,
+             ptck.id as "parentId",
+             ptck.title as "parentTitle",
+             
+             ( SELECT count(1) 
+			   FROM (table_course_knowledge  a  JOIN  table_knowledge_question b  ON a.`id`=b.`knowledge_id`) 
+			   LEFT JOIN  table_version_question c  ON b.`question_id`=c.`id`
+			   WHERE  c.`del_flag`=0 
+			    AND a.`version_id`=tck.version_id
+			    AND b.`knowledge_id`=tck.id
+		      ORDER BY  CAST( c.ques_type AS SIGNED INTEGER),c.create_date  
+		     )as "totalQuestion"
+             
+      FROM  table_course_knowledge tck 
+      LEFT JOIN  table_course_knowledge ptck  ON  tck.parent_id=ptck.id
+      WHERE tck. version_id=#{courseId}
+      and tck.recommend=1
+      <if test="treelevel !=null">
+       AND (LENGTH(tck.parent_ids)-LENGTH(REPLACE(tck.parent_ids,',','')))=#{treelevel}
+      </if>
+      order by ptck.title,tck.title,ptck.sort,tck.sort
+      
+      ) t  where totalQuestion > 0
+   </select>
+   
+   <select id="selectKnowledgeByCourseIdListPage"  resultMap="KnowledgeMap">
+   select * from (
+      SELECT tck.*,
+             ptck.id as "parentId",
+             ptck.title as "parentTitle",
+             
+             ( SELECT count(1) 
+			   FROM (table_course_knowledge  a  JOIN  table_knowledge_question b  ON a.`id`=b.`knowledge_id`) 
+			   LEFT JOIN  table_version_question c  ON b.`question_id`=c.`id`
+			   WHERE  c.`del_flag`=0 
+			    AND a.`version_id`=tck.version_id
+			    AND b.`knowledge_id`=tck.id
+		      ORDER BY  CAST( c.ques_type AS SIGNED INTEGER),c.create_date  
+		     )as "totalQuestion"
+             
+      FROM  table_course_knowledge tck 
+      LEFT JOIN  table_course_knowledge ptck  ON  tck.parent_id=ptck.id
+      WHERE tck. version_id=#{courseId}
+      <if test="treelevel !=null">
+       AND (LENGTH(tck.parent_ids)-LENGTH(REPLACE(tck.parent_ids,',','')))=#{treelevel}
+      </if>
+      order by ptck.title,tck.title,ptck.sort,tck.sort
+       ) t  where totalQuestion > 0
+      limit 0,8
+   </select>
+   
+    <!-- 课程和知识 查询所有试题 
+    
+     table_course_knowledge   tck   //课程知识点表 ,通过version_id(表示课程Id) 字段关联.
+     table_knowledge_question tkq   //课程知识点和试题的关系表   
+     table_version_question   tvq   //试题表
+     
+     AND tkq.`knowledge_id`='05261ade02e7490c90d092d9c118681d' 
+    
+    -->
+   <select id="selectQuestionByKnowIdList"   resultMap="questionMap">
+      SELECT tvq.* 
+	   FROM (table_course_knowledge  tck  JOIN  table_knowledge_question tkq  ON tck.`id`=tkq.`knowledge_id`) 
+	   LEFT JOIN  table_version_question tvq  ON tkq.`question_id`=tvq.`id`
+	   WHERE  tvq.`del_flag`=0 
+	    AND tck.`version_id`=#{courseId} 
+	    AND tkq.`knowledge_id`=#{knowId}
+      ORDER BY  CAST( tvq.ques_type AS SIGNED INTEGER),tvq.create_date 
+   </select>
+   
+   
+      <!-- 数量课程和知识 查询所有试题 
+    
+     table_course_knowledge   tck   //课程知识点表 ,通过version_id(表示课程Id) 字段关联.
+     table_knowledge_question tkq   //课程知识点和试题的关系表   
+     table_version_question   tvq   //试题表
+     
+     AND tkq.`knowledge_id`='05261ade02e7490c90d092d9c118681d' 
+    
+    -->
+   <select id="countQuestionByKnowIdList"  resultType="java.lang.Integer">
+      SELECT count(1) 
+	   FROM (table_course_knowledge  tck  JOIN  table_knowledge_question tkq  ON tck.`id`=tkq.`knowledge_id`) 
+	   LEFT JOIN  table_version_question tvq  ON tkq.`question_id`=tvq.`id`
+	   WHERE  tvq.`del_flag`=0 
+	    AND tck.`version_id`=#{courseId} 
+	    AND tkq.`knowledge_id`=#{knowId}
+      ORDER BY  CAST( tvq.ques_type AS SIGNED INTEGER),tvq.create_date 
+   </select>
+  
+  
+  
+   <!-- 
+            发现栏目下  栏目分类
+   
+   
+    -->
+    
+    <resultMap type="com.thinkgem.jeesite.modules.web.entity.ResCategory" id="resCateMap">
+         <id column="id"  property="id"  jdbcType="VARCHAR"/>
+         <result  column="name" property="name" jdbcType="VARCHAR"/>
+         <result  column="description" property="description" jdbcType="VARCHAR"/>
+         <result  column="presenter" property="persenter" jdbcType="VARCHAR"/>
+         <result  column="price" property="price" jdbcType="DOUBLE"/>
+          <result  column="courseName" property="courseName" jdbcType="DOUBLE"/>
+         
+         <result  column="image" property="image" jdbcType="VARCHAR"/>
+         <result  column="type" property="type" jdbcType="INTEGER"/>
+         <result  column="parent_id" property="parentId" jdbcType="VARCHAR"/>
+         <result  column="parent_ids" property="parentIds" jdbcType="VARCHAR"/>
+         <result  column="play_num" property="playNum" jdbcType="INTEGER"/>
+         <result  column="resCount"  property="resCount" jdbcType="INTEGER" />
+         
+          <result  column="playNum"  property="playNum" jdbcType="INTEGER" />
+         
+         <result   column="parent_id"  property="parent.id"   jdbcType="VARCHAR"/>
+          <result   column="parent_name"  property="parent.name"   jdbcType="VARCHAR"/>
+          <result   column="author"  property="author"   jdbcType="VARCHAR"/>
+          
+    </resultMap>
+  
+    
+    
+     <select id="selectResCategoryByCourseIdList"   resultMap="resCateMap"  >
+    
+       select tc.*,
+              ptc.id as "parent_id",
+              ptc.name as "parent_name",
+              (
+		         SELECT COUNT(1) FROM  table_publication_resource WHERE category_id IN (   
+		
+		                SELECT id FROM table_category WHERE CONCAT(parent_ids,',') LIKE CONCAT('%,',tc.id,',%') OR id= tc.id
+		           ) 
+              )as "resCount",
+              (
+                  select count(1) from  table_publication_resource_visitors where resource_id in (
+		         SELECT id FROM  table_publication_resource WHERE category_id IN (   
+		
+		                SELECT id FROM table_category WHERE CONCAT(parent_ids,',') LIKE CONCAT('%,',tc.id,',%') OR id= tc.id
+		           ) )
+              )as "playNum"
+       from  table_category  tc 
+       left join  table_category ptc   on  tc.parent_id=ptc.id
+    
+       <where>
+            and CONCAT(tc.parent_ids,',') LIKE CONCAT('%,',#{parentCateId},',%')
+            <if test="treelevel >0">
+               AND (LENGTH(tc.parent_ids)-LENGTH(REPLACE(tc.parent_ids,',','')))=#{treelevel}
+            </if>
+            <if test="courseIds !=null and  courseIds.length >0">
+                and tc.courseId in 
+                <foreach collection="courseIds" open="("  close=")"  separator=","  item="var">
+                     #{var}                
+                </foreach>
+            
+            </if>
+       </where>
+    </select>
+    
+    
+    
+    
+    <select id="categoryListById"   resultMap="resCateMap"  >
+    
+       select tc.*,
+              ptc.id as "parent_id",
+              ptc.name as "parent_name",
+              c.title as "courseName",
+              tc.name as "author",
+              
+              (
+		         SELECT COUNT(1) FROM  table_publication_resource WHERE category_id IN (   
+		
+		                SELECT id FROM table_category WHERE CONCAT(parent_ids,',') LIKE CONCAT('%,',tc.id,',%') OR id= tc.id
+		           ) 
+              )as "resCount",
+                (
+                  select count(1) from  table_publication_resource_visitors where resource_id in (
+		         SELECT id FROM  table_publication_resource WHERE category_id IN (   
+		
+		                SELECT id FROM table_category WHERE CONCAT(parent_ids,',') LIKE CONCAT('%,',tc.id,',%') OR id= tc.id
+		           ) )
+              )as "playNum"
+              
+       from  table_category  tc 
+       left join  table_category ptc   on  tc.parent_id=ptc.id
+        LEFT JOIN table_course c ON tc.`courseId`=c.`id`  
+       <where>
+               and  tc.parent_id =#{id}
+            
+       </where>
+    </select>
+    
+    
+    
+  	
+  	<select id="getIndexAd" resultType="com.thinkgem.jeesite.modules.web.entity.AD">
+  		SELECT id,
+  			   image_url AS "imageUrl",ad_type as "adType",
+  			   target 
+  		FROM table_ad WHERE col_id =(SELECT tac.col_id FROM table_ad_columns tac WHERE tac.ad_code='000')
+  		ORDER BY seq
+  	</select>
+  	
+  	<select id="getTrueVersionId" resultType="string">
+  		select year_version_id from table_version_question where id=#{id}
+  	</select>
+</mapper>

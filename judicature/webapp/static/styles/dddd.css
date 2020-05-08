@@ -1,0 +1,36 @@
+@charset "utf-8";
+/* CSS Document */
+.box{font-size:12px;}
+img{border:none;}
+ul ol{maring:0px; padding:0px; list-style: none;}
+ul li{maring:0px; padding:0px; list-style: none;}
+.guand{width:500px; float:left;}
+.guand ul{maring:0px; padding:0px; list-style: none;}
+.tianjia{width:55px; float:left;}
+
+.sch{width:500px;float:left;}
+
+#apDiv1 {
+	position:absolute;
+	left:11px;
+	top:113px;
+	width:67px;
+	height:26px;
+	z-index:1;
+	overflow:hidden;
+}
+#apDiv2 {
+	position:absolute;
+	left:11px;
+	top:235px;
+	width:67px;
+	height:26px;
+	z-index:1;
+	overflow:hidden;
+}
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}

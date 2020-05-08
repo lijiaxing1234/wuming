@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.QuestionlibImportDao">
+    
+	<sql id="questionlibImportColumns">
+		a.id AS "id",
+		a.questionlib_id AS "questionlibId",
+		a.specialty_id AS "specialtyId",
+		a.title AS "title",
+		a.writer AS "writer",
+		a.doc_name AS "docName",
+		a.office_id AS "office.id",
+		a.user_id AS "user.id",
+		a.phone AS "phone",
+		a.school_id AS "school.id",
+		a.course_phase AS "coursePhase",
+		o6.name AS "office.name",
+		u7.name AS "user.name",
+		a.file_path AS "filePath",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		quesImportApply.queslib_import_id as  "quesImportApplyId"
+	</sql>
+	
+	<sql id="questionlibImportJoins">
+		LEFT JOIN sys_office o6 ON o6.id = a.school_id
+		LEFT JOIN sys_user u7 ON u7.id = a.user_id
+		left join table_questionlib_import_apply quesImportApply on a.id=quesImportApply.queslib_import_id
+	</sql>
+    
+	<select id="get" resultType="QuestionlibImport">
+		SELECT 
+			<include refid="questionlibImportColumns"/>
+		FROM table_questionlib_import a
+		<include refid="questionlibImportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="QuestionlibImport">
+		SELECT 
+			<include refid="questionlibImportColumns"/>
+		FROM table_questionlib_import a
+		<include refid="questionlibImportJoins"/>
+		<where>
+			<if test="delFlag != null and delFlag != ''">
+				AND a.del_flag = #{delFlag}
+			</if>
+			<if test="specialtyId != null and specialtyId != ''">
+				AND a.specialty_id = #{specialtyId}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="writer != null and writer != ''">
+				AND a.writer LIKE 
+					<if test="dbName == 'oracle'">'%'||#{writer}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{writer}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{writer},'%')</if>
+				<!-- AND a.writer = #{writer} -->
+			</if>
+			<if test="phone != null and phone != ''">
+				AND a.phone LIKE 
+					<if test="dbName == 'oracle'">'%'||#{phone}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{phone}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{phone},'%')</if>
+				<!-- AND a.phone = #{phone} -->
+			</if>
+			<if test="school != null and school.id != null and school.id != ''">
+				AND (o6.parent_ids like concat('%',#{school.id},'%') or o6.id = #{school.id})
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="office != null and office.id != null and office.id != ''">
+				AND a.office_id = #{office.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="QuestionlibImport">
+		SELECT 
+			<include refid="questionlibImportColumns"/>
+		FROM table_questionlib_import a
+		<include refid="questionlibImportJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_questionlib_import(
+			id,
+			questionlib_id,
+			specialty_id,
+			title,
+			doc_name,
+			writer,
+			office_id,
+			user_id,
+			phone,
+			school_id,
+			course_phase,
+			file_path,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{questionlibId},
+			#{specialtyId},
+			#{title},
+			#{docName},
+			#{writer},
+			#{office.id},
+			#{user.id},
+			#{phone},
+			#{school.id},
+			#{coursePhase},
+			#{filePath},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_questionlib_import SET 	
+			questionlib_id = #{questionlibId},
+			specialty_id = #{specialtyId},
+			title = #{title},
+			doc_name = #{docName},
+			writer = #{writer},
+			office_id = #{office.id},
+			user_id = #{user.id},
+			phone = #{phone},
+			school_id = #{school.id},
+			course_phase = #{coursePhase},
+			file_path = #{filePath},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM table_questionlib_import
+		WHERE id = #{id}
+	</delete>
+	
+	<select id="queryExamQuestionlibId" resultType="String">
+		SELECT 
+			id
+		FROM table_course_questionlib
+		<where>
+			version_id=#{versionId}
+		</where>		
+	</select>
+</mapper>

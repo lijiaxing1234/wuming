@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+  version="2.0">
+    
+  <description>JSTL 1.1 functions library</description>
+  <display-name>JSTL functions cms</display-name>
+  <tlib-version>1.1</tlib-version>
+  <short-name>questionlib</short-name>
+  <uri>http://java.sun.com/jsp/jstl/functionsc</uri>
+  
+  
+  
+  <!-- 学校端课程、课程版本 开始 -->
+  
+   <function>
+    <description>根据专业ID获取学校选中课程列表</description>
+    <name>getSchoolCourseBySpecialtyId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getSchoolCourseBySpecialtyId(java.lang.String)</function-signature>
+    <example>${questionlib:getSchoolCourseBySpecialtyId(specialtyId)}</example>  
+   </function>
+   
+   <function>
+    <description>根据版本ID获取学校课程版本列表</description>
+    <name>getSchoolCourseVersionByCourseId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getSchoolCourseVersionByCourseId(java.lang.String)</function-signature>
+    <example>${questionlib:getSchoolCourseVersionByCourseId(id)}</example>  
+  </function>
+  
+  <!-- 学校端课程、课程版本 结束 -->
+  
+  
+   <function>
+    <description>获取专业列表</description>
+    <name>getSpecialty</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getSpecialty()</function-signature>
+    <example>${questionlib:getSpecialty()}</example>  
+  </function>
+  
+  <function>
+    <description>根据ID获取专业</description>
+    <name>getSpecialtyByID</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getSpecialtyByID(java.lang.String)</function-signature>
+    <example>${questionlib:getSpecialtyByID(id)}</example>  
+  </function>
+  
+  <function>
+    <description>获取课程列表</description>
+    <name>getCourse</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourse()</function-signature>
+    <example>${questionlib:getCourse()}</example>  
+  </function>
+  
+    <function>
+    <description>根据专业ID获取课程列表</description>
+    <name>getCourseBySpecialtyId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseBySpecialtyId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseBySpecialtyId(specialtyId)}</example>  
+  </function>
+  
+   <function>
+    <description>根据ID获取课程</description>
+    <name>getCourseByID</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseByID(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseByID(id)}</example>  
+  </function>
+
+
+  <function>
+	  <description>根据教师ID获取所教课程</description>
+	  <name>getTeacherCourseVesion</name>
+	  <function-class>com.thinkgem.jeesite.modules.teacher.utils.TearcherUserUtils</function-class>
+	  <function-signature>java.util.List getTeacherCourseVesion()</function-signature>
+	  <example>${questionlib:getTeacherCourseVesion()}</example>  
+  </function>
+  <function>
+	  <description>根据题型 得到提型对应的分数</description>
+	  <name>getExamQuestionScore</name>
+	  <function-class>com.thinkgem.jeesite.modules.teacher.utils.TearcherUserUtils</function-class>
+	  <function-signature>java.util.List getExamQuestionScore(java.util.List,java.lang.String)</function-signature>
+	  <example>${questionlib:getExamQuestionScore(list,value)}</example>  
+  </function>
+  <function>
+	  <description>22222</description>
+	  <name>groupbyString</name>
+	  <function-class>com.thinkgem.jeesite.modules.teacher.utils.TearcherUserUtils</function-class>
+	  <function-signature>java.util.Map groupbyString(java.lang.String)</function-signature>
+	  <example>${questionlib:groupbyString(list,value)}</example>  
+  </function>
+	
+ 
+  <function>
+    <description>获取课程版本列表</description>
+    <name>getCourseVersion</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseVersion()</function-signature>
+    <example>${questionlib:getCourseVersion()}</example>  
+  </function>
+  
+   <function>
+    <description>根据版本ID获取课程版本列表</description>
+    <name>getCourseVersionByCourseId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseVersionByCourseId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseVersionByCourseId(id)}</example>  
+  </function>
+   <function>
+    <description>根据版本ID获取单个课程版本</description>
+    <name>getCourseVersionByVersionId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseVersionByVersionId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseVersionByVersionId(id)}</example>  
+  </function>
+  
+   <function>
+    <description>获取所有题库列表</description>
+    <name>getCourseQuestionlib</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseQuestionlib()</function-signature>
+    <example>${questionlib:getCourseQuestionlib()}</example>  
+  </function>
+  
+   <function>
+    <description>根据学校id获取题库列表</description>
+    <name>getCourseQuestionlibBySchoolId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseQuestionlibBySchoolId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseQuestionlibBySchoolId(id)}</example>  
+  </function>
+  
+   <function>
+    <description>根据版本id获取题库列表</description>
+    <name>getCourseQuestionlibByVersionId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseQuestionlibByVersionId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseQuestionlibByVersionId(id)}</example>  
+  </function>
+   <function>
+    <description>根据版本id获取平台端题库列表</description>
+    <name>getCoursePlatformQuestionlibByVersionId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCoursePlatformQuestionlibByVersionId(java.lang.String)</function-signature>
+    <example>${questionlib:getCoursePlatformQuestionlibByVersionId(id)}</example>  
+  </function>
+  
+   <function>
+    <description>根据用户id获取题库列表</description>
+    <name>getCourseQuestionlibByUserId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseQuestionlibByUserId(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseQuestionlibByUserId(id)}</example>  
+  </function>
+  
+   <function>
+    <description>根据当前用户所在机构获取题库列表</description>
+    <name>getCourseQuestionlibByCurrentUserCompanyId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.util.List getCourseQuestionlibByCurrentUserCompanyId()</function-signature>
+    <example>${questionlib:getCourseQuestionlibByCurrentUserCompanyId()}</example>  
+  </function>
+  
+   <function>
+    <description>根据题库ID获取单个题库</description>
+    <name>getCourseQuestionlibById</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getCourseQuestionlibById(java.lang.String)</function-signature>
+    <example>${questionlib:getCourseQuestionlibById(id)}</example>  
+  </function>
+  
+  <function>
+  	<description>根据学校ID查询学校下的所有班级</description>
+  	<name>getClassBySchoolId</name>
+  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+  	<function-signature>java.lang.String getClassBySchoolId()</function-signature>
+  	<example>${questionlib:getClassBySchoolId()}</example>
+  </function>
+  <function>
+  	<description>根据学校ID查询学校中专业下的所有班级</description>
+  	<name>getClassBySpecTitle</name>
+  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+  	<function-signature>java.lang.String getClassBySpecTitle(java.lang.String)</function-signature>
+  	<example>${questionlib:getClassBySpecTitle(specTitle)}</example>
+  </function>
+
+	<function>
+	  	<description>根据教师ID查询教师下的所有班级</description>
+	  	<name>getCourseQuestionlibByTeacherId</name>
+	  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+	  	<function-signature>java.lang.String getCourseQuestionlibByTeacherId()</function-signature>
+	  	<example>${questionlib:getCourseQuestionlibByTeacherId()}</example>
+  </function>
+	  
+  <function>
+    <description>根据班级id查询班级</description>
+    <name>getClassByID</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getClassByID(java.lang.String)</function-signature>
+    <example>${questionlib:getClassByID(id)}</example>  
+  </function>
+  
+  <function>
+    <description>根据id查询学校（机构）</description>
+    <name>getOfficeById</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getOfficeById(java.lang.String)</function-signature>
+    <example>${questionlib:getOfficeById(id)}</example>  
+  </function>
+  
+  <function>
+  	<description>获取学校没有拥有的课程</description>
+  	<name>getSchoolNotCourse</name>
+  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+  	<function-signature>java.lang.String getSchoolNotCourse()</function-signature>
+    <example>${questionlib:getSchoolNotCourse()}</example>
+  </function>
+  
+  <function>
+	  	<description>根据教师ID查询教师下的所有模板</description>
+	  	<name>getExample</name>
+	  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+	  	<function-signature>java.lang.String getExample()</function-signature>
+	  	<example>${questionlib:getExample()}</example>
+  </function>
+  
+<!--     <function>
+	  	<description>根据试卷id查询该试卷下的班级</description>
+	  	<name>getClassByExamId</name>
+	  	<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+	  	<function-signature>java.lang.String getClassByExamId(String examId)</function-signature>
+	  	<example>${questionlib:getClassByExamId(examId)}</example>
+  </function> -->
+  
+  <function>
+    <description>查询机构类型的Office</description>
+    <name>getOfficeByType</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.String getOfficeByType(java.lang.String)</function-signature>
+    <example>${questionlib:getOfficeByType(type)}</example>  
+  </function>
+    <function>
+    <description>查询试题类型的统计数量</description>
+    <name>getStaticDTOValue</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.lang.Object getStaticDTOValue(java.lang.String,com.thinkgem.jeesite.modules.questionlib.dto.StaticDTO)</function-signature>
+    <example>${questionlib:getStaticDTOValue(dictValue,obj)}</example>  
+  </function>
+  
+  <function>
+    <description>通过试卷查询班级</description>
+    <name>getClassbyExamId</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>java.util.List getClassbyExamId(java.lang.String)</function-signature>
+    <example>${questionlib:getClassbyExamId(examId)}</example>  
+     
+  </function>
+  <function>
+    <description>得到申请如平台的数据</description>
+    <name>getQuesImportApply</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>com.thinkgem.jeesite.modules.questionlib.entity.TableQuestionlibImportApply getQuesImportApply(java.lang.String)</function-signature>
+    <example>${questionlib:getQuesImportApply(quesImportId)}</example>  
+     
+  </function>
+  
+  <function>
+    <description>得到平台下所有的题库</description>
+    <name>getQuestionLibs</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>com.thinkgem.jeesite.modules.questionlib.entity.SchoolQuestionlib getQuestionLibs()</function-signature>
+    <example>${questionlib:getQuestionLibs()}</example>  
+  </function>
+<!--   <function>
+    <description>得到登录这所在机构下所有的题库</description>
+    <name>getQuestionLibsByLoginUser</name>
+    <function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+    <function-signature>com.thinkgem.jeesite.modules.questionlib.entity.SchoolQuestionlib getQuestionLibsByLoginUser()</function-signature>
+    <example>${questionlib:getQuestionLibsByLoginUser()}</example>  
+  </function> -->
+  
+  <!--平台端、学校端 测评试卷列表 三级联动 开始-->
+	<function>
+		<description>根据专业ID获取课程列表</description>
+		<name>findCourseBySpecialtyId</name>
+		<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+		<function-signature>java.lang.String findCourseBySpecialtyId(java.lang.String)</function-signature>
+		<example>${questionlib:findCourseBySpecialtyId(specialtyId)}</example>
+	</function>
+	<function>
+		<description>根据版本ID获取课程版本列表</description>
+		<name>findCourseVersionByCourseId</name>
+		<function-class>com.thinkgem.jeesite.modules.questionlib.common.QuestionlibTld</function-class>
+		<function-signature>java.lang.String findCourseVersionByCourseId(java.lang.String)</function-signature>
+		<example>${questionlib:findCourseVersionByCourseId(id)}</example>
+	</function>
+
+
+   <!--平台端、学校端 测评试卷列表 三级联动 结束-->
+</taglib>

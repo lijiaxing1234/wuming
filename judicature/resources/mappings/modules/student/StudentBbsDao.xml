@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.student.dao.StudentBbsDao">
+    
+    <select id="getOfficeIdByStudentId" parameterType="String" resultType="String">
+    	SELECT
+			b.company_id AS officeId
+		FROM
+			table_student a ,
+			table_class b
+		WHERE
+			a.class_id = b.id
+		AND a.id = #{studentId}
+    </select>
+    
+    <select id="getUQuestionDetail" parameterType="String" resultType="UQuestionAnswer">
+    	SELECT
+			*
+		FROM
+			table_answer a
+		WHERE
+			a.questionId = #{uQuestionId}
+		ORDER BY
+			a.createTime
+		LIMIT 10
+    </select>
+	
+	<select id="getSchoolIdByStudentId" parameterType="String" resultType="String">
+		SELECT
+			so.id
+		FROM
+			table_student ts ,
+			table_class tc ,
+			sys_office so
+		WHERE
+			ts.class_id = tc.id
+		AND tc.company_id = so.id
+		AND ts.id = #{studentId}
+	</select>    
+	
+	<insert id="insert">
+	  INSERT INTO  table_answer 
+		 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					id,
+				</if>
+				<if test="detail != null and detail !=''">
+					detail,
+				</if>
+				<if test="createtime != null">
+					createtime,
+				</if>
+				<if test="modifytime != null">
+					modifytime,
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					del_flag,
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   teacher_id,
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   student_id,
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				  office_id,
+				</if>
+				<if test="question !=null and question.id !=null and question.id !=''">
+				   questionId 
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					#{id},
+				</if>
+				<if test="detail != null and detail !=''">
+					#{detail},
+				</if>
+				<if test="createtime != null">
+					#{createtime},
+				</if>
+				<if test="modifytime != null">
+					#{modifytime},
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					#{delFlag},
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   #{teacher.id},
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   #{student.id},
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				   #{sqlMap.officeId},
+				</if>
+				<if test="question !=null and question.id !=null and question.id !=''">
+				    #{question.id}
+				</if>
+			</trim>
+	</insert>
+	
+	
+</mapper>

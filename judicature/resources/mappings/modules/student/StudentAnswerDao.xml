@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.student.dao.StudentAnswerDao">
+
+	<sql id="versionQuestionColumns">
+		a.id AS "id",
+		a.exam_code AS "examCode",
+		a.ques_type AS "quesType",
+		a.ques_level AS "quesLevel",
+		a.ques_point AS "quesPoint",
+		a.title AS "title",
+		a.choice0 AS "choice0",
+		a.choice1 AS "choice1",
+		a.choice2 AS "choice2",
+		a.choice3 AS "choice3",
+		a.choice4 AS "choice4",
+		a.choice5 AS "choice5",
+		a.choice6 AS "choice6",
+		a.choice7 AS "choice7",
+		a.choice8 AS "choice8",
+		a.choice9 AS "choice9",
+		a.answer0 AS "answer0",
+		a.answer1 AS "answer1",
+		a.answer2 AS "answer2",
+		a.answer3 AS "answer3",
+		a.answer4 AS "answer4",
+		a.answer5 AS "answer5",
+		a.answer6 AS "answer6",
+		a.answer7 AS "answer7",
+		a.answer8 AS "answer8",
+		a.answer9 AS "answer9",
+		a.count AS "count",
+		a.description AS "description",
+		a.writer AS "writer",
+		a.checker AS "checker",
+		a.office_id AS "office.id",
+		a.tearch_id AS "tearchId",
+		a.version_id AS "versionId",
+		a.questionlib_id AS "questionlibId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="versionQuestionJoins">
+	</sql>
+
+	<insert id="addStudentTask" parameterType="StudentTask">
+		insert into table_student_task(
+			id,
+			student_id,
+			exam_detail_id,
+			isSubmit,
+			totalFraction,
+			score,
+			startTime,
+			submitTime
+		) values (
+			#{id},
+			#{student.id},
+			#{examDetail.id},
+			#{isSubmit},
+			#{totalfraction},
+			#{score},
+			#{starttime},
+			#{submittime}
+		)
+	</insert>
+	
+	<select id="getQuestionListByExamDetailIdAndQuesType" resultType="VersionQuestion">
+		SELECT
+			<include refid="versionQuestionColumns"/>
+		FROM
+			table_version_question a
+		LEFT JOIN table_exam_detail_question b ON a.id = b.question_id
+		WHERE
+			b.exam_detail_id = #{examDetailId} AND a.ques_type = #{quesType}
+		order by b.sort
+	</select>
+	
+	<select id="getQuestionListByExamDetailIdAndQuesType2" resultType="VersionQuestion">
+		SELECT
+			<include refid="versionQuestionColumns"/>
+		FROM
+		    table_version_question a
+		        LEFT JOIN
+		    table_exam_detail_question b ON a.id = b.question_id,
+		    table_examination c,
+		    table_exam_detail d
+		WHERE
+		    d.id = b.exam_detail_id
+		        AND d.exam_id = c.id
+		        AND exam_id = #{examId}
+		        AND a.ques_type = #{quesType}
+		ORDER BY b.sort	
+	</select>
+	
+	<select id="isAnswered" parameterType="StudentAnswer" resultType="StudentAnswer">
+		SELECT * FROM table_student_answer 
+			WHERE 
+		student_id = #{studentId} AND question_id = #{questionId} AND exam_id = #{examId}
+	</select>
+	<insert id="insertAnswer" parameterType="StudentAnswer">
+		INSERT INTO table_student_answer (
+			id,
+			student_id,
+			exam_id,
+			question_id,
+			question_type,
+			answer0,
+			answer1,
+			answer2,
+			answer3,
+			answer4,
+			answer5,
+			answer6,
+			answer7,
+			answer8,
+			answer9,
+			score,
+			del_flag
+		)
+		VALUES
+		(
+			#{id},	
+			#{studentId},
+			#{examId},
+			#{questionId},
+			#{questionType},
+			#{answer0},
+			#{answer1},
+			#{answer2},
+			#{answer3},
+			#{answer4},
+			#{answer5},
+			#{answer6},
+			#{answer7},
+			#{answer8},
+			#{answer9},
+			#{score},
+			'0'
+		)
+	</insert>
+	<update id="updateAnswer" parameterType="StudentAnswer">
+		UPDATE table_student_answer
+		SET 
+		 	answer0 = #{answer0},
+		 	answer1 = #{answer1},
+		 	answer2 = #{answer2},
+		 	answer3 = #{answer3},
+		 	answer4 = #{answer4},
+		 	answer5 = #{answer5},
+		 	answer6 = #{answer6},
+		 	answer7 = #{answer7},
+		 	answer8 = #{answer8},
+		 	answer9 = #{answer9},
+		 	score = #{score}
+		WHERE
+			id = #{id}
+	</update>
+	
+	<update id="updateStudentTask" parameterType="StudentTask">
+		update table_student_task set 
+			isSubmit = '1',
+			submitTime = #{submittime},
+			score = (SELECT 
+	            SUM(a.score)
+	        FROM
+	            table_student_answer a
+	        WHERE
+	            a.student_id = #{student.id} AND a.exam_id = #{examid})
+		where student_id=#{student.id} and exam_detail_id=#{examDetail.id}
+	</update>
+	
+	<!-- 根据试题类型 测试id 学生id  查询试题的详细信息 -->
+	<select id="getQuestionList" parameterType="map" resultType="VersionQuestion">
+		SELECT 
+			<include refid="versionQuestionColumns"/>
+		FROM table_version_question a,table_student_answer b
+		WHERE
+			a.id = b.question_id
+		AND 	a.ques_type = #{quesType}
+		AND 	b.exam_id = #{examId}
+		AND 	b.student_id = #{studentId}
+	</select>
+	
+	
+	<select id="getCorrectAnswerByCompare" resultType="String" >
+		SELECT
+			a.answer0
+		FROM
+			table_student_answer a
+		WHERE
+			a.exam_id = #{examId}
+		AND a.question_id = #{questionId}
+		AND a.answer0 = (
+			SELECT
+				b.answer0
+			FROM
+				table_version_question b
+			WHERE
+				b.id = #{questionId}
+		)
+	</select>
+	
+	<update id="updateAnswrByCorrentOrNot">
+		update table_student_answer set
+		is_correct = #{isCorrect},
+		score = #{score}
+		where 
+		exam_id = #{examId}
+		and 
+		question_id = #{questionId}
+	</update>
+	<select id="getStudentTaskIdByStudentIdAndExamDetailId" parameterType="map" resultType="String">
+		SELECT
+			a.id
+		FROM
+			table_student_task a
+		WHERE
+			a.exam_detail_id = #{examDetailId}
+		AND a.student_id = #{studentId}
+	</select>
+	
+	<select id="getStudentTaskIdByStudentIdAndExamDetailIdAndIsSubmit" parameterType="map" resultType="String">
+		SELECT
+			a.id
+		FROM
+			table_student_task a
+		WHERE
+			a.exam_detail_id = #{examDetailId}
+		AND a.student_id = #{studentId}
+		and a.isSubmit = '1'
+	</select>
+	
+	<select id="getExampleQuestionList" parameterType="map" resultType="VersionQuestion">
+		SELECT
+			<include refid="versionQuestionColumns"/>
+		FROM
+		    table_version_question a,
+		    table_exam_detail_question b
+		WHERE
+		    a.id = b.question_id
+		        AND b.exam_detail_id = #{examDetailId}
+	</select>
+	
+	<select id="getMissQuestions" parameterType="map" resultType="VersionQuestion">
+		SELECT DISTINCT
+			a.id AS "id",
+			a.exam_code AS "examCode",
+			a.ques_type AS "quesType",
+			a.ques_level AS "quesLevel",
+			a.ques_point AS "quesPoint",
+			a.title AS "title",
+			a.choice0 AS "choice0",
+			a.choice1 AS "choice1",
+			a.choice2 AS "choice2",
+			a.choice3 AS "choice3",
+			a.choice4 AS "choice4",
+			a.choice5 AS "choice5",
+			a.choice6 AS "choice6",
+			a.choice7 AS "choice7",
+			a.choice8 AS "choice8",
+			a.choice9 AS "choice9",
+			(CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer0
+		    END) AS 'answer0',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer1
+		    END) AS 'answer1',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer2
+		    END) AS 'answer2',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer3
+		    END) AS 'answer3',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer4
+		    END) AS 'answer4',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer5
+		    END) AS 'answer5',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer6
+		    END) AS 'answer6',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer7
+		    END) AS 'answer7',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer8
+		    END) AS 'answer8',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer9
+		    END) AS 'answer9',
+		    a.count AS 'count',
+		   (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.description
+		    END) AS 'description',
+			a.writer AS "writer",
+			a.checker AS "checker",
+			a.office_id AS "office.id",
+			a.tearch_id AS "tearchId",
+			a.version_id AS "versionId",
+			a.questionlib_id AS "questionlibId",
+			a.create_by AS "createBy.id",
+			a.create_date AS "createDate",
+			a.update_by AS "updateBy.id",
+			a.update_date AS "updateDate",
+			a.del_flag AS "delFlag",
+			b.sort
+		FROM
+		    table_version_question a,
+		    table_exam_detail_question b,
+		    table_exam_detail c
+		WHERE
+		    a.id = b.question_id
+		        AND b.exam_detail_id = c.id
+		        AND c.exam_id = #{examId}
+		        AND a.ques_type =  #{quesType}
+		        order by b.sort
+	</select>
+	
+	<select id="getTestPaperStatus" parameterType="StudentAnswer" resultType="String">
+		SELECT 
+		    a.STATUS
+		FROM
+		    table_exam_class a,
+		    table_class b,
+		    table_student c
+		WHERE
+		    a.exam_id = #{examId}
+		        AND a.class_id = b.id
+		        AND b.id = c.class_id
+		        AND c.id = #{studentId}
+	</select>
+	<select id="getExamDetailIdByExamDeatilId" parameterType="map" resultType="String">
+		SELECT 
+		    exam_detail_id
+		FROM
+		    table_student_task a
+		WHERE
+		    a.student_id = #{studentId}
+		        AND a.exam_detail_id = #{examDetailId}
+	</select>
+	
+	<select id="getStudentAnswerByExample" parameterType="StudentAnswer" resultType="StudentAnswer">
+		SELECT 
+		   	   *
+		   	   
+		FROM  table_student_answer  
+		
+		WHERE  del_flag='0'
+		
+		AND  exam_id=#{examId} 
+		
+		AND  student_id=#{studentId}
+		
+		AND  question_id=#{questionId}
+		
+		AND  question_type=#{questionType}
+		
+	</select>
+	
+	<select id="isExistAnswer" parameterType="StudentAnswer" resultType="String">
+		select id from table_student_answer where del_flag = '0'
+		AND  exam_id=#{examId} 
+		AND  student_id=#{studentId}
+		AND  question_id=#{questionId}
+		and is_mobile = '1'
+	</select>
+	
+</mapper>

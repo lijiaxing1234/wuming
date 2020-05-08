@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.SchoolRescourceDao">
+
+	<sql id="edresourcesColumns">
+		a.id AS "id",
+		a.res_name AS "resName",
+		a.res_file AS "resFile",
+		a.user_id AS "userId",
+		a.office_id AS "officeId",
+		a.knowledge_id AS "courseKnowledge.id",
+		a.version_id AS "courseKnowledge.versionId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+    
+	<select id="getSchoolResourceList" resultType="Edresources">
+		SELECT 
+			<include refid="edresourcesColumns"/>
+		FROM table_resource a,sys_user b
+		<where>
+		a.user_id = b.id AND b.company_id = #{companyId}
+		<if test="knowledgeId != null and knowledgeId != ''">
+		a.knowledge_id=#{knowledgeId}
+		</if>
+		  AND a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="resName != null and resName != ''">
+				AND a.res_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{resName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{resName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{resName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.CourseDao">
+    
+	<sql id="courseColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.specialty_id AS "specialtyId",
+		a.level AS "level",
+		a.phase AS "phase",
+		a.sort,
+		a.course_code AS "courseCode",
+		a.couse_system AS "couseSystem",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="courseJoins">
+	</sql>
+    
+	<select id="get" resultType="Course">
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM table_course a
+		<include refid="courseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Course">
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM table_course a
+		<include refid="courseJoins"/>
+		<where>
+			
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			
+			<if test="specialtyId != null and specialtyId != ''">
+				AND a.specialty_id = #{specialtyId}
+			</if>
+			 <if test="level !=null and level !=''">
+			    and a.LEVEL=#{level}
+			 </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY a.sort
+			</when>
+			<otherwise>
+				ORDER BY a.sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Course">
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM table_course a
+		<include refid="courseJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="countCourseBySpecialtyId" resultType="java.lang.Integer">
+	     <!-- SELECT COUNT(*) FROM table_course  WHERE specialty_id=#{specialtyId}
+	      -->
+	     SELECT
+			count(*)
+		FROM table_course a
+		 
+		<where>
+		  a.specialty_id in 
+		  <foreach collection="sqlParam.ids" open="(" close=")" item="key" separator=",">
+		     #{key}
+		  </foreach>
+			 
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_course(
+			id,
+			title,
+			specialty_id,
+			level,
+			phase,
+			course_code,
+			couse_system,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			sort
+		) VALUES (
+			#{id},
+			#{title},
+			#{specialtyId},
+			#{level},
+			#{phase},
+			#{courseCode},
+			#{couseSystem},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{sort}
+			  
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_course SET 	
+			title = #{title},
+			specialty_id = #{specialtyId},
+			level = #{level},
+			phase = #{phase},
+			course_code = #{courseCode},
+			couse_system = #{couseSystem},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			 sort =#{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_course
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getCourseByCourseCode" resultType="Course">
+		SELECT 
+			<include refid="courseColumns"/>
+		FROM table_course a
+		<include refid="courseJoins"/>
+		WHERE a.course_code = #{courseCode}
+	</select>
+	
+	<insert id="addTestDate">
+		insert into table_test_date(exam_date) value(#{examDate})
+	</insert>
+	
+	<select id="hasTestDate" resultType="int">
+		select count(id) from table_test_date 
+	</select>
+	
+	<update id="updateTestDate">
+		update table_test_date set exam_date=#{examDate} where id =#{id}
+	</update>
+	
+	<select id="getTestDate" resultType="com.thinkgem.jeesite.modules.questionlib.entity.TestDate">
+		select id ,exam_date  from table_test_date
+	</select>
+	
+	<select id="getAllCourseInformation" resultType="com.thinkgem.jeesite.modules.web.entity.CourseInformation">
+	select id,title,icon,create_date,url from table_course_information limit #{pageNO},#{pageSize}
+	</select>
+	
+	<insert id="addCourseInformation">
+		insert into table_course_information(title,icon,create_date,url) value(#{title},#{icon},#{createDate},#{url})
+	</insert>
+	
+	<delete id="delCourseInformation">
+	delete from table_course_information where id=#{id}
+	</delete>
+	
+	<select id="getAllciCount" resultType="int">
+		select count(id) from table_course_information
+	</select>
+</mapper>

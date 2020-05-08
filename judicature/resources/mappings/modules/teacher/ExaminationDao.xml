@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExaminationDao">
+    
+	<sql id="examColumns">
+		  a.id as "id",
+		  a.title as "title",
+		  a.exam_type as "examType",
+		  a.teacher_id as "teacher.id",
+		  a.version_id as "version.id",
+		  a.exam_place as "examPlace",
+		  a.begin_time as "beginTime",
+		  a.end_time as "endTime",
+		  a.isab  as "isAb",
+		  a.total_score as "totalScore",
+		  a.isNew as "isNew",
+		  a.exam_mode as "examMode",
+		  
+		  a.question_radio as "questionRadio",
+		  a.question_multiple as "questionMultiple",
+		  a.question_blank as "questionBlank",
+		  a.question_short_answer as "questionShortAnswer",
+		  a.question_compute as "questionCompute",
+		  
+		  a.difficult as "difficult",
+		  a.simple as "simple",
+		  a.general as "general",
+		  
+		  a.exam_hours as "exam_hours",
+		  a.endHours as "endHours",
+		  a.answerHours as "answerHours",
+		  a.remarks as "remarks"
+	</sql>
+	
+	<!-- <select id="findTeacherKnowledgeList" resultType="TeacherKnowledge">
+		SELECT
+			<include refid="teacherKnowledgeColumns"/>
+		FROM (
+		   SELECT * FROM table_course_knowledge 
+		   WHERE  del_flag=#{DEL_FLAG_NORMAL}  AND id  NOT IN ( 
+		    SELECT  course_knowledge_id  FROM  table_teacher_knowledge WHERE teacher_id=#{teacher.id} AND LEVEL=4 
+		   )
+		)b
+		LEFT JOIN (
+		   SELECT * FROM  table_teacher_knowledge WHERE teacher_id=#{teacher.id}
+		)AS a  ON b.id=a.course_knowledge_id
+
+	    ORDER BY b.id
+	</select>
+	 -->
+	
+	<select id="findList" resultType="Examination">
+	   
+	   select   
+	       <include refid="examColumns"/> 
+	   from table_examination a
+	   where a.del_flag=#{DEL_FLAG_NORMAL} and a.istemplate=#{EXAM_TEMPLATE_YES}
+	   <if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+		  and teacher_id=#{teacher.id}	   
+	   </if>
+	   <if test="version !=null and version.id !=null and version.id !=''">
+	      and  version_id=#{version.id}
+	   </if>
+	   <if test="title !=null and title !=''">
+	      and title like CONCAT('%', #{title}, '%')
+	   </if>
+	   order by a.create_date desc
+	</select>
+	<select id="findExam" resultType="Examination">
+	   
+	   select   
+	       <include refid="examColumns"/> 
+	   from table_examination a
+	   where a.del_flag=#{DEL_FLAG_NORMAL} and a.istemplate=#{EXAM_TEMPLATE_YES}
+	   <if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+		  and teacher_id=#{teacher.id}	   
+	   </if>
+	   <if test="version !=null and version.id !=null and version.id !=''">
+	      and  version_id=#{version.id}
+	   </if>
+	   order by a.create_date desc
+	</select>
+	<!--单条试卷 -->
+	<select  id="getExam" resultType="Examination">
+	    select  
+	       <include refid="examColumns"/>,
+	       a.istemplate as "istemplate",
+	      timestampdiff(MINUTE,begin_time,end_time) AS 'timeDifference'
+	    from  table_examination a
+	    where a.id=#{id}
+	</select>
+	
+	<!--有选择的新增试卷-->
+	<insert id="addExaminationSelect">
+	   INSERT INTO table_examination
+	   <trim prefix="(" suffix=")" suffixOverrides=",">
+	  	   <if test="id !=null and id !=''">
+	  	       id,
+	  	   </if>
+	  	   <if test="title !=null and title !=''">
+		       title,
+		   </if>
+	       <if test="examType !=null and examType !=''">
+		       exam_type,
+		   </if>
+	       <if test="teacher !=null and teacher.id!=null and teacher.id !=''">
+		       teacher_id,
+		   </if>
+	       <if test="version !=null and version.id!=null and version.id !=''">
+		       version_id,
+		   </if>
+	       <if test="examPlace !=null and examPlace!=''">
+		       exam_place,
+		   </if>
+	       <if test="beginTime !=null">
+		       begin_time,
+		   </if>
+	       <if test="endTime !=null">
+		       end_time,
+		   </if>
+	       <if test="publishAnswerTime !=null">
+		       publish_answer_time,
+		   </if>
+	       <if test="isAb !=null and isAb !=''">
+		       isab,
+		   </if>
+	       <if test="totalScore !=null and totalScore !=''">
+		       total_score,
+		   </if>
+	       <if test="isNew !=null and isNew !=''">
+		       isNew,
+		   </if>
+	       <if test="examMode !=null and examMode !=''">
+		       exam_mode,
+		   </if>
+		   <if test="examHours !=null and examHours !=''">
+		   		exam_hours,
+		   </if>
+		   <if test="questionRadio !=null">
+		      question_radio,
+		   </if>
+		   <if test="questionMultiple !=null">
+		      question_multiple,
+		   </if>
+		   <if test="questionBlank !=null">
+		      question_blank,
+		   </if>
+		   <if test="questionShortAnswer !=null">
+		      question_short_answer,
+		   </if>
+		   <if test="questionCompute !=null">
+		      question_compute,
+		   </if>
+		   <if test="difficult !=null and difficult !=''">
+		      difficult,
+		   </if>
+		   <if test="simple !=null and simple !=''">
+		      simple,
+		   </if>
+		   <if test="general !=null and general !=''">
+		      general,
+		   </if>
+		   <if test="remarks !=null and remarks !=''">
+		      remarks,
+		   </if>
+		   <if test="createDate !=null and createDate !=''">
+		      create_date,
+		   </if>
+		   <if test="status !=null and status !=''">
+		      status,
+		   </if>
+		   <if test="istemplate !=null and istemplate !=''">
+		     istemplate,
+		   </if>
+	   		<if test="useTemplatId !=null and useTemplatId !=''">
+		      use_template_id,
+		   </if>
+	   	   <if test="delFlag !=null and delFlag !=''">
+	   	      del_flag
+	   	   </if>
+	   </trim>
+	   <trim prefix="values (" suffix=")" suffixOverrides=",">
+	   	  <if test="id !=null and id !=''">
+	  	       #{id},
+	  	   </if>
+	  	   <if test="title !=null and title !=''">
+		       #{title},
+		   </if>
+	       <if test="examType !=null and examType !=''">
+		       #{examType},
+		   </if>
+	       <if test="teacher !=null and teacher.id!=null and teacher.id !=''">
+		       #{teacher.id},
+		   </if>
+	       <if test="version !=null and version.id!=null and version.id !=''">
+		        #{version.id},
+		   </if>
+	       <if test="examPlace !=null and examPlace!=''">
+		        #{examPlace},
+		   </if>
+	       <if test="beginTime !=null">
+		        #{beginTime},
+		   </if>
+	       <if test="endTime !=null">
+		        #{endTime},
+		   </if>
+	       <if test="publishAnswerTime !=null">
+		       #{publishAnswerTime},
+		   </if>
+	       <if test="isAb !=null and isAb !=''">
+		       #{isAb},
+		   </if>
+	       <if test="totalScore !=null and totalScore !=''">
+		       #{totalScore},
+		   </if>
+	       <if test="isNew !=null and isNew !=''">
+		       #{isNew},
+		   </if>
+	       <if test="examMode !=null and examMode !=''">
+		        #{examMode},
+		   </if>
+		   <if test="examHours !=null and examHours !=''">
+		   		 #{examHours},
+		   </if>
+		   <if test="questionRadio !=null and questionRadio !=''">
+		      #{questionRadio},
+		   </if>
+		   <if test="questionMultiple !=null and questionMultiple !=''">
+		       #{questionMultiple},
+		   </if>
+		   <if test="questionBlank !=null and questionBlank !=''">
+		       #{questionBlank},
+		   </if>
+		   <if test="questionShortAnswer !=null and questionShortAnswer !=''">
+		       #{questionShortAnswer},
+		   </if>
+		   <if test="questionCompute !=null and questionCompute !=''">
+		      #{questionCompute},
+		   </if>
+		   <if test="difficult !=null and difficult !=''">
+		       #{difficult},
+		   </if>
+		   <if test="simple !=null and simple !=''">
+		       #{simple},
+		   </if>
+		   <if test="general !=null and general !=''">
+		       #{general},
+		   </if>
+		   <if test="remarks !=null and remarks !=''">
+		      #{remarks},
+		   </if>
+		   <if test="createDate !=null and createDate !=''">
+		       #{createDate},
+		   </if>
+		   <if test="status !=null and status !=''">
+		       #{status},
+		   </if>
+		   <if test="istemplate !=null and istemplate !=''">
+		      #{istemplate},
+		   </if>
+	   		<if test="useTemplatId !=null and useTemplatId !=''">
+		      #{useTemplatId},
+		   </if>
+		    <if test="delFlag !=null and delFlag !=''">
+	   	      #{delFlag}
+	   	   </if>
+	   </trim>
+	</insert>
+	
+	
+	
+	<!-- 试卷修改 -->
+	<update id="updateExamSelect">
+	   update table_examination 
+	   <set>
+	       <if test="title !=null and title !=''">
+		       title=#{title},
+		   </if>
+	       <if test="examType !=null and examType !=''">
+		       exam_type=#{examType},
+		   </if>
+	       <if test="teacher !=null and teacher.id!=null and teacher.id !=''">
+		       teacher_id=#{teacher.id },
+		   </if>
+	       <if test="version !=null and version.id!=null and version.id !=''">
+		       version_id=#{version.id },
+		   </if>
+	       <if test="examPlace !=null and examPlace!=''">
+		       exam_place=#{examPlace},
+		   </if>
+	       <if test="beginTime !=null">
+		       begin_time=#{beginTime},
+		   </if>
+	       <if test="endTime !=null">
+		       end_time=#{endTime},
+		   </if>
+	       <if test="publishAnswerTime !=null">
+		       publish_answer_time=#{publishAnswerTime},
+		   </if>
+	       <if test="isAb !=null and isAb !=''">
+		       isab=#{isAb},
+		   </if>
+	       <if test="totalScore !=null and totalScore !=''">
+		       total_score=#{totalScore},
+		   </if>
+	       <if test="isNew !=null and isNew !=''">
+		       isNew=#{isNew},
+		   </if>
+	       <if test="examMode !=null and examMode !=''">
+		       exam_mode=#{examMode},
+		   </if>
+		   <if test="examHours !=null and examHours !=''">
+		   		exam_hours=#{examHours},
+		   </if>
+		   <if test="endHours !=null and endHours !=''">
+		   		endHours=#{endHours},
+		   </if>
+		   <if test="answerHours !=null and answerHours !=''">
+		   		answerHours=#{answerHours},
+		   </if>
+		   <if test="questionRadio !=null">
+		      question_radio=#{questionRadio},
+		   </if>
+		   <if test="questionMultiple !=null">
+		      question_multiple=#{questionMultiple},
+		   </if>
+		   <if test="questionBlank !=null">
+		      question_blank=#{questionBlank},
+		   </if>
+		   <if test="questionShortAnswer !=null">
+		      question_short_answer=#{questionShortAnswer},
+		   </if>
+		   <if test="questionCompute !=null">
+		      question_compute=#{questionCompute},
+		   </if>
+		   <if test="difficult !=null and difficult !=''">
+		      difficult=#{difficult},
+		   </if>
+		   <if test="simple !=null and simple !=''">
+		      simple=#{simple},
+		   </if>
+		   <if test="general !=null and general !=''">
+		      general=#{general},
+		   </if>
+		   <if test="remarks !=null and remarks !=''">
+		      remarks=#{remarks},
+		   </if>
+		   <if test="createDate !=null and createDate !=''">
+		      create_date=#{createDate},
+		   </if>
+		   <if test="status !=null and status !=''">
+		      status=#{status},
+		   </if>
+		   <if test="istemplate !=null and istemplate !=''">
+		     istemplate=#{istemplate},
+		   </if>
+	   </set>
+	   where id=#{id}
+	</update>
+	<!-- 作业的试卷修改 -->
+	<update id="updateHomeWorkExamSelect">
+	   update table_examination 
+	   <set>
+	       <if test="title !=null and title !=''">
+		       title=#{title},
+		   </if>
+	       <if test="examType !=null and examType !=''">
+		       exam_type=#{examType},
+		   </if>
+	       <if test="teacher !=null and teacher.id!=null and teacher.id !=''">
+		       teacher_id=#{teacher.id },
+		   </if>
+	       <if test="version !=null and version.id!=null and version.id !=''">
+		       version_id=#{version.id },
+		   </if>
+	       <if test="examPlace !=null and examPlace!=''">
+		       exam_place=#{examPlace},
+		   </if>
+	       <if test="beginTime !=null">
+		       begin_time=#{beginTime},
+		   </if>
+	       <if test="beginTime !=null and endHours !=null and endHours !=''">
+		       end_time=DATE_ADD(#{beginTime},INTERVAL #{endHours} MINUTE),
+		   </if>
+	       <if test="beginTime !=null and endHours !=null and endHours !=''">
+		       publish_answer_time=DATE_ADD(end_time,INTERVAL #{answerHours} MINUTE),
+		   </if>
+	       <if test="isAb !=null and isAb !=''">
+		       isab=#{isAb},
+		   </if>
+	       <if test="totalScore !=null and totalScore !=''">
+		       total_score=#{totalScore},
+		   </if>
+	       <if test="isNew !=null and isNew !=''">
+		       isNew=#{isNew},
+		   </if>
+	       <if test="examMode !=null and examMode !=''">
+		       exam_mode=#{examMode},
+		   </if>
+		   <if test="examHours !=null and examHours !=''">
+		   		exam_hours=#{examHours},
+		   </if>
+		   <if test="endHours !=null and endHours !=''">
+		   		endHours=#{endHours},
+		   </if>
+		   <if test="answerHours !=null and answerHours !=''">
+		   		answerHours=#{answerHours},
+		   </if>
+		   <if test="questionRadio !=null">
+		      question_radio=#{questionRadio},
+		   </if>
+		   <if test="questionMultiple !=null">
+		      question_multiple=#{questionMultiple},
+		   </if>
+		   <if test="questionBlank !=null">
+		      question_blank=#{questionBlank},
+		   </if>
+		   <if test="questionShortAnswer !=null">
+		      question_short_answer=#{questionShortAnswer},
+		   </if>
+		   <if test="questionCompute !=null">
+		      question_compute=#{questionCompute},
+		   </if>
+		   <if test="difficult !=null and difficult !=''">
+		      difficult=#{difficult},
+		   </if>
+		   <if test="simple !=null and simple !=''">
+		      simple=#{simple},
+		   </if>
+		   <if test="general !=null and general !=''">
+		      general=#{general},
+		   </if>
+		   <if test="remarks !=null and remarks !=''">
+		      remarks=#{remarks},
+		   </if>
+		   <if test="createDate !=null and createDate !=''">
+		      create_date=#{createDate},
+		   </if>
+		   <if test="status !=null and status !=''">
+		      status=#{status},
+		   </if>
+		   <if test="istemplate !=null and istemplate !=''">
+		     istemplate=#{istemplate},
+		   </if>
+	   </set>
+	   where id=#{id}
+	</update>
+	
+	
+	<!-- 查询固定题型的分值  -->
+	<select id="findQuesScore"  resultType="java.util.HashMap" >
+	    select  
+		   b.value as "quesType",
+		   a.value as "quesScore"
+		 from  
+		(select * from  sys_dict  where type='question_score') a,
+		(select * from  sys_dict  where type='question_type') b
+		where a.label=b.label
+	</select>
+<!-- 	查询对应知识点 -->
+	<select id="getKnowIds"  resultType="String" >
+	    select DISTINCT course_knowledge_id from table_exam_knowledge 
+	    <where>
+	    	<if test="examId !=null and examId !=''">
+		    	 AND exam_id=#{examId}
+		   </if>
+	    </where>
+	</select>
+<!-- 	查询对应习题 -->
+	<select id="getQuestionIds" resultType="String" >
+		SELECT 
+			question_id
+		FROM
+			table_exam_detail_question
+		WHERE
+			exam_detail_id = (
+				SELECT
+					id
+				FROM
+					table_exam_detail
+				WHERE
+					exam_id = #{examId}
+			)
+		order by sort
+		<!-- AND question_id IN (
+			SELECT
+				question_id
+			FROM
+				table_knowledge_question
+			WHERE
+				knowledge_id = #{knowId}
+		) -->
+	</select>
+	<select id="getExampleList" resultType="Exam" >
+		SELECT DISTINCT
+			e.id AS "id",
+			course.title AS "examCourse.title",
+			tc.id AS "examClass.id",
+			tc.title AS "examClass.title",
+			e.title AS "title",
+			e.exam_type AS "examType",
+			e.create_date as "time",
+			tec.status as "status"
+		FROM
+			table_examination e
+		JOIN table_exam_class tec ON tec.exam_id = e.id
+		JOIN table_class tc ON tc.id = tec.class_id
+		LEFT JOIN table_teacher_class_course ttcc ON ttcc.class_id=tc.id
+		JOIN table_course course ON course.id=ttcc.course_id 
+		<where>
+			AND ttcc.teacher_id=#{sqlMap.userId} 
+			AND ttcc.verson_id=#{sqlMap.versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+		    AND e.del_flag ='0'
+		    AND e.exam_type='4'
+		   <!--  AND e.istemplate='0' -->
+		    AND tec.status IN ('0','1','2')
+			<if test="beginTime !=null and endTime !=null">
+			      and  DATE_FORMAT(e.create_date,'%Y-%m-%d') between DATE_FORMAT(#{beginTime},'%Y-%m-%d') and DATE_FORMAT(#{endTime},'%Y-%m-%d')
+			</if>
+			
+			<!-- <if test="endTime != null and endTime != ''">
+				AND e.end_time = #{endTime}
+			</if> -->
+			
+			<if test="examClass != null and examClass.id !=null and examClass.id !=''">
+				AND tc.id = #{examClass.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND e.title LIKE concat('%',#{title},'%')
+			</if>
+		</where>
+		order by e.create_date desc
+	</select>
+	<update id="saveMainTitleAndSubTitle">
+	   update table_exam_detail set main_title=#{mainTitle_A},sub_title=#{subTitle_A} where exam_id=#{examId} and type=#{examtype}
+	</update>
+</mapper>

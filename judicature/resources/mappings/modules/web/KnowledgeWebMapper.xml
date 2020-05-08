@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.KnowledgeWebMapper">
+
+<select id="getKnowledgeByCourseId" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	select id,
+		   knowledge_code as "knowledgeCode",
+		   title
+	from table_course_knowledge
+	where version_id=#{courseId}
+	and parent_id='0'
+	order by sort
+</select>
+
+<select id="getKnowledgeById" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	SELECT tck.id,
+		   tck.knowledge_code AS "knowledgeCode",
+		   tck.parent_id AS "parentId",
+		   tck.title,
+		   uka.wrong_question AS "wrongQuestion"
+	FROM table_course_knowledge tck LEFT JOIN user_knowledge_accuracy uka ON tck.id=uka.knowledge_id
+	WHERE tck.id=#{id}
+</select>
+
+<select id="getKnowledgeByParentId" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	<!-- select tck.id,
+		   tck.knowledge_code as "knowledgeCode",
+		   tck.title,
+		   (select count(*) from table_knowledge_question tkq where tkq.knowledge_id=tck.id) as "totalQuestion",
+		   uka.right_question as "rightQuestion",
+		   uka.wrong_question as "wrongQuestion"
+	from table_course_knowledge tck INNER JOIN user_knowledge_accuracy uka 
+	on tck.id = uka.knowledge_id
+	where tck.parent_id = #{parentId} and uka.user_id = #{userId} -->
+	select tck.id,
+		   tck.knowledge_code as "knowledgeCode",
+		   tck.title,
+		   (select count(*) from table_knowledge_question tkq where tkq.knowledge_id=tck.id) as "totalQuestion",
+		   (select uka.right_question from user_knowledge_accuracy uka where uka.knowledge_id=tck.id and uka.user_id=#{userId}) as "rightQuestion",
+		   (select uka.wrong_question from user_knowledge_accuracy uka where uka.knowledge_id=tck.id and uka.user_id=#{userId}) as "wrongQuestion"
+	from table_course_knowledge tck
+	where tck.parent_id = #{parentId}
+	and tck.del_flag = '0'
+	order by sort
+</select>
+
+<select id="getKnowledgeByShelf" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	select tck.id,
+		   tck.knowledge_code as "knowledgeCode",
+		   tck.title,
+		   (select count(*) from table_knowledge_question tkq where tkq.knowledge_id=tck.id) as "totalQuestion",
+		   (select uka.right_question from user_knowledge_accuracy uka where uka.knowledge_id=tck.id and uka.user_id=#{userId}) as "rightQuestion",
+		   (select uka.wrong_question from user_knowledge_accuracy uka where uka.knowledge_id=tck.id and uka.user_id=#{userId}) as "wrongQuestion"
+	from table_course_knowledge tck
+	where tck.id = #{id}
+	and tck.del_flag = '0'
+	order by sort
+</select>
+
+<insert id="addUserKnowledgeInfo">
+	insert into user_knowledge_accuracy(user_id,knowledge_id,right_question,wrong_question)
+	values(#{userId},#{id},right_question+#{rightQuestion},wrong_question+#{wrongQuestion})
+</insert>
+
+<select id="hasUserKnowledgeInfo" resultType="int">
+	select count(id) from user_knowledge_accuracy where user_id=#{userId} and knowledge_id=#{id}
+</select>
+
+<update id="updateUserKnowledgeInfo">
+	update user_knowledge_accuracy 
+	set right_question=right_question+#{rightQuestion},
+		wrong_question=wrong_question+#{wrongQuestion}
+	where user_id=#{userId} and knowledge_id=#{id}
+</update>
+
+<select id="getRootKnow1" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	<!-- SELECT 
+	id,
+	title ,
+	(SELECT SUM(wrong_question) FROM table_course_knowledge tck LEFT JOIN user_knowledge_accuracy uka ON tck.id=uka.knowledge_id
+	
+	WHERE uka.user_id=#{userId} AND tck.parent_id=a.id) AS "wrongQuestion" 
+	 
+	 FROM table_course_knowledge a WHERE  parent_id ='0'  AND version_id=#{versionId} and del_flag = '0' -->
+	<!-- SELECT DISTINCT tck.id AS "id",
+		            tck.title AS "title",
+		            COUNT(ur.id) AS "wrongQuestion"
+	FROM (table_course_knowledge tck
+	LEFT JOIN table_knowledge_question tkq
+	ON tck.id = (SELECT tck1.parent_id FROM table_course_knowledge tck1 WHERE tck1.id = tkq.knowledge_id))
+	LEFT JOIN user_record_answer ura
+	ON ura.ques_id=tkq.question_id
+	LEFT JOIN user_record ur
+	ON ur.id = ura.record_id
+	WHERE tck.version_id=#{versionId}
+	AND tck.parent_id = '0'
+	AND ur.user_id=#{userId}
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0 -->
+	SELECT DISTINCT tck.id AS "id",
+		            tck.title AS "title",
+		            (SELECT COUNT(*) FROM user_record_answer ura1 LEFT JOIN table_knowledge_question tkq1 ON tkq1.question_id = ura1.ques_id LEFT JOIN table_course_knowledge tck2 ON tck2.id = tkq1.knowledge_id WHERE ura1.answer_status = 0 AND tck.id = tck2.parent_id) AS "wrongQuestion"
+	FROM table_course_knowledge tck
+	LEFT JOIN table_knowledge_question tkq
+	ON tck.id = (SELECT tck1.parent_id FROM table_course_knowledge tck1 WHERE tck1.id = tkq.knowledge_id)
+	LEFT JOIN user_record_answer ura
+	ON ura.ques_id=tkq.question_id
+	LEFT JOIN user_record ur
+	ON ur.id = ura.record_id
+	WHERE ur.course_id=#{versionId}
+	AND tck.parent_id = '0'
+	AND ur.user_id=#{userId}
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0
+</select>
+
+<select id="getRootKnow2" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+
+	SELECT DISTINCT tck.id AS "id",
+		            tck.title AS "title",
+		            (SELECT COUNT(*) FROM user_record_answer ura1 LEFT JOIN table_knowledge_question tkq1 ON tkq1.question_id = ura1.ques_id WHERE ura1.answer_status = 0 AND tkq1.knowledge_id = tck.id) AS "wrongQuestion"
+	FROM table_course_knowledge tck
+	LEFT JOIN table_knowledge_question tkq
+	ON tck.id = (SELECT tck1.id FROM table_course_knowledge tck1 WHERE tck1.id = tkq.knowledge_id)
+	LEFT JOIN user_record_answer ura
+	ON ura.ques_id=tkq.question_id
+	LEFT JOIN user_record ur
+	ON ur.id = ura.record_id
+	WHERE ur.course_id=#{versionId}
+	AND tck.parent_id = '0'
+	AND ur.user_id=#{userId}
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0
+	<!-- SELECT DISTINCT tck.id AS "id",
+		            tck.title AS "title",
+		            COUNT(ur.id) AS "wrongQuestion" 
+	FROM (table_course_knowledge tck
+	LEFT JOIN table_knowledge_question tkq
+	ON tck.id = (SELECT tck1.id FROM table_course_knowledge tck1 WHERE tck1.id = tkq.knowledge_id))
+	LEFT JOIN user_record_answer ura
+	ON ura.ques_id=tkq.question_id
+	LEFT JOIN user_record ur
+	ON ur.id = ura.record_id
+	WHERE tck.version_id=#{versionId}
+	AND tck.parent_id ='0'
+	AND ur.user_id=#{userId}
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0 -->
+	<!-- SELECT  DISTINCT    tck.id AS "id",
+		            tck.title AS "title",
+		            (SELECT COUNT(*) FROM user_record_answer ura LEFT JOIN user_record ur ON ur.id = ura.record_id WHERE ur.know_first = tck.id) AS "wrongQuestion"
+	FROM table_course_knowledge tck
+	LEFT JOIN user_record ur
+	ON ur.course_id=tck.version_id
+	LEFT JOIN user_record_answer ura
+	ON ur.id = ura.record_id
+	WHERE ur.course_id=#{versionId}
+	AND ur.user_id=#{userId}
+	AND tck.parent_id = '0'
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0
+	AND ur.know_first = tck.id -->
+	<!-- SELECT DISTINCT 	    tck.id AS "id",
+		            tck.title AS "title",
+		            (SELECT COUNT(*) FROM user_record_answer ura LEFT JOIN user_record ur ON ur.id = ura.record_id WHERE ur.know_first = tck.id) AS "wrongQuestion"
+	FROM table_course_knowledge tck
+	LEFT JOIN table_knowledge_question tkq
+	ON tck.id = (SELECT tck1.id FROM table_course_knowledge tck1 WHERE tck1.id = tkq.knowledge_id)
+	LEFT JOIN user_record_answer ura
+	ON ura.ques_id=tkq.question_id
+	LEFT JOIN user_record ur
+	ON ur.id = ura.record_id
+	WHERE ur.course_id=#{versionId}
+	AND tck.parent_id = '0'
+	AND ur.user_id=#{userId}
+	AND tck.del_flag = '0'
+	AND ura.answer_status = 0
+	AND (SELECT COUNT(*) FROM user_record_answer ura LEFT JOIN user_record ur ON ur.id = ura.record_id WHERE ur.know_first = tck.id) > 0 -->
+</select>
+
+<select id="getUserCollectionKnow1" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	select DISTINCT tck.id as "id",
+				    tck.title as "title"
+	from (table_course_knowledge tck
+	left join table_knowledge_question tkq
+	on tck.id = (select tck1.parent_id from table_course_knowledge tck1 where tck1.id = tkq.knowledge_id))
+	left join table_user_collection tuc
+	on tuc.question_id=tkq.question_id
+	where tck.version_id=#{courseId}
+	and tck.parent_id ='0'
+	and tuc.user_id=#{userId}
+	order by sort
+</select>
+
+<select id="getUserCollectionKnow2" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	select DISTINCT tck.id as "id",
+				    tck.title as "title" 
+	from (table_course_knowledge tck
+	left join table_knowledge_question tkq
+	on tck.id = (select tck1.id from table_course_knowledge tck1 where tck1.id = tkq.knowledge_id))
+	left join table_user_collection tuc
+	on tuc.question_id=tkq.question_id
+	where tck.version_id=#{courseId}
+	and tck.parent_id = '0'
+	and tuc.user_id=#{userId}
+	order by sort
+</select>
+
+<select id="getCollectionKnowledgeByParentId" resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+	select tck.id,
+		   tck.title
+	from table_course_knowledge tck
+	where tck.parent_id = #{parentId}
+	and (select count(*)
+		 from table_knowledge_question tkq
+		 left join table_user_collection tuc 
+		 on tuc.question_id = tkq.question_id
+		 where tkq.knowledge_id = tck.id
+		 AND tuc.user_id=#{userId})>0
+	order by sort
+</select>
+
+   
+   <!-- 得到知识点集合 -->
+   <!-- <select id="getKnowledgeList"     resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+   
+      SELECT tck.id as "id",
+		     tck.title as "title",
+          ( 
+	         SELECT COUNT(question_id) FROM (
+		        SELECT * FROM  (table_course_knowledge tck_1 LEFT JOIN  table_knowledge_question tkq ON tck_1.id=tkq.knowledge_id) 
+		     ) t 
+		
+		    WHERE version_id=tck.version_id AND (id=tck.id OR parent_ids LIKE CONCAT('%,',tck.id,',%'))
+		
+	      ) AS "totalQuestion",
+ 
+	       ptck.id AS "parent.id",
+	       ptck.title "parent.title"
+	       
+	   FROM table_course_knowledge  tck LEFT JOIN  table_course_knowledge ptck ON tck.parent_id=ptck.id
+	   WHERE tck.version_id=#{courseId}
+	       and tck.parent_id=#{parentId}
+	       and tck.del_flag=0
+	   order by tck.sort
+   </select> -->
+   
+   <select id="getKnowledgeList"     resultType="com.thinkgem.jeesite.modules.web.entity.Knowledge">
+    SELECT tck.id AS "id",
+		     tck.title AS "title",
+          ( 
+	         SELECT COUNT(question_id) FROM (
+		           SELECT tck_1.*,tkq.* FROM   table_course_knowledge tck_1
+		                       LEFT JOIN   (  table_version_question tvq   JOIN  table_knowledge_question tkq   ON tkq.`question_id` = tvq.id  AND  tvq.del_flag='0' ) 
+				       ON tck_1.id=tkq.knowledge_id 
+		     ) t
+		      
+		    WHERE version_id=tck.version_id AND (id=tck.id OR parent_ids LIKE CONCAT('%,',tck.id,',%'))
+	      ) AS "totalQuestion",
+ 
+	       ptck.id AS "parent.id",
+	       ptck.title "parent.title"
+	       
+	   FROM table_course_knowledge  tck LEFT JOIN  table_course_knowledge ptck ON tck.parent_id=ptck.id
+	   WHERE tck.version_id=#{courseId}
+	       AND tck.parent_id=#{parentId}
+	       AND tck.del_flag=0
+	   ORDER BY tck.sort
+   </select>
+</mapper>

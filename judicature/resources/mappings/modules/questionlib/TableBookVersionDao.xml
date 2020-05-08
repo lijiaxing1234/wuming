@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.TableBookVersionDao">
+    
+	<sql id="tableBookVersionColumns">
+		a.ver_id AS "verId",
+		a.book_id AS "bookId",
+		a.book_name AS "bookName",
+		a.ver_code AS "verCode",
+		a.book_code AS "bookCode",
+		a.book_type AS "bookType",
+		a.resource_type AS "resourceType",
+		a.platform AS "platform",
+		a.publish_type AS "publishType",
+		a.making_type AS "makingType",
+		a.book_catagory_id AS "bookCatagoryId",
+		a.bundle_id AS "bundleId",
+		a.book_keywords AS "bookKeywords",
+		a.book_authors AS "bookAuthors",
+		a.book_authors_summary AS "bookAuthorsSummary",
+		a.book_summary AS "bookSummary",
+		a.isbn AS "isbn",
+		a.publish_date AS "publishDate",
+		a.publisher AS "publisher",
+		a.paper_price AS "paperPrice",
+		a.iphone_price AS "iphonePrice",
+		a.ipad_price AS "ipadPrice",
+		a.androidphone_price AS "androidphonePrice",
+		a.androidpad_price AS "androidpadPrice",
+		a.cover_url AS "coverUrl",
+		a.book_url AS "bookUrl",
+		a.book_size AS "bookSize",
+		a.book_resolution AS "bookResolution",
+		a.office_id AS "office.id",
+		a.updatetime AS "updatetime",
+		a.updater AS "updater",
+		a.book_state AS "bookState",
+		a.probation_rate AS "probationRate",
+		a.check_id AS "checkId",
+		a.delete_flag AS "deleteFlag",
+		a.memo AS "memo",
+		a.translator AS "translator",
+		a.chief_editor AS "chiefEditor",
+		a.word_count AS "wordCount",
+		a.long_title AS "longTitle",
+		a.short_title AS "shortTitle",
+		a.promotion_words AS "promotionWords",
+		a.recommended_words AS "recommendedWords",
+		a.book_price AS "bookPrice",
+		a.copyrighter_id AS "copyrighterId",
+		a.copyright_begintime AS "copyrightBegintime",
+		a.copyright_endtime AS "copyrightEndtime",
+		a.catalogue AS "catalogue",
+		a.promotion_price AS "promotionPrice",
+		a.resource_id AS "resourceId",
+		a.book_resource_type AS "bookResourceType",
+		a.series_name AS "seriesName",
+		a.checker_id AS "checkerId",
+		a.check_state AS "checkState",
+		a.is_open AS "isOpen",
+		a.is_cover AS "isCover",
+		a.is_copyright AS "isCopyright",
+		a.is_catalog AS "isCatalog",
+		a.is_image AS "isImage",
+		a.is_layout AS "isLayout",
+		a.is_code AS "isCode",
+		a.other_desc AS "otherDesc",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.id AS "id",
+		o29.name AS "office.name"
+	</sql>
+	
+	<sql id="tableBookVersionJoins">
+		LEFT JOIN sys_office o29 ON o29.id = a.office_id
+	</sql>
+    
+	<select id="get" resultType="TableBookVersion">
+		SELECT 
+			<include refid="tableBookVersionColumns"/>
+		FROM table_book_version a
+		<include refid="tableBookVersionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TableBookVersion">
+		SELECT 
+			<include refid="tableBookVersionColumns"/>
+		FROM table_book_version a
+		<include refid="tableBookVersionJoins"/>
+		<where>
+			
+			<if test="bookName != null and bookName != ''">
+				AND a.book_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{bookName}</if>
+					<if test="dbName == 'mssql'">'%'+#{bookName}</if>
+					<if test="dbName == 'mysql'">concat('%',#{bookName})</if>
+			</if>
+			<if test="bookAuthors != null and bookAuthors != ''">
+				AND a.book_authors LIKE 
+					<if test="dbName == 'oracle'">'%'||#{bookAuthors}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{bookAuthors}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{bookAuthors},'%')</if>
+			</if>
+			<if test="isbn != null and isbn != ''">
+				AND a.isbn LIKE 
+					<if test="dbName == 'oracle'">'%'||#{isbn}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{isbn}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{isbn},'%')</if>
+			</if>
+			<if test="checkState != null and checkState != ''">
+				AND a.check_state = #{checkState}
+			</if>
+			<if test="isOpen != null and isOpen != ''">
+				AND a.is_open = #{isOpen}
+			</if>
+			<if test="checkerId != null and checkerId != ''">
+				AND a.checker_id = #{checkerId}
+			</if>
+			<if test="isCover != null and isCover != ''">
+				AND a.is_cover = #{isCover}
+			</if>
+			<if test="isCopyright != null and isCopyright != ''">
+				AND a.is_copyright = #{isCopyright}
+			</if>
+			<if test="isCatalog != null and isCatalog != ''">
+				AND a.is_catalog = #{isCatalog}
+			</if>
+			<if test="isImage != null and isImage != ''">
+				AND a.is_image = #{isImage}
+			</if>
+			<if test="isLayout != null and isLayout != ''">
+				AND a.is_layout = #{isLayout}
+			</if>
+			<if test="isCode != null and isCode != ''">
+				AND a.is_code = #{isCode}
+			</if>
+			<if test="otherDesc != null and otherDesc != ''">
+				AND a.other_desc = #{otherDesc}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TableBookVersion">
+		SELECT 
+			<include refid="tableBookVersionColumns"/>
+		FROM table_book_version a
+		<include refid="tableBookVersionJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_book_version(
+			ver_id,
+			book_id,
+			book_name,
+			ver_code,
+			book_code,
+			book_type,
+			resource_type,
+			platform,
+			publish_type,
+			making_type,
+			book_catagory_id,
+			bundle_id,
+			book_keywords,
+			book_authors,
+			book_authors_summary,
+			book_summary,
+			isbn,
+			publish_date,
+			publisher,
+			paper_price,
+			iphone_price,
+			ipad_price,
+			androidphone_price,
+			androidpad_price,
+			cover_url,
+			book_url,
+			book_size,
+			book_resolution,
+			office_id,
+			updatetime,
+			updater,
+			book_state,
+			probation_rate,
+			check_id,
+			delete_flag,
+			memo,
+			translator,
+			chief_editor,
+			word_count,
+			long_title,
+			short_title,
+			promotion_words,
+			recommended_words,
+			book_price,
+			copyrighter_id,
+			copyright_begintime,
+			copyright_endtime,
+			catalogue,
+			promotion_price,
+			resource_id,
+			book_resource_type,
+			series_name,
+			checker_id,
+			check_state,
+			is_open,
+			is_cover,
+			is_copyright,
+			is_catalog,
+			is_image,
+			is_layout,
+			is_code,
+			other_desc,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			id
+		) VALUES (
+			#{verId},
+			#{bookId},
+			#{bookName},
+			#{verCode},
+			#{bookCode},
+			#{bookType},
+			#{resourceType},
+			#{platform},
+			#{publishType},
+			#{makingType},
+			#{bookCatagoryId},
+			#{bundleId},
+			#{bookKeywords},
+			#{bookAuthors},
+			#{bookAuthorsSummary},
+			#{bookSummary},
+			#{isbn},
+			#{publishDate},
+			#{publisher},
+			#{paperPrice},
+			#{iphonePrice},
+			#{ipadPrice},
+			#{androidphonePrice},
+			#{androidpadPrice},
+			#{coverUrl},
+			#{bookUrl},
+			#{bookSize},
+			#{bookResolution},
+			#{office.id},
+			#{updatetime},
+			#{updater},
+			#{bookState},
+			#{probationRate},
+			#{checkId},
+			#{deleteFlag},
+			#{memo},
+			#{translator},
+			#{chiefEditor},
+			#{wordCount},
+			#{longTitle},
+			#{shortTitle},
+			#{promotionWords},
+			#{recommendedWords},
+			#{bookPrice},
+			#{copyrighterId},
+			#{copyrightBegintime},
+			#{copyrightEndtime},
+			#{catalogue},
+			#{promotionPrice},
+			#{resourceId},
+			#{bookResourceType},
+			#{seriesName},
+			#{checkerId},
+			#{checkState},
+			#{isOpen},
+			#{isCover},
+			#{isCopyright},
+			#{isCatalog},
+			#{isImage},
+			#{isLayout},
+			#{isCode},
+			#{otherDesc},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_book_version SET 	
+			book_name = #{bookName},
+			check_state = #{checkState},
+			checker_id = #{checkerId},
+			is_open = #{isOpen},
+			is_cover = #{isCover},
+			is_copyright = #{isCopyright},
+			is_catalog = #{isCatalog},
+			is_image = #{isImage},
+			is_layout = #{isLayout},
+			is_code = #{isCode},
+			other_desc = #{otherDesc},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_book_version
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

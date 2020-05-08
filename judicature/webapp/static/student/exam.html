@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8">
+<title>在线考试</title>
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="stylesheet" href="2.3.1/css_default/bootstrap.css">
+<link rel="stylesheet" href="css/main.css">
+<link href="css/exam.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<style>
+
+/*兼容FireFox*/
+body {
+  -moz-user-focus: ignore;
+  -moz-user-select: none;
+}
+
+</style>
+</head>
+<body style="background:#d1d1d1;">
+  <div class="exam container">
+    <div class="header">
+      <table width="1200px" border="0" cellspacing="0" cellpadding="0">
+        <tbody><tr>
+          <td><div class="header_title" style="width: 745px;padding-left:30px;">在线测评试卷带图</div></td>
+          <td style="width:350px;"><div class="time" id="ztesttime" style="">考试时间90分钟 剩余70分49秒</div></td>
+          <td style="width:120px; padding-right:30px"><div class="btn right" style="background-position: -114px -359px;"><input type="button" class="btn" style="cursor:pointer; background-position: 0px -360px;"></div></td>    
+        </tr>
+      </tbody></table>
+    </div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top:2px solid #56a0a1;">
+      <tbody>
+        <tr>
+          <td valign="top" style="background:#fff; width:237px;border-right:1px solid #ccc;">
+            <div class="user">
+              <img src="images/watch.jpg" alt="" class="header-img">
+              <div class="username"><p>考生：李源友</p></div>
+            </div> 
+            <div class="answer">
+              <div class="answer_title"></div>
+              <div class="answer_body" id="answerContent" style="height: 137px; overflow-x: hidden; overflow-y: auto;">
+                <div id="navContent">
+                  <h3>一、单选题</h3>
+                  <table border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                      <tr></tr>
+                      <tr>
+                        <td id="navSign_1" class="bg_red"><a style="cursor:pointer" onclick="gotoTopic(1,1)">1</a></td>
+                        <td id="navSign_2"><a style="cursor:pointer" onclick="gotoTopic(1,2)">2</a></td>
+                        <td id="navSign_3"><a style="cursor:pointer" onclick="gotoTopic(1,3)">3</a></td>
+                        <td id="navSign_4"><a style="cursor:pointer" onclick="gotoTopic(1,4)">4</a></td>
+                        <td id="navSign_5"><a style="cursor:pointer" onclick="gotoTopic(1,5)">5</a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="tushi"></div>
+              </div>
+            </div>
+          </td>
+      <td valign="top">
+         <div class="paper">
+           <div class="paper_title"></div>
+           <div class="tip">
+             <table width="95%" border="0" cellspacing="0" cellpadding="0">
+               <tbody>
+                <tr>
+                  <td class="tip_left"></td>
+                  <td class="tip_bg"><div id="msg">试卷加载完毕，您可以开始答题！</div></td>
+                  <td class="tip_right">&nbsp;</td>
+                </tr>
+             </tbody>
+            </table>
+           </div>
+           <div class="cal_fonts" style="width: 960px;">
+              <div class="cal"><a id="showcabutton" style="cursor:pointer;"><img src="images/exam/icon_calculator.gif" width="94" height="17" border="none"></a></div>
+            <div id="timelimitDiv" class="timelimit" style="display:none;"></div>
+            <br clear="all">
+         </div>    
+        <div id="topicContent" style="height: 840px; overflow-y: auto;overflow-x: hidden; width: 955px;">
+          <div class="basetype" id="basetype_1" style="display: block;">
+            <div class="subject" style="width: 905px;"> 
+              <p>一、单选题</p>
+            </div>
+            <div class="problem" id="tm_1" index="1" topicid="2701" style="width: 900px; display: block;"> 
+              <div class="problem_num">  
+                <div class="sign_title">第<span>1</span>题，本小题 20 分</div> 
+              </div> 
+              <dl>    
+                <dt><img src="images/exam/t1.png" border="0"></dt>  
+                <dd>
+                  <input type="radio" topicno="1" id="tmda_1_0" name="tmdn_1" value="A">
+                  <label for="tmda_1_0" id="tmxx_1_0" style="color: black;">A. 41</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="1" id="tmda_1_1" name="tmdn_1" value="B">
+                  <label for="tmda_1_1" id="tmxx_1_1" style="color: black;">B. 46</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="1" id="tmda_1_2" name="tmdn_1" value="C">
+                  <label for="tmda_1_2" id="tmxx_1_2" style="color: black;">C. 52</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="1" id="tmda_1_3" name="tmdn_1" value="D">
+                  <label for="tmda_1_3" id="tmxx_1_3" style="color: black;">D. 57</label>
+                </dd> 
+              </dl>
+            </div>
+            <div class="problem" id="tm_2" index="2" topicid="2639" style="width: 900px; display: block;"> 
+              <div class="problem_num">  
+                <div class="sign_title">第<span>2</span>题，本小题 20 分</div> 
+              </div> 
+              <dl>    
+                <dt>网络<img src="images/exam/t2.png" border="0">的节点电压方程为<img src="images/exam/t3.png" border="0">，网络<img src="images/exam/t4.png" border="0">的全节点方程为<img src="images/exam/t5.png" border="0">，把<img src="images/exam/t5.png" border="0">的节点①与<img src="images/exam/t6.png" border="0">的节点①、<img src="images/exam/t5.png" border="0">的节点②与<img src="images/exam/t6.png" border="0">的节点②用无阻导线联接，联接后复合网络的节点电压方程为（&nbsp;&nbsp;&nbsp;&nbsp;）。
+                </dt>  
+                <dd>
+                  <input type="radio" topicno="2" id="tmda_2_0" name="tmdn_2" value="A">
+                  <label for="tmda_2_0" id="tmxx_2_0" style="color: black;">A. <img src="images/exam/t7.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="2" id="tmda_2_1" name="tmdn_2" value="B">
+                  <label for="tmda_2_1" id="tmxx_2_1" style="color: black;">B. <img src="images/exam/t8.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="2" id="tmda_2_2" name="tmdn_2" value="C">
+                  <label for="tmda_2_2" id="tmxx_2_2" style="color: black;">C. <img src="images/exam/t9.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="2" id="tmda_2_3" name="tmdn_2" value="D">
+                  <label for="tmda_2_3" id="tmxx_2_3" style="color: black;">D. <img src="images/exam/t10.png" border="0"></label>
+                </dd> 
+              </dl>
+            </div>
+            <div class="problem" id="tm_3" index="3" topicid="2638" style="width: 900px; display: block;"> 
+              <div class="problem_num">  
+                <div class="sign_title">第<span>3</span>题，本小题 20 分</div> 
+              </div> 
+              <dl>    
+                <dt>某网络的不定导纳阵为<img src="images/exam/t11.png" border="0">，③节点接地后定导纳阵为（&nbsp;&nbsp;&nbsp;&nbsp;）。
+                </dt>  
+                <dd>
+                  <input type="radio" topicno="3" id="tmda_3_0" name="tmdn_3" value="A">
+                  <label for="tmda_3_0" id="tmxx_3_0">A. <img src="images/exam/t12.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="3" id="tmda_3_1" name="tmdn_3" value="B">
+                  <label for="tmda_3_1" id="tmxx_3_1">B. <img src="images/exam/t13.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="3" id="tmda_3_2" name="tmdn_3" value="C">
+                  <label for="tmda_3_2" id="tmxx_3_2">C. <img src="images/exam/t14.png" border="0"></label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="3" id="tmda_3_3" name="tmdn_3" value="D">
+                  <label for="tmda_3_3" id="tmxx_3_3">D. <img src="images/exam/t15.png" border="0"></label>
+                </dd> 
+              </dl>
+            </div>
+            <div class="problem" id="tm_4" index="4" topicid="2635" style="width: 900px; display: block;"> 
+              <div class="problem_num">  
+                <div class="sign_title">第<span>4</span>题，本小题 20 分</div> 
+              </div> 
+              <dl>    
+                <dt>某多口网络的混合参数方程为<img src="images/exam/t16.jpg" border="0">，其端口分析法方程为<img src="images/exam/t17.jpg" border="0">，其中<img src="images/exam/t18.jpg" border="0">和<img src="images/exam/t19.jpg" border="0">均为实常数阵，下列陈述正确的是（&nbsp;&nbsp;&nbsp;&nbsp;）。
+                </dt>  
+                <dd>
+                  <input type="radio" topicno="4" id="tmda_4_0" name="tmdn_4" value="A">
+                  <label for="tmda_4_0" id="tmxx_4_0">A. 该网络的端接有一半为线性电阻</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="4" id="tmda_4_1" name="tmdn_4" value="B">
+                  <label for="tmda_4_1" id="tmxx_4_1">B. 该网络的端接有一半为非线性电阻</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="4" id="tmda_4_2" name="tmdn_4" value="C">
+                  <label for="tmda_4_2" id="tmxx_4_2">C. 该网络的端接有一半为动态元件</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="4" id="tmda_4_3" name="tmdn_4" value="D">
+                  <label for="tmda_4_3" id="tmxx_4_3">D. 该网络的端接均为线性电阻</label>
+                </dd> 
+              </dl>
+            </div>
+            <div class="problem" id="tm_5" index="5" topicid="2631" style="width: 900px; display: block;"> 
+              <div class="problem_num"> 
+                <div class="sign_title">第<span>5</span>题，本小题 20 分</div> 
+              </div> 
+              <dl>    
+                <dt>对"S"型和"N"型非线性电阻,其下倾段&nbsp;Rd&nbsp;为负,称为（&nbsp;&nbsp;&nbsp;&nbsp;）。</dt>  
+                <dd>
+                  <input type="radio" id="tmda_5_0" name="tmdn_5" value="A">
+                  <label for="tmda_5_0" id="tmxx_5_0">A. 负电阻</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="5" id="tmda_5_1" name="tmdn_5" value="B">
+                  <label for="tmda_5_1" id="tmxx_5_1">B. 负功率</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="5" id="tmda_5_2" name="tmdn_5" value="C">
+                  <label for="tmda_5_2" id="tmxx_5_2">C. 流控源</label>
+                </dd>  
+                <dd>
+                  <input type="radio" topicno="5" id="tmda_5_3" name="tmdn_5" value="D">
+                  <label for="tmda_5_3" id="tmxx_5_3">D. 压控源</label>
+                </dd> 
+              </dl>
+            </div>
+          </div>
+          <div class="btn_bottom" style="width: 950px;margin:30px 0 50px;">
+            <div class="btn" style="background-position: -114px 0;"><input type="button" class="btn btn_submit" style="cursor:pointer; background-position: 0px -360px;"></div>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>

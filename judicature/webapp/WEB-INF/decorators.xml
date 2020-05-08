@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/views">
+	
+	<!-- 默认装饰页面, 在需要装饰的页面增加<meta name="decorator" content="default"/> -->
+	<decorator name="blank" page="layouts/blank.jsp" />
+	<decorator name="default" page="layouts/default.jsp" />
+	
+	<!-- 教师端装饰页面 -->
+	<decorator name="teacher_blank" page="layouts/teacher_blank.jsp" />
+	<decorator name="teacher_default" page="layouts/teacher_default.jsp" />
+	
+		<!-- 学生端装饰页面 -->
+	<decorator name="student_blank" page="layouts/student_blank.jsp" />
+	<decorator name="student_default" page="layouts/student_default.jsp" />
+	<decorator name="student_exam" page="layouts/exam_default.jsp" />
+	
+	<!-- CMS基础主题装饰页面 -->
+	<decorator name="cms_default_basic" page="modules/cms/front/themes/basic/layouts/default.jsp" />
+	<decorator name="cms_default_weixin" page="modules/cms/front/themes/weixin/layouts/default.jsp" />
+	
+</decorators>

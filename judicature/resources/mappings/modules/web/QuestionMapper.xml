@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.QuestionMapper">
+
+<select id="getQuestionsByknowledgeId" resultType="com.thinkgem.jeesite.modules.web.entity.Questions">
+	SELECT tvq.id as "id",
+		   tvq.title as "title",
+		   tvq.ques_type as "quesType",
+		   tvq.choice0 as "choice0",
+		   tvq.choice1 as "choice1",
+		   tvq.choice2 as "choice2",
+		   tvq.choice3 as "choice3",
+		   tvq.choice4 as "choice4",
+		   tvq.choice5 as "choice5",
+		   tvq.answer0 as "answer0",
+		   tvq.answer1 as "answer1",
+		   tvq.answer2 as "answer2",
+		   tvq.answer3 as "answer3",
+		   tvq.description as "description",
+		   tvq.count as "count",
+		   tvq.material as "material"
+	FROM table_version_question tvq
+	LEFT JOIN table_knowledge_question tkq
+	ON tvq.id = tkq.question_id
+	WHERE tkq.knowledge_id=#{knowledgeId}
+	AND tvq.del_flag = 0
+</select>
+
+<insert id="addUserAnswer">
+	insert into table_student_answer(id,student_id,question_id,answer0,is_correct)
+	values
+	<foreach collection="list" item="item" index="index" separator="," >
+        (#{item.answerId},#{item.studentId},#{item.id},#{item.answer0},#{item.isCorrect})  
+    </foreach>
+</insert>
+
+<insert id="addUserCollection">
+	insert into table_user_collection(user_id,question_id) value(#{userId},#{questionId})
+</insert>
+
+<delete id="delUserCollection">
+	delete from table_user_collection where user_id=#{userId} and question_id=#{questionId}
+</delete>
+
+<select id="questions15" resultType="com.thinkgem.jeesite.modules.web.entity.Questions">
+	SELECT tvq.id as "id",
+		   tvq.title as "title",
+		   tvq.choice0 as "choice0",
+		   tvq.choice1 as "choice1",
+		   tvq.choice2 as "choice2",
+		   tvq.choice3 as "choice3",
+		   tvq.choice4 as "choice4",
+		   tvq.choice5 as "choice5",
+		   tvq.answer0 as "answer0",
+		   tvq.answer1 as "answer1",
+		   tvq.answer2 as "answer2",
+		   tvq.answer3 as "answer3",
+		   tvq.description as "description", 
+		   tvq.count as "count",
+		   tvq.material as "material"
+	FROM  table_version_question tvq WHERE tvq.version_id=#{versionId}
+	AND tvq.del_flag = 0
+	AND tvq.seq >= (SELECT FLOOR( RAND() * ((SELECT MAX(seq) FROM table_version_question)-(SELECT MIN(seq) FROM table_version_question)) + (SELECT MIN(seq) FROM table_version_question))) 
+	LIMIT 15
+</select>
+
+<select id="getWrongQuestionByUser" resultType="com.thinkgem.jeesite.modules.web.entity.Questions">
+	SELECT tvq.id AS "id",
+		   tvq.title AS "title",
+		   tvq.ques_type AS "quesType",
+		   tvq.choice0 AS "choice0",
+		   tvq.choice1 AS "choice1",
+		   tvq.choice2 AS "choice2",
+		   tvq.choice3 AS "choice3",
+		   tvq.choice4 AS "choice4",
+		   tvq.choice5 AS "choice5",
+		   tvq.answer0 AS "answer0",
+		   tvq.answer1 AS "answer1",
+		   tvq.answer2 AS "answer2",
+		   tvq.answer3 AS "answer3",
+		   tvq.description AS "description",
+		   tvq.count AS "count",
+		   tvq.material AS "material"
+	FROM  (table_version_question tvq 
+	LEFT JOIN user_record_answer ura 
+	ON tvq.id = ura.ques_id)
+	LEFT JOIN table_knowledge_question tkq 
+	ON tvq.id=tkq.question_id
+	LEFT JOIN user_record ur 
+	ON ur.id = ura.record_id 
+	WHERE tkq.knowledge_id=#{knowledgeId}
+	AND ur.user_id=#{userId}
+	AND tvq.del_flag='0'
+	AND ura.answer_status = 0
+</select>
+
+<select id="getCollectionQuestionsByUser" resultType="com.thinkgem.jeesite.modules.web.entity.Questions">
+	SELECT tvq.id AS "id",
+		   tvq.title AS "title",
+		   tvq.ques_type as "quesType",
+		   tvq.choice0 AS "choice0",
+		   tvq.choice1 AS "choice1",
+		   tvq.choice2 AS "choice2",
+		   tvq.choice3 AS "choice3",
+		   tvq.choice4 as "choice4",
+		   tvq.choice5 as "choice5",
+		   tvq.answer0 AS "answer0",
+		   tvq.answer1 as "answer1",
+		   tvq.answer2 as "answer2",
+		   tvq.answer3 as "answer3",
+		   tvq.description AS "description",
+		   tvq.count as "count",
+		   tvq.material as "material"
+	FROM  (table_version_question tvq 
+	LEFT JOIN table_user_collection tuc 
+	ON tvq.id = tuc.question_id)
+	LEFT JOIN table_knowledge_question tkq 
+	ON tvq.id=tkq.question_id 
+	WHERE tkq.knowledge_id=#{knowledgeId}
+	AND tuc.user_id=#{userId}
+</select>
+
+<select id="getCollectionQuestionsCount" resultType="int">
+	SELECT count(tvq.id)
+	FROM  (table_version_question tvq 
+	LEFT JOIN table_user_collection tuc 
+	ON tvq.id = tuc.question_id)
+	LEFT JOIN table_knowledge_question tkq
+	ON tvq.id=tkq.question_id 
+	WHERE tkq.knowledge_id=#{knowledgeId}
+	AND tuc.user_id=#{userId}
+</select>
+
+<select id="userHasCollectionQue" resultType="int">
+	select count(*) from table_user_collection where user_id=#{userId} and question_id=#{questionId}
+</select>
+
+<!-- <delete id="">
+	delete from table_user_collection where question_id=#{questionId}
+</delete>
+
+<delete id="">
+	delete from user_record_answer where ques_id=#{questionId}
+</delete> -->
+
+</mapper>

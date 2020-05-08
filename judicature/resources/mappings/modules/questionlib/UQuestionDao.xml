@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.UQuestionDao">
+    
+	<sql id="uQuestionColumns">
+		a.id AS "id",
+		a.subject AS "subject",
+		a.detail AS "detail",
+		a.createtime AS "createtime",
+		a.modifytime AS "modifytime",
+		a.del_flag  as "delFlag",
+		a.teacher_id AS "teacher.id",
+		t.name as "teacher.name",
+		a.student_id AS "student.id",
+		s.name as "student.name"
+	</sql>
+	
+	<sql id="uQuestionJoins">
+		left join sys_user t  on  a.teacher_id=t.id 
+		left join table_student s  on  a.student_id=s.id 
+	</sql>
+    
+    <sql id="uQuestionWhere" >
+	   <where>
+		<!-- 	<if test="subject != null and  subject !=''">
+				and a.subject=#{subject}
+			</if> -->
+			<if test="delFlag != null and delFlag !=''">
+				and a.del_flag=#{delFlag}
+			</if>
+			<!-- <if test="userName !=null and userName !=''">
+				and u.name like CONCAT('%', #{userName}, '%')
+			</if>
+			<if test="loginName !=null and loginName !=''">
+				and u.login_name like CONCAT('%', #{loginName}, '%')
+			</if> -->
+			<if test="detail !=null and detail !=''">
+				and a.detail like CONCAT('%',#{detail},'%')
+			</if>
+			<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+			    and a.office_id=#{sqlMap.officeId}
+			</if>
+		</where>
+    </sql>
+    
+    
+	<select id="get" resultType="UQuestion">
+		SELECT 
+			<include refid="uQuestionColumns"/>
+		FROM table_question a
+		<include refid="uQuestionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getQuestion" resultType="UQuestion">
+	    SELECT 
+			<include refid="uQuestionColumns"/>,
+			(
+			 select count(*) from   table_answer 
+			 where  office_id=a.office_id and del_flag=2 and questionId=a.id
+			) as "answerCount"
+		FROM table_question a
+		<include refid="uQuestionJoins"/>
+		WHERE a.id = #{id}
+	  
+	</select>
+	
+	<!-- <select id="findList" resultType="UQuestion">
+		SELECT 
+			<include refid="uQuestionColumns"/>
+		FROM table_question a
+		<include refid="uQuestionJoins"/>
+		
+		<if test="_parameter != null" >
+	      <include refid="uQuestionWhere" />
+	    </if>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY a.modifytime desc,a.createTime desc
+			</otherwise>
+		</choose>
+	</select> -->
+	<select id="findList" resultType="UQuestion">
+		SELECT 
+			p.id AS "id",
+			p. SUBJECT AS "subject",
+			p.detail AS "detail",
+			p.createtime AS "createtime",
+			p.modifytime AS "modifytime",
+			p.del_flag AS "delFlag",
+			p. NAME AS "teacher.name"
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT DISTINCT
+							a.*,b.name
+						FROM
+							table_question a,
+							sys_user b
+						WHERE
+							a.teacher_id != '' 
+							AND a.teacher_id=b.id
+					) AS t1
+				UNION ALL
+					SELECT
+						*
+					FROM
+						(
+							SELECT
+							a.*,b.name
+						FROM
+							table_question a,
+							table_student b
+						WHERE
+							a.student_id != '' 
+							AND a.student_id=b.id
+					
+						) AS t2
+			)p 
+			  <where>
+				<if test="delFlag != null and delFlag !=''">
+					and p.del_flag=#{delFlag}
+				</if>
+				<if test="detail !=null and detail !=''">
+					and p.detail like CONCAT('%',#{detail},'%')
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				    and p.office_id=#{sqlMap.officeId}
+				</if>
+			</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY p.modifytime desc,p.createTime desc
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findListWithAnswerCount" resultType="UQuestion">
+		SELECT 
+			<include refid="uQuestionColumns"/>,
+			(
+			 select count(*) from   table_answer 
+			 where  office_id=a.office_id and del_flag=2 and questionId=a.id
+			) as "answerCount"
+		FROM table_question a
+		<include refid="uQuestionJoins"/>
+		
+		<if test="_parameter != null" >
+	      <include refid="uQuestionWhere" />
+	    </if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY a.modifytime desc,a.createTime desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="UQuestion">
+		SELECT 
+			<include refid="uQuestionColumns"/>
+		FROM table_question a
+		<include refid="uQuestionJoins"/>
+		
+		<if test="_parameter != null" >
+	      <include refid="uQuestionWhere" />
+	    </if>	
+	    
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			   ORDER BY a.modifytime desc,a.createTime desc
+			</otherwise>
+		</choose>
+		${sqlMap.limit}
+	</select>
+	
+	
+	<select id="countAllList"  resultType="java.lang.Integer">
+		SELECT  count(*) FROM table_question a
+		<include refid="uQuestionJoins"/>
+		<if test="_parameter != null" >
+	      <include refid="uQuestionWhere" />
+	    </if>	
+	</select>
+	
+	<insert id="insert">
+	  INSERT INTO  table_question 
+		 <trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					id,
+				</if>
+				<if test="subject != null and subject !=''">
+					subject,
+				</if>
+				<if test="detail != null and detail !=''">
+					detail,
+				</if>
+				<if test="createtime != null">
+					createtime,
+				</if>
+				<if test="modifytime != null">
+					modifytime,
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					del_flag,
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   teacher_id,
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   student_id,
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				  office_id,
+				</if>
+			</trim>
+			<trim prefix="values (" suffix=")" suffixOverrides=",">
+				<if test="id != null and id !=''">
+					#{id},
+				</if>
+				<if test="subject != null and subject !=''">
+					#{subject},
+				</if>
+				<if test="detail != null and detail !=''">
+					#{detail},
+				</if>
+				<if test="createtime != null">
+					#{createtime},
+				</if>
+				<if test="modifytime != null">
+					#{modifytime},
+				</if>
+				<if test="delFlag != null and delFlag !=''">
+					#{delFlag},
+				</if>
+				<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+				   #{teacher.id},
+				</if>
+				<if test="student !=null and student.id !=null and student.id !=''">
+				   #{student.id},
+				</if>
+				<if test="sqlMap.officeId !=null and sqlMap.officeId !=''">
+				   #{sqlMap.officeId}
+				</if>
+			</trim>
+	</insert>
+	
+	<update id="update">
+		UPDATE table_question 
+		<set>
+			<if test="subject != null and subject !=''">
+				subject=#{subject},
+			</if>
+			<if test="detail != null and detail !=''">
+				detail=#{detail},
+			</if>
+			<if test="createtime != null">
+				createtime=#{createtime},
+			</if>
+			<if test="modifytime != null">
+				modifytime=#{modifytime},
+			</if>
+			<if test="delFlag != null and delFlag !=''">
+				del_flag=#{delFlag},
+			</if>
+			<if test="teacher !=null and teacher.id !=null and teacher.id !=''">
+			   teacher_id=#{teacher.id},
+			</if>
+			<if test="student !=null and student.id !=null and student.id !=''">
+			   student_id=#{student.id},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		update table_question 
+		<set>
+			<if test="createtime != null">
+				createtime=#{createtime},
+			</if>
+			<if test="modifytime != null">
+				modifytime=#{modifytime},
+			</if>
+			<if test="delFlag != null and delFlag !=''">
+				del_flag=#{delFlag},
+			</if>
+		</set>
+	    where id = #{id}
+	</update>
+	
+	<select id="get2LatestQuestionAndAnswers" parameterType="map" resultType="UQuestion">
+		select 
+		    ttt.questionGiver,
+			ttt.questionDetail,
+			ttt.answerDetail,
+			(case when
+			ttt.answerQuestionStudent is not null then
+			ttt.answerQuestionStudent else
+			ttt.answerQuestionTeacher end) as 'questionAnswer',
+			ttt.questionCreateTime,
+			ttt.answerCreateTime
+		from
+		    (select 
+		        tt.questionGiver,
+		            tt.questionDetail,
+		            tt.answerDetail,
+		            (select 
+		                    tts.name
+		                from
+		                    table_student tts
+		                where
+		                    tts.id = tt.studentId) as 'answerQuestionStudent',
+		            (select 
+		                    ttsu.name
+		                from
+		                    sys_user ttsu
+		                where
+		                    ttsu.id = tt.teacherId) as 'answerQuestionTeacher',
+					tt.questionCreateTime,
+					tt.answerCreateTime
+		    from
+		        (select 
+		        (case
+		                when t.teacherName is not null then t.teacherName
+		                else t.studentName
+		            end) as 'questionGiver',
+		            t.questionDetail,
+		            t.answerDetail,
+		            t.studentId,
+		            t.teacherId,
+					t.questionCreateTime,
+					t.answerCreateTime
+		    from
+		        (select 
+		        (select 
+		                    name
+		                from
+		                    sys_user b
+		                where
+		                    b.id = a.teacher_id) as 'teacherName',
+		            (select 
+		                    c.name
+		                from
+		                    table_student c
+		                where
+		                    c.id = a.student_id) as 'studentName',
+		            a.detail as 'questionDetail',
+		            (select 
+		                    d.detail
+		                from
+		                    table_answer d
+		                where
+		                    d.questionId = a.id
+		                order by d.createTime
+		                limit 1) as 'answerDetail',
+		            (select 
+		                    d.student_id
+		                from
+		                    table_answer d
+		                where
+		                    d.questionId = a.id
+		                order by d.createTime
+		                limit 1) as 'studentId',
+		            (select 
+		                    d.teacher_id
+		                from
+		                    table_answer d
+		                where
+		                    d.questionId = a.id
+		                order by d.createTime
+		                limit 1) as 'teacherId',
+					(select 
+		                    d.createTime
+		                from
+		                    table_answer d
+		                where
+		                    d.questionId = a.id
+		                order by d.createTime
+		                limit 1) as 'answerCreateTime',
+					a.createTime as 'questionCreateTime'
+		    from
+		        table_question a
+		    where
+		        a.del_flag = '2'
+		        and a.office_id = #{officeId}
+		    order by a.createTime desc
+		    limit 2) t) tt) ttt
+	</select>
+	
+	<select id="getTMsgCount" parameterType="String" resultType="Integer">
+		select 
+		    count(id) as 'i'
+		from
+		    table_message a
+		where
+		    a.office_id = #{shcoolId}
+		    and <![CDATA[  to_days(now()) - TO_DAYS(a.createtime)  <= ]]> 1
+	</select>
+	
+	<select id="getTMsgText" parameterType="String" resultType="map">
+		select 
+		    a.content as msg,
+		    a.id
+		from
+		    table_message a
+		where
+		    a.office_id = #{schoolId}
+		    and <![CDATA[  to_days(now()) - TO_DAYS(a.createtime)  <= ]]> 1
+		order by a.is_top desc , a.createtime desc
+	</select>
+	
+	<select id="getTeacherChartsData" parameterType="map" resultType="map">
+		select 
+			date_format(a.create_date, '%Y-%m') as 'month',
+		    count(a.id) as 'count'
+		from
+		    table_examination a
+		where
+		    a.teacher_id = #{teacherId}
+		group by date_format(a.create_date, '%Y-%m')
+		order by date_format(a.create_date, '%Y-%m')
+		<if test="duration != null and duration != '' ">
+			limit #{duration}
+		</if>
+	</select>
+	
+	<select id="getTeacherChartsData2" parameterType="map" resultType="map">
+		select 
+			date_format(a.create_date, '%Y-%m') as 'month',
+		    count(a.id) as 'count'
+		from
+		    table_examination a
+		where
+		    a.teacher_id = #{teacherId}
+		    and a.exam_type = #{examType}
+		group by date_format(a.create_date, '%Y-%m')
+		order by date_format(a.create_date, '%Y-%m')
+		<if test="duration != null and duration != '' ">
+			limit #{duration}
+		</if>
+	</select>
+	
+	<select id="getTeacherMain1" parameterType="map" resultType="map">
+		select 
+		    count(id) as 'runtimecount',
+		    (select 
+		            count(id)
+		        from
+		            table_examination a
+		        where
+		            a.teacher_id = #{teacherId}
+		            	and a.version_id = #{versionId}
+		                and a.exam_type in ('3' , '5')) as 'allcount'
+		from
+		    table_examination b
+		where
+		    now() <![CDATA[ < ]]> b.end_time
+		        and now() <![CDATA[ > ]]> b.begin_time
+		        and b.version_id = #{versionId}
+		        and b.teacher_id = #{teacherId}
+		        and b.exam_type = '5'
+	</select>
+	
+	<select id="getTeacherMain2" parameterType="String" resultType="map">
+		select 
+		    count(a.id) as 'allHomeWorkCount',
+		    (select 
+		            count(*)
+		        from
+		            (select 
+		                (case
+		                        when count(c.isMark = '1') = count(b.id) then '1'
+		                        else '0'
+		                    end) as 'isMark'
+		            from
+		                table_examination b, table_exam_class c
+		            where
+		                b.teacher_id = #{teacherId}
+		                    and b.exam_type = '3'
+		                    and b.id = c.exam_id
+		                    and b.version_id = #{versionId}
+		            group by b.id) t
+		        where
+		            t.isMark = '1') as 'isMarkCount'
+		from
+		    table_examination a
+		where
+		    a.teacher_id = #{teacherId}
+		    and a.version_id = #{versionId}
+		        and a.exam_type = '3'
+	</select>
+	
+	<select id="getTeacherMain3" parameterType="String" resultType="map">
+		select 
+		    count(a.id) as 'allHomeWorkCount',
+		    (select 
+		            count(*)
+		        from
+		            (select 
+		                (case
+		                        when count(c.isMark = '1') = count(b.id) then '1'
+		                        else '0'
+		                    end) as 'isMark'
+		            from
+		                table_examination b, table_exam_class c
+		            where
+		                b.teacher_id = #{teacherId}
+		                    and b.exam_type = '5'
+		                    and b.id = c.exam_id
+		                    and b.version_id = #{versionId}
+		            group by b.id) t
+		        where
+		            t.isMark = '1') as 'isMarkCount'
+		from
+		    table_examination a
+		where
+		    a.teacher_id = #{teacherId}
+		    and a.version_id = #{versionId}
+		        and a.exam_type = '5'
+	</select>
+	
+	<select id="teacherCourseSchedule" parameterType="map" resultType="map">
+		select 
+		    count(z.id) as 'totalCount',
+		    (select 
+		            count(t.examKnowlege) as 'examKnowlegeCount'
+		        from
+		            (select distinct
+		                tck.title as 'examKnowlege'
+		            from
+		                table_examination a, table_exam_detail ted, table_exam_detail_question tedq, table_version_question tvq, table_course_knowledge tck
+		            where
+		                a.teacher_id = #{teacherId}
+		                    and a.version_id = #{versionId}
+		                    and a.id = ted.exam_id
+		                    and ted.id = tedq.exam_detail_id
+		                    and tedq.question_id = tvq.id
+		                    and tvq.exam_code = tck.title) t) as 'examCount'
+		from
+		    table_course_knowledge z
+		where
+		    z.version_id = #{versionId}
+	</select>
+	
+</mapper>

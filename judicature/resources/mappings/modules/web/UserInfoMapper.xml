@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.UserInfoMapper">
+
+<select id="hasUser" resultType="int">
+	select count(id) from table_student where std_phone=#{phone}
+</select>
+
+<select id="getUserPWD" resultType="string">
+	select std_password from table_student where std_phone=#{phone}
+</select>
+
+<select id="userHasPWD" resultType="int">
+	select count(id) from table_student where id=#{id} and std_password is not null
+</select>
+
+<insert id="addUser">
+	insert into table_student(id,std_phone,create_date,update_date) values(#{id},#{phone},NOW(),NOW())
+</insert>
+
+<update id="setPW">
+	update table_student set std_password=#{password} where id=#{id}
+</update>
+
+<insert id="addPlayLog">
+	insert into table_publication_resource_visitors(id,resource_id,user_id) values(#{id},#{resourceId},#{userId})
+</insert>
+
+<select id="findPlayLog" resultType="int">
+	select count(1) from table_publication_resource_visitors where user_id=#{userId} and resource_id =#{resourceId}
+</select>
+
+
+<update id="updateUserInfo">
+	update table_student
+	<set>
+	<if test="name != null and name != '' ">
+	name=#{name},
+	</if>
+	<if test="sex != null and sex != '' ">
+	std_sex=#{sex},
+	</if>
+	<if test="region != null and region != '' ">
+	region=#{region},
+	</if>
+	</set>
+	where id=#{id}
+</update>
+
+<update id="updateUserIcon">
+	update table_student set icon=#{icon} where id=#{id}
+</update>
+
+<select id="getUserInfoByPhone" resultType="com.thinkgem.jeesite.modules.web.entity.UserInfo">
+	select id,name,std_sex as "sex",std_password as "password",icon,region from table_student where std_phone=#{phone}
+</select>
+
+<select id="getUserInfoById" resultType="com.thinkgem.jeesite.modules.web.entity.UserInfo">
+	select id,name,std_sex as "sex",icon,region from table_student where id=#{id}
+</select>
+
+<!--  -->
+
+<select id="hasUserDeliveryAddress" resultType="int">
+	select count(id) from user_delivery_address where user_id=#{userId}
+</select>
+
+<insert id="addDeliveryAddress">
+	insert into user_delivery_address(user_id,consignee,phone,location,delivery_address)
+	value(#{userId},#{consignee},#{phone},#{location},#{deliveryAddress})
+</insert>
+
+<update id="updateDeliveryAddress">
+	update user_delivery_address 
+	<set>
+	<if test="consignee != null and consignee != '' ">
+	consignee=#{consignee},
+	</if>
+	<if test="phone != null and phone != '' ">
+	phone=#{phone},
+	</if>
+	<if test="location != null and location != '' ">
+	location=#{location},
+	</if>
+	<if test="deliveryAddress != null and deliveryAddress != '' ">
+	delivery_address=#{deliveryAddress}
+	</if>
+	</set>
+	where user_id=#{userId}
+</update>
+
+<select id="getDeliveryAddress" resultType="com.thinkgem.jeesite.modules.web.entity.UserDeliveryAddress">
+	select consignee,phone,location,delivery_address as "deliveryAddress" from user_delivery_address where user_id=#{userId}
+</select>
+
+<insert id="addUserIntegral">
+	insert into table_user_integral(user_id,create_date,video_time,question_num,live_time)
+	value(#{userId},CURDATE(),#{videoTime},#{questionNum},#{liveTime})
+</insert>
+
+<select id="hasTodayUserIntegral" resultType="int">
+	select count(id) from table_user_integral where user_id=#{userId} and create_date=CURDATE()
+</select>
+
+<update id="updateUserIntegralTime">
+	update table_user_integral
+	<set>
+	<if test="videoTime >= 0 ">
+	video_time=video_time+#{videoTime},
+	</if>
+	<if test="questionNum >= 0 ">
+	question_num = question_num+#{questionNum},
+	</if>
+	<if test="liveTime >= 0 ">
+	live_time=live_time+#{liveTime}
+	</if>
+	</set>
+	where user_id=#{userId} and create_date=CURDATE()
+</update>
+
+<select id="getUserIntegralTime" resultType="com.thinkgem.jeesite.modules.web.entity.UserIntegral">
+	select video_time as "videoTime",
+		   question_num as "questionNum",
+		   live_time as "liveTime"
+	from table_user_integral
+	where user_id=#{userId} and create_date=CURDATE()
+</select>
+
+<update id="updateUserIntegral">
+	update table_user_integral
+	set video_integral=#{videoIntegral},
+		question_integral=#{questionIntegral},
+		live_integral=#{liveIntegral}
+	where user_id=#{userId} and create_date=CURDATE()
+</update>
+
+<select id="getUserIntegral" resultType="com.thinkgem.jeesite.modules.web.entity.UserIntegral">
+	select video_time as "videoTime",
+		   question_num as "questionNum",
+		   live_time as "liveTime",
+		   video_integral as "videoIntegral",
+		   question_integral as "questionIntegral",
+		   live_integral as "liveIntegral",
+		   (SELECT SUM(video_integral+question_integral+live_integral)
+			FROM table_user_integral
+			WHERE user_id=#{userId})as "total"
+		   <!-- SELECT SUM(
+			(SELECT SUM(video_integral+question_integral+live_integral)
+			FROM table_user_integral
+			WHERE user_id=#{userId})
+			+(SELECT SUM(pumpkin_count)
+			FROM table_user_sign
+			WHERE user_id=#{userId})
+	) --> 
+	from table_user_integral
+	where user_id=#{userId} and create_date=#{createDate}
+</select>
+
+<select id="getTotalIntegral" resultType="int">
+	SELECT SUM(video_integral+question_integral+live_integral) AS "total"
+			FROM table_user_integral
+			WHERE user_id=#{userId}
+</select>
+
+<update id="updateStudyTime">
+	update table_student set study_time = study_time + #{studyTime} where id = #{id}
+</update>
+
+<select id="hasLiveCount" resultType="int">
+	select count(id) from table_user_record where user_id=#{userId} and source_id=#{sourceId}
+</select>
+
+<select id="centerIndex" resultType="com.thinkgem.jeesite.modules.web.entity.UserInfo">
+	select name,
+		   std_phone as "phone",
+		   icon,
+		   (select count(id) from table_user_record WHERE user_id=#{userId} and watch_time IS NULL ) as "liveCount",
+		   (SELECT SUM(question_num)  FROM table_user_integral WHERE user_id = #{userId})/(SELECT COUNT(id) FROM table_version_question) AS "queNum",
+           (select video_time from table_user_integral where user_id = #{userId} and create_date=#{createDate} ) as "videoTime",
+           study_time as "studyTime",
+           (select exam_date from table_test_date) as "examDate",
+           (SELECT SUM(video_integral+question_integral+live_integral)
+           from table_user_integral
+	       where user_id=#{userId} and create_date=#{createDate}) as "pumpkinCount"
+           <!-- SELECT SUM(
+			(SELECT SUM(video_integral+question_integral+live_integral)
+			FROM table_user_integral
+			WHERE user_id=#{userId} and create_date=#{createDate})
+			+(SELECT pumpkin_count
+			FROM table_user_sign
+			WHERE user_id=#{userId} and sign_date=#{createDate})
+	        ) -->
+	from table_student where id=#{userId}
+</select>
+
+<select id="getUserPumpkinCount" resultType="com.thinkgem.jeesite.modules.web.entity.UserIntegral">
+	select video_time as "videoTime",
+		   question_num as "questionNum",
+		   live_time as "liveTime"
+	from table_user_integral
+	where user_id=#{userId} and create_date=#{createDate}
+</select>
+
+<select id="getUserSign" resultType="com.thinkgem.jeesite.modules.web.entity.UserSign">
+	select id,sign_date,pumpkin_count from table_user_sign where user_id = #{userId} and sign_date in
+	<foreach collection="list" item="a" index="index" open="(" close=")" separator=",">  
+        #{a} 
+    </foreach>  
+</select>
+
+<insert id="userTodaySign">
+	insert into table_user_sign(user_id,sign_date,pumpkin_count) value(#{userId},#{signDate},#{pumpkinCount})
+</insert>
+
+<select id="getUserSignPumpkinCountByDate" resultType="int">
+	select pumpkin_count from table_user_sign where user_id = #{userId} and sign_date=#{date}
+</select>
+
+<select id="hasUserSign" resultType="int">
+	select count(id) from table_user_sign where user_id=#{userId}
+</select> 
+
+<select id="hasSignToday" resultType="int">
+	select count(id) from table_user_sign where user_id=#{userId} and sign_date=#{date}
+</select>
+
+<select id="hasIntegralByDate" resultType="int">
+	select count(id) from table_user_integral user_id=#{userId} and create_date=#{createDate}
+</select>
+
+<select id="getSumSignPumpkinCount" resultType="int">
+	SELECT SUM(pumpkin_count)
+			FROM table_user_sign
+			WHERE user_id=#{userId}
+</select>
+
+<select id="getAllCourseInformation" resultType="com.thinkgem.jeesite.modules.web.entity.CourseInformation">
+	select id,title,icon,create_date,url from table_course_information
+</select>
+
+<insert id="addCourseInformation">
+	insert into table_course_information(title,icon,create_date,url) value(#{title},#{icon},#{createDate},#{url})
+</insert>
+
+<delete id="delCourseInformation">
+	delete from table_course_information where id=#{id}
+</delete>
+
+<select id="usedPumpkinCount" resultType="int">
+	select sum(pumpkin_count) from table_pumpkin_pay where user_id=#{userId}
+</select>
+
+<update id="forgetPWD">
+	update table_student set std_password=#{password} where std_phone=#{phone}
+</update>
+</mapper>

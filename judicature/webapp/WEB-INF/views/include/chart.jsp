@@ -1,0 +1,1 @@
+<script src="${ctxStatic}/chart/echarts.js" type="text/javascript"></script>

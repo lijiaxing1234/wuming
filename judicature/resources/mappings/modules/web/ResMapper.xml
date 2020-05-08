@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.ResMapper">
+
+   <resultMap type="com.thinkgem.jeesite.modules.web.entity.ResCategory" id="resCategoryMap">
+      <id   column="id"  property="id"  jdbcType="VARCHAR"/>
+   	  <result  column="name"  property="name" jdbcType="VARCHAR" />
+   	  <result  column="description"  property="description" jdbcType="VARCHAR"/>
+   	  <result  column="persenter"  property="persenter" jdbcType="VARCHAR"/>
+   	  <result  column="price"  property="price" jdbcType="DOUBLE"/>
+   	  <result  column="type"  property="type" jdbcType="VARCHAR"/>
+   	  <result  column="parentId"  property="parentId" jdbcType="VARCHAR"/>
+   	  <result  column="parentIds"  property="parentIds" jdbcType="VARCHAR"/>
+   	  <result  column="playNum"  property="playNum" jdbcType="VARCHAR"/>
+   	  <result  column="resCount"  property="resCount" jdbcType="INTEGER"/>
+   	 <!--  <collection property="resCategory"
+			ofType="com.thinkgem.jeesite.modules.web.entity.ResCategory"
+			javaType="ArrayList" column="id" select="selectCategoryByParentId" /> -->
+ 	<!--  <collection property="res"
+			ofType="com.thinkgem.jeesite.modules.web.entity.Resource"
+			javaType="ArrayList" column="id" select="selectResByCateId" /> -->
+   </resultMap>
+  
+  <select id="selectCategoryById" resultMap="resCategoryMap">
+		SELECT
+			id as 'id',
+			name as 'name',
+			description as 'description',
+			presenter as 'persenter',
+			price as 'price',
+			image as 'image',
+			type as 'type',
+			parent_id as 'parentId',
+		    parent_ids as 'parentIds',
+			play_num as 'playNum'
+		FROM
+			table_category cate
+		WHERE
+			cate.id=#{cateId}
+			order by  name
+	</select>
+  
+	<select id="selectCategoryByParentId" resultMap="resCategoryMap">
+		SELECT
+			id as 'id',
+			name as 'name',
+			description as 'description',
+			presenter as 'persenter',
+			price as 'price',
+			image as 'image',
+			type as 'type',
+			parent_id as 'parentId',
+		    parent_ids as 'parentIds',
+			play_num as 'playNum'<!-- ,
+			(SELECT
+				count(1)
+			FROM
+				table_publication_resource
+			WHERE
+				category_id IN (
+					SELECT
+						id
+					FROM
+						table_category
+					WHERE
+						id =#{cateId}
+					OR parent_ids LIKE CONCAT(
+						'%',#{cateId},'%'
+					)
+				)) as 'resCount' -->
+		FROM
+			table_category cate
+		WHERE
+			cate.parent_id =#{cateId}
+			
+			order by  name
+	</select>
+	  <resultMap type="com.thinkgem.jeesite.modules.web.entity.Resource" id="ResourceMap">
+      <id   column="id"  property="id"  jdbcType="VARCHAR"/>
+   	  <result  column="name"  property="name" jdbcType="VARCHAR" />
+   	  <result  column="courseId"  property="courseId" jdbcType="VARCHAR"/>
+   	  <result  column="courseName"  property="courseName" jdbcType="VARCHAR"/>
+   	  <result  column="categoryId"  property="categoryId" jdbcType="VARCHAR"/>
+   	  <result  column="filePath"  property="filePath" jdbcType="VARCHAR"/>
+   	  <result  column="fileSize"  property="fileSize" jdbcType="VARCHAR"/>
+   	  <result  column="presenter"  property="presenter" jdbcType="VARCHAR"/>
+   	  <result  column="creator"  property="creator" jdbcType="VARCHAR"/>
+   	  <result  column="price"  property="price" jdbcType="DOUBLE"/>
+   	  <result  column="createTime"  property="createTime" jdbcType="DATE"/>
+   	  <result  column="updateDate"  property="updateDate" jdbcType="DATE"/>
+   	  <result  column="fileTime"  property="fileTime" jdbcType="VARCHAR"/>
+   	  <result  column="reserved1"  property="reserved1" jdbcType="VARCHAR"/>
+   	  <result  column="reserved2"  property="reserved2" jdbcType="VARCHAR"/>
+   </resultMap>
+	<select id="selectResByCateId" resultMap="ResourceMap">
+		SELECT
+			tpr.id,
+			tpr.name,
+			tpr.course_id as 'courseId',
+			(
+				SELECT NAME FROM table_category WHERE id =(
+ 				SELECT parent_id FROM table_category WHERE id=tpr.category_id)) as courseName,
+			(
+ 				SELECT parent_id FROM table_category WHERE id=tpr.category_id) as 'categoryId',
+			tpr.file_path as 'filePath',
+			tpr.file_size as 'fileSize',
+			tpr.presenter,
+			tpr.creator,
+			tpr.price,
+			tpr.reserved1,
+			tpr.reserved2,
+			tpr.create_time as 'createTime',
+			tpr.file_time as 'fileTime',
+			tpr.update_time as 'updateDate',
+			(select watch_time from table_user_record tur where tur.user_id=#{userId} and tur.source_id=tpr.id) as "watchTime"
+		FROM
+			table_publication_resource tpr 
+		WHERE
+			category_id IN (
+				SELECT
+					id
+				FROM
+					table_category
+				WHERE
+					id =#{cateId}
+				OR parent_ids LIKE CONCAT(
+					'%',#{cateId},'%'
+				)
+			)
+			
+			order by  name
+	</select>
+	
+	<insert id="addUserRecord">
+		insert into table_user_record(user_id,source_id,watch_time)
+		value(#{userId},#{sourceId},#{watchTime})
+	</insert>
+	
+	<insert id="addUserLiveCount">
+		insert into table_user_record(user_id,source_id)
+		value(#{userId},#{sourceId})
+	</insert>
+	
+	<select id="hasUserRecord" resultType="int">
+		select count(id) from table_user_record where user_id=#{userId} and source_id=#{sourceId}
+	</select>
+	
+	<update id="updateUserRecord">
+		update table_user_record set watch_time=#{watchTime} where user_id=#{userId} and source_id=#{sourceId}
+	</update>
+	
+	<select id="getUserRecord" resultType="com.thinkgem.jeesite.modules.web.entity.UserRecord">
+		select watch_time as "watchTime" from table_user_record where user_id=#{userId} and source_id=#{sourceId}
+	</select>
+	
+	<resultMap type="com.thinkgem.jeesite.modules.web.dto.SearchResult" id="searchResourceMap">
+      <id   column="id"  property="id"  jdbcType="VARCHAR"/>
+   	  <result  column="name"  property="name" jdbcType="VARCHAR" />
+   	  <result  column="courseId"  property="courseId" jdbcType="VARCHAR"/>
+   	  <result  column="categoryId"  property="categoryId" jdbcType="VARCHAR"/>
+   	  <result  column="filePath"  property="filePath" jdbcType="VARCHAR"/>
+   	  <result  column="fileSize"  property="fileSize" jdbcType="VARCHAR"/>
+   	  <result  column="presenter"  property="presenter" jdbcType="VARCHAR"/>
+   	  <result  column="creator"  property="creator" jdbcType="VARCHAR"/>
+   	  <result  column="price"  property="price" jdbcType="DOUBLE"/>
+   	  <result  column="createTime"  property="createTime" jdbcType="DATE"/>
+   	  <result  column="updateDate"  property="updateDate" jdbcType="DATE"/>
+   	  <result  column="fileTime"  property="fileTime" jdbcType="VARCHAR"/>
+   	  
+   	  <!-- 分类 -->
+   	   <result  column="catId"  property="catId" jdbcType="VARCHAR" />
+   	   <result  column="catName"  property="catName" jdbcType="VARCHAR" />
+   	   <result  column="catImage"  property="catImage" jdbcType="VARCHAR" />
+   	   
+   	   <result  column="parentId"  property="parentId" jdbcType="VARCHAR" />
+   	   <result  column="parentName"  property="parentName" jdbcType="VARCHAR" />
+   	   <result  column="parentImage"  property="parentImage" jdbcType="VARCHAR" />
+   	   
+   </resultMap>
+	
+	<select id="searchResource"  parameterType="com.thinkgem.jeesite.modules.web.dto.SearchResult"  resultMap="searchResourceMap">
+	
+		SELECT * FROM (
+			SELECT * FROM  table_publication_resource  tpr 
+			     JOIN  
+			    (
+			      SELECT tc.id AS "catId",tc.name AS "catName",tc.image AS "catImage", 
+			             ptc.id AS "parentId",ptc.name AS "parentName",ptc.image AS "parentImage"
+			       FROM  `table_category` tc 
+			       LEFT JOIN `table_category` ptc ON  tc.parent_id = ptc.id 
+			    
+			    ) tcs   
+			    
+			    ON tpr.category_id=tcs.catId
+			
+		)_table
+       
+       <where>
+            <if test=" name !=null and  name !='' ">
+               and name like concat('%',#{name},'%')
+            </if> 
+       </where>
+         
+         ORDER BY  name 
+         
+        <if test="start !=null and  pageSize !=null">
+              limit #{start},#{pageSize}
+        </if>
+	</select>
+	
+	<!-- 写死了 只查询 免费课程  分类下的所有子分类  -->
+	<select id="search"  resultType="com.thinkgem.jeesite.common.persistence.Parameter"   parameterType="java.util.Map">
+		SELECT table_category_parent.id as  "id", table_category_parent.name  as "name" FROM  (table_publication_resource  table_publication_resource  
+		               JOIN (SELECT * FROM  table_category  WHERE parent_ids LIKE CONCAT('%,','253e78a4-98ce-45ec-9ede-e3b29e17a7b7',',%')) table_category ON  table_publication_resource.category_id=table_category.id
+		               JOIN  table_course table_course   ON  table_course.`id`=table_publication_resource.`course_id`)
+		               JOIN  table_category table_category_parent  ON  table_category.parent_id=table_category_parent.id
+		    WHERE  table_course.`level`=1 
+		    	       
+		    <if test="searchKey  !=null and  searchKey !=''">
+		       and (  table_course.`title` like  concat('%',#{searchKey},'%')
+		           or table_publication_resource.`name` like  concat('%',#{searchKey},'%')
+		           or table_category.`name` like  concat('%',#{searchKey},'%')
+		       )
+		    </if>
+		       
+		    GROUP  BY  table_category_parent.id,table_category_parent.name
+		    
+	        <if  test="start !=null and  end !=null">
+	           limit  #{start},#{end}
+	        </if>
+	</select>
+
+</mapper>

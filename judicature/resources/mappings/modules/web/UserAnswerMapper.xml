@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.web.dao.UserAnswerMapper">
+
+ 
+  
+  
+  <!-- *************************************************用户记录基本表相关 *********************  开始-->
+  
+   <resultMap type="com.thinkgem.jeesite.modules.web.entity.UserRecord" id="userRecordMap">
+   	  <id  column="id"  property="id"  jdbcType="VARCHAR"/>
+   	  <result  column="user_id"  property="userId"  jdbcType="VARCHAR"/>
+   	  <result  column="course_id"  property="courseId"  jdbcType="VARCHAR"/>
+   	  <result  column="know_first"  property="knowFirst"  jdbcType="VARCHAR"/>
+   	  
+   	  <result  column="know_second"  property="knowSecond"  jdbcType="VARCHAR"/>
+   	  <result  column="json"  property="json"  jdbcType="VARCHAR"/>
+   	  
+   </resultMap>
+   
+   <resultMap type="com.thinkgem.jeesite.modules.web.entity.UserRecordAnswer" id="userRecordAnswerMap"  extends="userRecordMap">
+        
+   </resultMap>  
+
+  <select id="selectUserRecord"    resultMap="userRecordMap">
+     SELECT * FROM user_record  
+     <where>
+          <if test="id != null and id !=''">
+	        and id =#{id}
+	      </if>
+	      <if test="userId != null and userId !=''">
+	        and user_id = #{userId}
+	      </if>
+	      <if test="courseId != null and courseId !=''">
+	        and course_id = #{courseId}
+	      </if>
+	      <if test="knowFirst != null and  knowFirst !=''">
+	        and  know_first =#{knowFirst}
+	      </if>
+	      <if test="knowSecond != null and  knowSecond !=''">
+	        and know_second = #{knowSecond}
+	      </if>
+     </where>
+  </select>
+  
+  
+  <select id="selectUserRecordAnswer"  resultMap="userRecordMap">
+	   SELECT * FROM  user_record_answer  user_record_answer 
+	   LEFT JOIN  user_record user_record ON user_record_answer.`record_id`=user_record.`id`
+       
+       <where>
+	      <if test="userId != null and userId !=''">
+	        and user_record.user_id = #{userId}
+	      </if>
+	      <if test="courseId != null and courseId !=''">
+	        and user_record.course_id = #{courseId}
+	      </if>
+	      <if test="knowFirst != null and  knowFirst !=''">
+	        and  user_record.know_first =#{knowFirst}
+	      </if>
+	      <if test="knowSecond != null and  knowSecond !=''">
+	        and user_record.know_second = #{knowSecond}
+	      </if>
+	      <if test="recordId !=null and recordId !=''">
+	        and  user_record_answer.record_id=#{recordId}
+	      </if>
+	      <if test="quesId !=null and quesId !=''">
+	        and  user_record_answer.ques_id=#{quesId}
+	      </if>
+     </where>
+     
+  </select>
+  
+  
+ <insert id="insertUserRecordSelective" parameterType="com.thinkgem.jeesite.modules.web.entity.UserRecord"  keyColumn="id"  keyProperty="id"  useGeneratedKeys="true">
+    insert into user_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null and id !=''">
+        id,
+      </if>
+      <if test="userId != null and userId !=''">
+        user_id,
+      </if>
+      <if test="courseId != null and courseId !=''">
+        course_id,
+      </if>
+      <if test="knowFirst != null and  knowFirst !=''">
+        know_first,
+      </if>
+      <if test="knowSecond != null and  knowSecond !=''">
+        know_second,
+      </if>
+      <if test="json !=null and  json !=''">
+         json,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null and id !=''">
+        #{id,jdbcType=VARCHAR},
+      </if>
+     <if test="userId != null and userId !=''">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null and courseId !=''">
+        #{courseId,jdbcType=VARCHAR},
+      </if>
+      <if test="knowFirst != null and  knowFirst !=''">
+        #{knowFirst,jdbcType=VARCHAR},
+      </if>
+       <if test="knowSecond != null and  knowSecond !=''">
+        #{knowSecond,jdbcType=VARCHAR},
+      </if>
+       <if test="json !=null and  json !=''">
+           #{json,jdbcType=VARCHAR},
+       </if>
+    </trim>
+  </insert>
+  
+<!--   <update id="updateUserRecorByPrimaryKeySelective" parameterType="com.thinkgem.jeesite.modules.web.entity.UserRecord">
+    update user_record
+    <set>
+      <if test="userId != null and userId !=''">
+        user_id=#{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null and courseId !=''">
+        course_id=#{courseId,jdbcType=VARCHAR},
+      </if>
+      <if test="knowFirst != null and  knowFirst !=''">
+        know_first=#{knowFirst,jdbcType=VARCHAR},
+      </if>
+      <if test="knowSecond != null and  knowSecond !=''">
+        know_second=#{knowSecond,jdbcType=VARCHAR},
+      </if>
+      <if test="json !=null and  json !=''">
+         json=#{json,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update> -->
+
+  <!-- *************************************************用户记录基本表相关 ********************* 结束-->
+  
+  
+  
+  
+  <!-- *************************************************用户答题记录相关  *********************   开始-->
+  
+  <insert id="insertUserRecordAnswerSelective" parameterType="com.thinkgem.jeesite.modules.web.entity.UserRecordAnswer">
+    insert into user_record_answer
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+       <if test="recordId !=null and recordId !=''">
+          record_id,
+       </if>
+       <if test="quesId !=null and  quesId !=''">
+         ques_id,
+       </if>
+       <if test="answerStatus !=null and  answerStatus !=''">
+         answer_status,
+       </if>
+        <if test="answerOption !=null and answerOption !=''">
+         answer_option,
+       </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+       <if test="recordId !=null and recordId !=''">
+           #{recordId,jdbcType=VARCHAR},
+       </if>
+      <if test="quesId !=null and quesId !=''">
+        #{quesId,jdbcType=VARCHAR},
+      </if>
+       <if test="answerStatus !=null and  answerStatus !=''">
+          #{answerStatus,jdbcType=INTEGER},
+       </if>
+       <if test="answerOption !=null and  answerOption !=''">
+          #{answerOption,jdbcType=INTEGER},
+       </if>
+    </trim>
+  </insert>
+  
+  <update id="updateUserRecordAnswerByPrimaryKeySelective" parameterType="com.thinkgem.jeesite.modules.web.entity.UserRecordAnswer">
+    update user_record_answer
+    <set>
+        <!-- 
+       <if test="recordId !=null and recordId !=''">
+          record_id=#{recordId,jdbcType=VARCHAR},
+       </if>
+        <if test="quesId !=null and  quesId !=''">
+          ques_id=#{quesId,jdbcType=VARCHAR},
+        </if> -->
+        <if test="answerStatus !=null and  answerStatus !=''">
+         answer_status=#{answerStatus,jdbcType=INTEGER},
+        </if>
+        <if test="answerOption !=null and answerOption !=''">
+         answer_option= #{answerOption,jdbcType=INTEGER},
+       </if>
+    </set>
+      where record_id = #{recordId,jdbcType=VARCHAR} and ques_id=#{quesId,jdbcType=VARCHAR}
+  </update> 
+  
+  
+  
+  <!-- *************************************************用户答题记录相关  ********************* 结束-->
+  
+  
+  
+  
+  <!-- 统计用户答题情况 -->
+  
+   <!-- /*统计用户 已经做了多少题，做错多少题，做对多少题*/ -->
+  <select id="statisUserAnswer"  resultType="java.util.Map">
+	  SELECT 
+	        COUNT(1) AS "hasDoneQuestion",
+	        COUNT(CASE  WHEN answer_status =1 THEN 1 ELSE NULL  END )  AS "rightQuestion", 
+	        COUNT(CASE  WHEN (answer_status =0 OR answer_status IS NULL)  THEN 1 ELSE NULL  END) AS "wrongQuestion"  
+	        
+	FROM (
+	SELECT  *  FROM  ( user_record ur LEFT JOIN  user_record_answer ura  ON ur.id=ura.record_id) 
+	)t
+	<where>
+	    <if test="userId !=null and userId !=''">
+	     and user_id=#{userId}
+	    </if>
+	   
+	    <if test="courseId !=null and courseId !=''">
+	      and  course_id=#{courseId}
+	    </if>
+	    
+	    <if test="knowFirst !=null and knowFirst !=''">
+	      and  know_first=#{knowFirst}
+	    </if>
+	    <if test="knowSecond !=null and knowSecond !=''">
+	     and  know_second=#{knowSecond}
+	    </if>
+	</where>	
+  </select>
+  
+   <!--查询课程下拥有多少试题 -->
+   <select id="countQuestionBycourseIdKnowId"  resultType="java.lang.Integer">
+     
+       SELECT COUNT(question_id) FROM (
+		   SELECT * FROM  ( table_course_knowledge tck  
+		   JOIN  (
+				 SELECT table_knowledge_question.`knowledge_id`,table_knowledge_question.`question_id` FROM table_knowledge_question table_knowledge_question ,table_version_question table_version_question
+				 WHERE  table_knowledge_question.`question_id`=table_version_question.`id`
+				 AND  table_version_question.`del_flag`='0' 
+			 ) tkq ON  tck.id=tkq.knowledge_id) 
+	   ) t
+	   <where>
+	   		   del_flag =0
+	        <if  test="courseId !=null and  courseId !=''">
+	           and version_id=#{courseId}
+	        </if>
+	        <if  test="knowId !=null and  knowId !=''">
+	            AND (id=#{knowId} OR parent_ids LIKE CONCAT('%,',#{knowId},',%'))
+	        </if>
+	   </where>
+   </select>
+  
+</mapper>

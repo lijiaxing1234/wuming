@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.StatisticsDao">
+ 
+    
+	<select id="getQuestionStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.StaticDTO">
+		SELECT * FROM (SELECT v.specialty_id specialtyId,
+		       v.id courseId,
+		       v.title courseName,
+		       v.version_id versionId,
+		       v.version_name versionName,
+			 tp.title specialtyName,
+			v.office_id as officeId,
+	       SUM(CASE v.ques_type WHEN '1' THEN 1 ELSE 0 END) count1,
+	       SUM(CASE v.ques_type WHEN '2' THEN 1 ELSE 0 END) count2,
+	       SUM(CASE v.ques_type WHEN '3' THEN 1 ELSE 0 END) count3,
+	       SUM(CASE v.ques_type WHEN '4' THEN 1 ELSE 0 END) count4,
+	       SUM(CASE v.ques_type WHEN '5' THEN 1 ELSE 0 END) count5,
+	       SUM(CASE v.ques_type WHEN '6' THEN 1 ELSE 0 END) count6,
+	       SUM(CASE v.ques_type WHEN '7' THEN 1 ELSE 0 END) count7,
+	       SUM(CASE v.ques_type WHEN '8' THEN 1 ELSE 0 END) count8,
+	       SUM(CASE v.ques_type WHEN '9' THEN 1 ELSE 0 END) count9,
+	       SUM(CASE v.ques_type WHEN '10' THEN 1 ELSE 0 END) count10,
+	       SUM(CASE v.ques_type WHEN '11' THEN 1 ELSE 0 END) count11
+		FROM view_course_question v,table_specialty tp
+		  WHERE v.specialty_id = tp.id
+			GROUP BY v.specialty_id,v.id,v.version_id,v.office_id) t
+			  WHERE 1=1 
+			     <if test="specialtyId != null and specialtyId != ''">
+					AND t.specialtyId = #{specialtyId}
+			     </if> 
+			     <if test="versionId != null and versionId != ''">
+					AND t.versionId = #{versionId}
+			     </if> 
+			     <if test="courseId != null and courseId != ''">
+					AND t.courseId = #{courseId}
+			     </if> 
+			     
+			      <if test="officeId != null and officeId != ''">
+					AND t.officeId = #{officeId}
+			     </if> 
+			      
+			  
+	</select>
+	
+	<select id="getSchoolStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.SchoolStaticsDTO">
+		SELECT so.id id,
+			   so.name schoolName,
+			(SELECT	COUNT(1) FROM sys_user tu WHERE	tu.del_flag='0' and tu.user_type='5' and tu.office_id IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) teacherCount,
+			(SELECT COUNT(1) FROM view_student tu WHERE	tu.del_flag='0' and tu.schoolId IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) studentCount,
+			(SELECT COUNT(1) FROM table_school_questionlib tu WHERE	tu.del_flag='0' and tu.school_Id  IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) questionlibCount,
+			(SELECT COUNT(1) FROM view_exam_class vec,table_class tc
+		      WHERE	tc.del_flag='0' and vec.class_id = tc.id AND tc.company_id  IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) examCount
+		FROM sys_office so 
+		   WHERE so.type = '1' 
+		       and so.del_flag ='0'  
+		       and  so.id not in('1','2')
+			  <if test="id != null and id != ''">
+					AND so.id LIKE concat('%',#{id},'%')
+			     </if> 
+	    GROUP BY so.id
+	</select>
+	
+	
+		<select id="getRunningStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.SchoolStaticsDTO">
+		SELECT so.id id,
+			   so.name schoolName,
+			(SELECT	COUNT(1) FROM sys_user tu WHERE	tu.del_flag='0' and tu.user_type='5' and tu.office_id IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) teacherCount,
+			(SELECT COUNT(1) FROM view_student tu WHERE	tu.del_flag='0' and tu.schoolId IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) studentCount,
+			(SELECT COUNT(1) FROM table_school_questionlib tu WHERE	tu.del_flag='0' and tu.school_Id  IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) questionlibCount,
+			(SELECT COUNT(1) FROM view_exam_class vec,table_class tc
+		      WHERE	tc.del_flag='0' and vec.class_id = tc.id AND tc.company_id  IN (SELECT	id	FROM sys_office	WHERE id = so.id OR parent_ids LIKE concat('%,',so.id,',%'))) examCount
+		FROM sys_office so 
+		   WHERE so.type = '1'   
+			  <if test="schoolName != null and schoolName != ''">
+					AND so.name LIKE concat('%',#{schoolName},'%')
+			     </if> 
+			     GROUP BY so.id
+	</select>
+	
+	<select id="knowledgePointsStatics" resultType="com.thinkgem.jeesite.modules.questionlib.dto.KnowledgePointsDTO">
+		SELECT
+		   ck.title title,
+		  (SELECT COUNT(1) FROM table_exam_knowledge xk WHERE xk.course_knowledge_id = ck.id and xk.exam_id =) count,
+		FROM table_course_knowledge ck   
+		 
+		WHERE 1=1 
+		
+		<if test="courseKnowledge !=null and  courseKnowledge.id !=null and courseKnowledge.id !=''">
+			AND (b.id=#{courseKnowledge.id} OR b.parent_ids LIKE CONCAT('%,',#{courseKnowledge.id},',%'))
+		</if>
+		
+		ORDER BY b.id
+	</select>
+ 
+ 
+ 
+    <sql id="knowledgeColumns">
+		   a.id as "id",
+		   a.title as "title",
+		   a.version_id as "versionId",
+		   a.level as "level",
+		   a.parent_id as "parent.id",
+		   a.parent_ids as "parentIds"
+	</sql>
+	
+	
+	<select id="getKnowledgePointsStatics" resultType="CourseKnowledge">
+		SELECT 
+		   <include refid="knowledgeColumns"/>
+			 ,
+		  (SELECT COUNT(1) FROM table_exam_knowledge  ek   ,table_examination e   
+		      WHERE ek.course_knowledge_id = a.id 
+		        and ek.exam_id  =e.id 
+		         <if test="startDt !=null and endDt !=null">
+			      and  DATE_FORMAT(e.create_date,'%Y-%m-%d') between #{startDt} and #{endDt}
+			     </if>
+			   
+		   
+		  ) as count1 ,
+		  
+		   (SELECT COUNT(1) FROM table_teacher_knowledge  tk     
+ 
+		      WHERE   tk.course_knowledge_id  =a.id  and tk.level != 4
+ 
+		  ) as count2 
+		  
+		  FROM table_course_knowledge a
+		 
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		    
+			<if test="parentIds != null and parentIds != ''">
+				AND (a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+					 or id=#{parentIds}
+					)
+			</if>
+			
+			 
+			
+			<if test="versionId != null and versionId != ''">
+				AND a.version_id = #{versionId}
+					 
+			</if>
+			
+			 
+		</where>
+		ORDER BY a.create_date
+	</select>
+	
+	<select id="accreditStatistics" resultType="SchoolQuestionlib">
+		SELECT 
+		    a.id,
+		    c.name AS 'schoolName',
+		    c.master AS 'master',
+		    b.title AS 'questionLibName',
+		    a.valid_start_date AS 'validStartDate',
+		    a.valid_end_date AS 'validEndDate',
+		    a.state AS 'state'
+		FROM
+		    table_school_questionlib a,
+		    table_course_questionlib b,
+		    sys_office c
+		WHERE
+		    a.school_id = c.id
+		        AND a.questionlib_id = b.id
+		        AND a.del_flag = '0'
+		<if test="questionlibId != null and questionlibId != '' ">
+				AND a.questionlib_id = #{questionlibId}
+		</if>
+		<if test="schoolId != null and schoolId != '' ">
+				AND b.school_id= #{schoolId}
+		</if>
+	</select>
+	
+</mapper>

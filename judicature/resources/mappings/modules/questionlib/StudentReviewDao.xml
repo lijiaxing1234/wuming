@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.StudentReviewDao">
+    
+	<sql id="studentReviewColumns">
+		a.id AS "id",
+		a.teacher_id AS "teacherId",
+		a.student_id AS "studentId",
+		a.content AS "content",
+		a.crate_time AS "crateTime",
+		a.is_show AS "isShow"
+	</sql>
+	
+	<sql id="studentReviewJoins">
+	</sql>
+    
+	<select id="get" resultType="StudentReview">
+		SELECT 
+			<include refid="studentReviewColumns"/>
+		FROM table_student_review a
+		<include refid="studentReviewJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="StudentReview">
+		SELECT 
+			<include refid="studentReviewColumns"/>
+		FROM table_student_review a
+		<include refid="studentReviewJoins"/>
+		<where>
+			 <if test="teacherId !=null and teacherId !=''">
+			   and	a.teacher_id=#{teacherId}
+			 </if>
+			
+			 <if test="studentId !=null and studentId !=''">
+			    and a.student_id=#{studentId}
+			 </if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			   order by crate_time desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="StudentReview">
+		SELECT 
+			<include refid="studentReviewColumns"/>
+		FROM table_student_review a
+		<include refid="studentReviewJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO table_student_review(
+			id,
+			teacher_id,
+			student_id,
+			content,
+			crate_time,
+			is_show
+		) VALUES (
+			#{id},
+			#{teacherId},
+			#{studentId},
+			#{content},
+			#{crateTime},
+			#{isShow}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_student_review SET 	
+			teacher_id = #{teacherId},
+			student_id = #{studentId},
+			content = #{content},
+			crate_time = #{crateTime},
+			is_show = #{isShow}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_student_review
+		<where>
+		    and id =#{id} 
+			<if test="teacherId !=null and teacherId !=''">
+				and teacher_id=#{teacherId}
+			</if>
+		</where>
+	</update>
+	
+	<select id="getMyReview" resultType="StudentReview">
+		SELECT 
+			a.id AS "id",
+			a.teacher_id AS "teacherId",
+			a.student_id AS "studentId",
+			a.content AS "content",
+			a.crate_time AS "crateTime",
+			a.is_show AS "isShow",
+			b.name AS "teacher.name"
+		FROM table_student_review a
+		LEFT JOIN sys_user b
+		ON a.teacher_id = b.id
+		<where>
+			is_show = '0'
+			<if test="studentId != null and studentId != ''">
+				and student_id = #{studentId}
+			</if>
+			<if test="teacher != null and teacher != '' and teacher.id != null and teacher.id != ''">
+				and teacher_id = #{teacher.id}
+			</if>
+		</where>
+	</select>
+	
+</mapper>

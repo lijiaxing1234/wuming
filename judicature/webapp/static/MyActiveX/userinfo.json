@@ -1,0 +1,207 @@
+{		
+"irTitle": "环境监测试题库试题模版20060322",		
+"irTables": {			
+            "count": "1",				
+            "table": [					 
+                {		
+                    "tablename": "1",		
+                    "rowcount": "4",		
+                    "columncount": "9"
+                }				
+            ]	
+        },		
+"irUrlDate": "表格12487646",		
+"irContent": [			
+            {		
+                "name": "1-1-1",		
+                "content": [
+                    {						 
+                        "type": "1",						 
+                        "content": "测点"						 
+                    },
+                    {						 
+                        "type": "1",						 
+                        "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                    }						 		
+                ]
+            },
+            {		
+                "name": "1-1-2",		
+                "content": [
+                    {						 
+                        "type": "1",						 
+                        "content": "题型"						 
+                    }						 
+                    ,{						 
+                        "type": "1",						 
+                        "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                    }						 		
+                ]
+            },
+            {		
+                "name": "1-1-3",		
+                "content": [
+                    {						 
+                        "type": "1",						 
+                        "content": "难度"						 
+                    }						 
+                    ,{						 
+                        "type": "1",						 
+                        "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                    }						 		
+                ]
+            },
+            {		
+                "name": "1-1-4",		
+                "content": [
+                    {						 
+                        "type": "1",						
+                        "content": "分值"						 
+                    }						 
+                    ,{						 
+                        "type": "1",						 
+                        "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                    }						 		
+                ]
+            },
+            {		
+                "name": "1-1-5",		
+                "content": [
+                    {						 
+                        "type": "1",						 
+                        "content": "试题"						 
+                    }						 
+                    ,{						 
+                        "type": "1",						 
+                        "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                    }						 	
+                ]
+            },
+            {		
+                "name": "1-1-6",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "解答"						 
+                }						 
+                ,{						 
+                "type": "1",						
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},
+            {		
+                "name": "1-1-7",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "讲解／分析"						 
+                }						 
+                ,{						 
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-1-8",		
+                "content": [{					
+                "type": "1",						 
+                "content": "命题人"						 
+                }						 
+                ,{						 
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-1-9",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "审题人"						 
+                }						 
+                ,{						 
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-2-1",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "基浙1.1,基浙2"						 
+                }						 
+                ,{						
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-2-2",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "w"						 
+                }						 
+                ,{						 
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-2-3",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "a"						 
+                }						 
+                ,{						 
+                "type": "1",						 
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-2-4",		
+                "content": [{						 
+                "type": "1",						 
+                "content": "8"						 
+                }						 
+                ,{						 
+                "type": "1",						
+                "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 
+                }						 		
+            ]},{		
+                "name": "1-2-5",	"content": [{	  "type": "1",	   "content": "简述烟气压力的分类及其含义，它们之间的关系。"						 
+                }						 
+                ,{	           "type": "1",	   "content": "&lt;o:p&gt;&lt;/o:p&gt;"	              }						 		
+                ]},
+                {		    "name": "1-2-6",         "content": [{	       "type": "1",						 "content": "烟气的压力分全压&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;(P&lt;/font&gt;"						 
+                }         ,{	       "type": "1",        "content": "t"	         }						 
+                   ,{						 
+                   "type": "1",						 
+                   "content": ")&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;、静压&lt;/font&gt;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;(P&lt;/font&gt;"						 
+                   }						 
+                   ,{						 
+                   "type": "1",						 
+                   "content": "s"						 
+                   }						 
+                   ,{						
+                    "type": "1",						
+                     "content": ")&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;和动压&lt;/font&gt;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;(P&lt;/font&gt;"						 }						 ,{						 "type": "1",						 "content": "v"						 }						 
+                     ,{						 "type": "1",						 "content": ")&nbsp;&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;。&nbsp;&lt;/font&gt;"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 
+                     ,{						 "type": "1",						 "content": "静压&nbsp;是单位体积气体所具有的势能，表现为气体在各个方向上作用于器壁的压力；动压&nbsp;是单位体积气体具有的动能，是使气体流动的压力；全压&nbsp;是气体在管道中流动具有的总能量。三者的关系为：&nbsp;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;P&lt;/font&gt;"						 
+                     }						 ,{						 "type": "1",						 "content": "t&nbsp;"						 }						
+                      ,{						 "type": "1",						 "content": "=&nbsp;P"						 }						 ,{						 "type": "1",						 "content": "s&nbsp;"						 }						 ,{						 "type": "1",						 "content": "+&nbsp;P"						 }						 ,{						 "type": "1",						 "content": "v"						 }						 ,{						 "type": "1",						 "content": "，所以，只要测出三项中的任意两项，即可求出第三项。"						 }						 
+                      ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-2-7",		"content": [{						 "type": "1",						 "content": "因为&#8230;&#8230;"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-2-8",		"content": [{						 "type": "1",						 "content": "张安超"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-2-9",		"content": [{						 "type": "1",						 "content": "梁静丽"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},                     
+                     {		"name": "1-3-1",		"content": [{						 "type": "1",						 "content": "基浙1.1,基浙2"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-2",		"content": [{						 "type": "1",						 "content": "w"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-3",		"content": [{						 "type": "1",						 "content": "c"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-4",		"content": [{						 "type": "1",						 "content": "8"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-5",		"content": [{						 "type": "1",						 "content": "用简图表示出烟气压力的测量，并简述压力测定的操作方法？"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-6",		"content": [{						 "type": "1",						 "content": "test.files/test466.png"						 }						 ,{						 "type": "1",						 "content": "先把仪器调整到水平1，检查液柱内是否有气泡，是否漏气，并将液面调至零点，然后，将皮托管与压力计连接（如左图两种连接方式，（&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;a&lt;/font&gt;&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;）用于测动压，（&lt;/font&gt;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;b&lt;/font&gt;&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;）用于测静压），把测压管的测压口伸进烟道内测点上，并对准气流方向，从&nbsp;&lt;/font&gt;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;U&nbsp;&lt;/font&gt;&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;形压力计上读出液面差，或从微压计上读出斜管液柱长度，按相应公式计算测得压力。&nbsp;&lt;/font&gt;"						 }						 
+                     ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 
+                     ,{						 "type": "1",						 "content": "test.files/test616.png"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&nbsp;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-7",		"content": [{						 "type": "1",						 "content": "因为&#8230;&#8230;"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-8",		"content": [{						 "type": "1",						 "content": "张安超"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-3-9",		"content": [{						 "type": "1",						 "content": "梁静丽"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-1",		"content": [{						 "type": "1",						 "content": "基浙1.1,基浙2"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-2",		"content": [{						 "type": "1",						 "content": "w"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-3",		"content": [{						 "type": "1",						 "content": "d"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},{		"name": "1-4-4",		"content": [{						 "type": "1",						 "content": "10"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},{		"name": "1-4-5",		"content": [{						 "type": "1",						 "content": "简述烟气流速的计算方法。"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-6",		"content": [{						 "type": "1",						 "content": "烟气流速的计算："						 }						 ,{						 "type": "1",						 "content": "test.files/test688.png"						 }						 ,{						 "type": "1",						 "content": "式中"						 }						 ,{						 "type": "1",						 "content": "test.files/test717.png"						 }						 ,{						 "type": "1",						 "content": "3"						 }						 ,{						 "type": "1",						 "content": "/Kg&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;），&nbsp;&lt;/font&gt;"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 
+                     ,{						 "type": "1",						 "content": "test.files/test758.png"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 ,{						 "type": "1",						 "content": "Ms&lt;font&nbsp;face=&quot;宋体&quot;&nbsp;&gt;烟气的相对分子量，&lt;/font&gt;&lt;font&nbsp;face=&quot;Times&nbsp;New&nbsp;Roman&quot;&nbsp;&gt;Kg/Kmol&lt;/font&gt;"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-7",		"content": [{						 "type": "1",						 "content": "&lt;o:p&gt;&nbsp;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-8",		"content": [{						 "type": "1",						 "content": "张安超"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]},
+                     {		"name": "1-4-9",		"content": [{						 "type": "1",						 "content": "梁静丽"						 }						 ,{						 "type": "1",						 "content": "&lt;o:p&gt;&lt;/o:p&gt;"						 }						 		]}		],		
+                     
+"irState": "0"}

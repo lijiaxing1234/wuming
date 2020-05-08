@@ -1,0 +1,1256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.student.mobile.dao.MobileStudentDao">
+	<!-- 登录 根据学号获取学生信息 -->
+	<select id="getStudentByCode" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.StudentVo">
+		SELECT
+			a.*, b.title AS 'className',b.end_date as 'endDate'
+		FROM
+			table_student a,
+			table_class b
+		WHERE
+			a.class_id = b.id
+		and a.std_code = #{stdCode}
+		and b.company_id = #{schoolId}
+		and a.del_flag = '0'
+		and b.del_flag = '0'
+	</select>
+	<select id="isGraduate" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.StudentVo">
+		select 
+		    b.end_date as 'endDate'
+		from
+		    table_student a,
+		    table_class b
+		where
+		    a.id = #{studentId} and a.del_flag = '0'
+		        and a.class_id = b.id
+		        and b.del_flag = '0'
+	</select>
+	
+	<!-- 进入主页面课程下拉选项 -->
+	<select id="getCoursesByStdId" parameterType="String" resultType="map">
+		SELECT 
+			(SELECT 
+		            tc.id
+		        FROM
+		            table_course tc,
+		            table_course_vesion tcv
+		        WHERE
+		            tc.id = tcv.course_id AND tcv.id = a.id) AS 'id',
+		    a.id AS 'versionId',
+		    (SELECT 
+		            tc.title
+		        FROM
+		            table_course tc,
+		            table_course_vesion tcv
+		        WHERE
+		            tc.id = tcv.course_id AND tcv.id = a.id) AS 'title'
+		FROM
+		    table_course_vesion a,
+		    table_teacher_class_course b,
+		    table_class c,
+		    table_student d
+		WHERE
+		    a.id = b.verson_id AND b.class_id = c.id
+		        AND c.id = d.class_id
+		        AND d.id = #{stdId}
+	</select>
+	<!-- 学生评论信息 根据学生的id获取数据 -->
+	<select id="getMyComment" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.CommentVo">
+		SELECT
+			a.id,
+			a.teacher_id AS 'teacherId',
+			b.`name` AS 'teacherName',
+			a.student_id AS 'studentId',
+			c.`name` AS 'studentName',
+			a.content,
+			a.crate_time AS 'createTime'
+		FROM
+			table_student_review a,sys_user b,table_student c
+		WHERE
+			a.is_show = '0'
+		AND a.student_id = #{studentId}
+		AND a.teacher_id = b.id
+		AND c.id = a.student_id
+		order by a.crate_time desc
+		LIMIT #{i},#{j}
+	</select>
+	
+	<select id="getQuestionLibQuesTypesAndQuesCounts" parameterType="map" resultType="map">
+		SELECT 
+		    t.quesType AS 'questionTypeId',
+		    sd.label 'questionTypeName',
+		    COUNT(t.questionId) AS 'questionCount'
+		FROM
+		    (SELECT 
+		        a.id AS 'questionId', a.ques_type AS 'quesType'
+		    FROM
+		        table_version_question a, (SELECT 
+		        z.question_id
+		    FROM
+		        table_teacher_questionslib_split z, table_student x, table_class y
+		    WHERE
+		        x.id = #{studentId}
+		            AND x.class_id = y.id
+		            AND y.company_id = z.school_id
+		            AND z.type IN ('0' , '2')) t
+		    where
+		        a.id = t.question_id
+		            and a.version_id = #{versionId}) t,
+		    sys_dict sd
+		WHERE
+		    t.quesType = sd.VALUE
+		        AND sd.type = 'question_type'
+		GROUP BY t.quesType
+		ORDER BY sd.sort
+	</select>
+
+	<!-- 我的题库 -->
+	<select id="getMyQuestionLib" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.QuestionVo">
+		SELECT 
+		    a.id,
+			a.exam_code AS 'examCode',
+			a.ques_type AS 'quesType',
+			CASE a.ques_type
+			WHEN '1' THEN '单选题' 
+			WHEN '2' THEN '填空题'
+			WHEN '3' THEN '计算题'
+			WHEN '4' THEN '简答题'
+			WHEN '5' THEN '多选题'
+			WHEN '6' THEN '概念题'
+			WHEN '7' THEN '综合题'
+			WHEN '8' THEN '作图题'
+			WHEN '9' THEN '制表题'
+			WHEN '10' THEN '识图题'
+			WHEN '11' THEN '判断题'
+			END AS 'strQuesType',
+			a.ques_level AS 'quesLevel',
+			a.ques_point AS 'quesPoint',
+			a.description AS 'description',
+			a.writer,
+			a.checker,
+			a.title,
+			a.choice0,
+			a.choice1,
+			a.choice2,
+			a.choice3,
+			a.choice4,
+			a.choice5,
+			a.choice6,
+			a.choice7,
+			a.choice8,
+			a.choice9,
+			a.answer0,
+			a.answer1,
+			a.answer2,
+			a.answer3,
+			a.answer4,
+			a.answer5,
+			a.answer6,
+			a.answer7,
+			a.answer8,
+			a.answer9
+		FROM
+		    table_version_question a,
+		    (SELECT 
+		            z.question_id
+		        FROM
+		            table_teacher_questionslib_split z
+		        WHERE
+		            z.type IN ('0' , '2')) t
+		   	where a.id = t.question_id
+		   	and a.version_id = #{versionId}
+		   	<if test="questionTypeId != null and questionTypeId != ''">
+            	and a.ques_type = #{questionTypeId}
+            </if>
+			ORDER BY a.exam_code
+			LIMIT #{i},#{j}
+	</select>
+	
+	<select id="getWrongQuestionLibQuesTypeAndQuesCount" parameterType="map" resultType="map">
+		SELECT 
+		    d.value AS 'questionTypeId',
+		    d.label AS 'questionTypeName',
+		    COUNT(a.id) AS 'questionCount'
+		FROM
+		    table_version_question a,
+		    table_student_answer b,
+		    table_examination c,
+		    sys_dict d
+		WHERE
+		    a.id = b.question_id
+		    	<if test="versionId != null and versionId != ''">
+		    		and a.version_id = #{versionId}
+		    	</if>
+		        AND c.id = b.exam_id
+		        AND b.student_id = #{studentId}
+		        AND (b.is_correct = '0'
+        		OR b.is_correct IS NULL)
+		        AND c.exam_type = #{examType}
+		        AND d.type = 'question_type'
+		        AND d.value = a.ques_type
+		GROUP BY a.ques_type
+		ORDER BY d.sort
+	</select>
+	
+	<!-- 我做错了的题目 -->
+	<select id="getWrongQuestionLib" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.QuestionVo">
+		SELECT
+			a.id,
+			a.exam_code AS 'examCode',
+			a.ques_type AS 'quesType',
+			CASE a.ques_type
+			WHEN '1' THEN '单选题' 
+			WHEN '2' THEN '填空题'
+			WHEN '3' THEN '计算题'
+			WHEN '4' THEN '简答题'
+			WHEN '5' THEN '多选题'
+			WHEN '6' THEN '概念题'
+			WHEN '7' THEN '综合题'
+			WHEN '8' THEN '作图题'
+			WHEN '9' THEN '制表题'
+			WHEN '10' THEN '识图题'
+			WHEN '11' THEN '判断题'
+			END AS 'strQuesType',
+			a.ques_level AS 'quesLevel',
+			a.ques_point AS 'quesPoint',
+			a.description AS 'description',
+			a.writer,
+			a.checker,
+			a.title,
+			a.choice0,
+			a.choice1,
+			a.choice2,
+			a.choice3,
+			a.choice4,
+			a.choice5,
+			a.choice6,
+			a.choice7,
+			a.choice8,
+			a.choice9,
+			a.answer0,
+			a.answer1,
+			a.answer2,
+			a.answer3,
+			a.answer4,
+			a.answer5,
+			a.answer6,
+			a.answer7,
+			a.answer8,
+			a.answer9,
+			CONCAT(IFNULL(b.answer0,''),IFNULL(b.answer1,''),IFNULL(b.answer2,''),IFNULL(b.answer3,''),IFNULL(b.answer4,''),IFNULL(b.answer5,''),IFNULL(b.answer6,''),IFNULL(b.answer7,''),IFNULL(b.answer8,''),IFNULL(b.answer9,'')) AS 'myAnswer'
+		FROM
+			table_version_question a,
+			table_student_answer b,
+			table_examination c
+		WHERE
+			a.id = b.question_id
+		<if test="versionId != null and versionId != ''">
+    		and a.version_id = #{versionId}
+    	</if>
+		AND c.id = b.exam_id
+		AND b.student_id = #{studentId}
+		AND (b.is_correct = '0' or b.is_correct is null)
+		and c.exam_type = #{examType}
+		<if test="questionTypeId != null and questionTypeId != ''">
+			and a.ques_type = #{questionTypeId}
+		</if>
+		order by a.exam_code,a.create_date
+		LIMIT #{i},#{j}
+	</select>
+	
+	
+	<!-- 根据课程id和测试类型获取给学生已经参加了的考试 	考试类型为1	-->
+	<select id="getExamsByTypeAndCourse" parameterType="map" resultType="map">
+		SELECT DISTINCT
+			a.id,
+			a.title,
+			a.exam_place as 'examPlace',
+			a.begin_time as 'beginTime',
+			a.end_time as 'endTime',
+			'1' as 'examStatus'
+		FROM
+			table_examination a,
+			table_exam_detail b,
+			table_student_task c,
+			table_course_vesion d,
+			table_course e
+		WHERE a.id = b.exam_id
+		AND b.id = c.exam_detail_id
+		AND c.student_id = #{studentId}
+		AND a.version_id = d.id
+		AND d.course_id = e.id
+		AND a.exam_type = #{examType}
+		AND e.id = #{courseId}
+		order by a.create_date desc
+		LIMIT #{i},#{j}
+	</select>
+	<!-- 根据课程id和测试类型获取学生没有参加了的考试	examStatus 2：没有参加的考试：已经错过了		3：没有参加的考试：没有错过 -->	
+	<select id="getStudentNotJoinExam" parameterType="map" resultType="map">
+		SELECT
+			a.id,
+			a.title,
+			a.exam_place as 'examPlace',
+			a.begin_time as 'beginTime',
+			a.end_time as 'endTime',
+		IF (a.end_time <![CDATA[ < ]]> NOW(), '2', '3') AS 'examStatus'
+		FROM
+			table_examination a,
+			table_exam_class b,
+			table_class c,
+			table_student d,
+			table_course_vesion e,
+			table_course f
+		WHERE
+			a.id = b.exam_id
+		AND b.class_id = c.id
+		AND c.id = d.class_id
+		AND d.id = #{studentId}
+		AND a.exam_type = #{examType}
+		AND a.version_id = e.id
+		AND e.course_id = f.id
+		AND f.id = #{courseId}
+		AND a.id NOT IN (
+			SELECT DISTINCT
+				a.id
+			FROM
+				table_examination a,
+				table_exam_detail b,
+				table_student_task c,
+				table_course_vesion d,
+				table_course e
+			WHERE
+				a.id = b.exam_id
+			AND b.id = c.exam_detail_id
+			AND c.student_id = #{studentId}
+			AND a.version_id = d.id
+			AND d.course_id = e.id
+			AND a.exam_type = #{examType}
+			AND e.id = #{courseId}
+		)
+		order by a.create_date desc
+		LIMIT #{i},#{j}
+	</select>
+	<!-- 获取试卷 -->
+	<select id="getTestPaper" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.QuestionVo">
+		SELECT 
+		    d.id,
+		    b.id AS 'examDetailId',
+		    d.exam_code AS 'examCode',
+		    d.ques_type AS 'quesType',
+		    d.ques_level AS 'quesLevel',
+		    d.ques_point AS 'quesPoint',
+		    d.title AS 'title',
+		    d.description,
+		    d.writer,
+		    d.checker,
+		    d.choice0,
+		    d.choice1,
+		    d.choice2,
+		    d.choice3,
+		    d.choice4,
+		    d.choice5,
+		    d.choice6,
+		    d.choice7,
+		    d.choice8,
+		    d.choice9,
+		    d.answer0,
+		    d.answer1,
+		    d.answer2,
+		    d.answer3,
+		    d.answer4,
+		    d.answer5,
+		    d.answer6,
+		    d.answer7,
+		    d.answer8,
+		    d.answer9
+		FROM
+		    table_examination a,
+		    table_exam_detail b,
+		    table_exam_detail_question c,
+		    table_version_question d,
+		    table_exam_class e,
+		    table_class f,
+		    table_student g,
+		    table_student_task h,
+            sys_dict i
+		WHERE
+		    a.id = #{examId}
+		        AND e.`status` IN ('1' , '2')
+		        AND e.exam_id = a.id
+		        AND e.class_id = f.id
+		        AND f.id = g.class_id
+		        AND g.id = #{studentId}
+		        AND a.id = b.exam_id
+		        AND b.id = c.exam_detail_id
+		        AND c.question_id = d.id
+		        AND h.exam_detail_id = b.id
+		        AND h.student_id = #{studentId}
+		        AND i.type = 'question_type'
+        		AND i.value = d.ques_type
+		        ORDER BY i.sort,c.sort
+	</select>
+	
+	<!-- 获取试卷的详细信息  试卷 + 答案 + 讲解 + 我的答案 -->
+	<select id="getTestPaperAllMessage" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.QuestionVo">
+		SELECT 
+		    ttt.id,
+		    ttt.title,
+		    ttt.examCode,
+		    ttt.quesType,
+		    ttt.quesLevel,
+		    ttt.quesPoint,
+		    ttt.writer,
+		    ttt.answer0,
+		    ttt.answer1,
+		    ttt.answer2,
+		    ttt.answer3,
+		    ttt.answer4,
+		    ttt.answer5,
+		    ttt.answer6,
+		    ttt.answer7,
+		    ttt.answer8,
+		    ttt.answer9,
+		    ttt.choice0,
+		    ttt.choice1,
+		    ttt.choice2,
+		    ttt.choice3,
+		    ttt.choice4,
+		    ttt.choice5,
+		    ttt.choice6,
+		    ttt.choice7,
+		    ttt.choice8,
+		    ttt.choice9,
+		    tsa.answerImg,
+		    ttt.sort,
+		    ttt.description,
+		    CONCAT(IFNULL(CONCAT(tsa.answer0, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer1, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer2, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer3, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer4, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer5, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer6, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer7, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer8, '*,*'), ''),
+		            IFNULL(CONCAT(tsa.answer9, '*,*'), '')) AS 'myAnswer',
+		    CASE
+		        WHEN tsa.is_correct = 1 THEN '1'
+		        ELSE '0'
+		    END AS 'isCorrent'
+		FROM
+		    (SELECT 
+		        tt.examId,
+		            tt.examDetailId,
+		            tt.studentId,
+		            tvq.id,
+		            tvq.title,
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer0
+		            END) AS 'answer0',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer1
+		            END) AS 'answer1',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer2
+		            END) AS 'answer2',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer3
+		            END) AS 'answer3',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer4
+		            END) AS 'answer4',
+		            BINARY( CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer5
+		            END) AS 'answer5',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer6
+		            END) AS 'answer6',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer7
+		            END) AS 'answer7',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer8
+		            END) AS 'answer8',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.answer9
+		            END) AS 'answer9',
+		            (CASE
+		                WHEN
+		                    (SELECT 
+		                            table_e.publish_answer_time
+		                        FROM
+		                            table_examination table_e
+		                        WHERE
+		                            table_e.id = #{examId}) <![CDATA[ > ]]> NOW()
+		                THEN
+		                    ''
+		                ELSE tvq.description
+		            END) AS 'description',
+		            tvq.writer,
+		            tvq.exam_code AS 'examCode',
+		            tvq.ques_type AS 'quesType',
+		            tvq.ques_level AS 'quesLevel',
+		            tvq.ques_point AS 'quesPoint',
+		            tvq.checker,
+		            tvq.choice0,
+		            tvq.choice1,
+		            tvq.choice2,
+		            tvq.choice3,
+		            tvq.choice4,
+		            tvq.choice5,
+		            tvq.choice6,
+		            tvq.choice7,
+		            tvq.choice8,
+		            tvq.choice9,
+		            tedq.sort
+		    FROM
+		        (SELECT 
+		        te.id AS 'examId',
+		            ted.id AS 'examDetailId',
+		            tst.student_id AS 'studentId'
+		    FROM
+		        table_examination te, table_exam_detail ted, table_student_task tst
+		    WHERE
+		        te.id = ted.exam_id
+		            AND ted.id = tst.exam_detail_id
+		            AND te.id = #{examId}
+		            AND tst.student_id = #{studentId}) AS tt, table_exam_detail_question tedq, table_version_question tvq
+		    WHERE
+		        tt.examDetailId = tedq.exam_detail_id
+		            AND tedq.question_id = tvq.id) AS ttt
+		        LEFT JOIN
+		    table_student_answer tsa ON ttt.examId = tsa.exam_id
+		        AND ttt.id = tsa.question_id
+		        and tsa.student_id = #{studentId}
+		        ,sys_dict sd
+		        where sd.type = 'question_type'
+		        AND sd.value = ttt.quesType
+		        ORDER BY sd.sort , ttt.sort
+	</select>
+	
+	<select id="getExamsByExamTypeAndCourseIdAndStudentId" parameterType="map" resultType="map">
+		SELECT
+			a.id AS 'id' ,
+			a.title AS 'title' ,
+			a.exam_place AS 'examPlace' ,
+			CASE
+		        WHEN a.exam_type = 4 THEN a.create_date
+		        ELSE a.begin_time
+		    END AS 'beginTime',
+			a.end_time AS 'endTime' ,
+			a.create_date AS 'createDate' ,
+		IF(a.end_time <![CDATA[ < ]]> NOW() , '2' , '3') AS 'examStatus',
+		b.STATUS AS 'quizExamStatus',
+		'0' as 'isMark'
+		FROM
+			table_examination a ,
+			table_exam_class b ,
+			table_class c ,
+			table_student d ,
+			sys_user e,
+			table_course_vesion f
+		WHERE
+			a.id = b.exam_id
+		AND b.`status` in ('1','2')
+		<!-- and a.istemplate = '0' -->
+		AND f.id = a.version_id
+		AND f.course_id = #{courseId}
+		AND b.class_id = c.id
+		AND c.id = d.class_id
+		AND d.id = #{studentId}
+		AND a.exam_type = #{examType}
+		AND e.id = a.teacher_id
+		AND a.del_flag = '0'
+		AND a.id NOT in(
+		SELECT
+			y.exam_id
+		FROM
+			table_student_task z ,
+			table_exam_detail y
+		WHERE
+			z.exam_detail_id = y.id
+		AND z.student_id = #{studentId}
+		AND z.issubmit = '1'
+		)
+		UNION ALL
+			SELECT
+				j.id AS 'id' ,
+				j.title AS 'title' ,
+				j.exam_place AS 'examPlace' ,
+				j.begin_time AS 'beginTime' ,
+				j.end_time AS 'endTime' ,
+				j.create_date AS 'createDate' ,
+				'1' AS 'examStatus' ,
+				'4' AS 'quizExamStatus',
+				CASE
+			        WHEN m.isMark IS NULL THEN '0'
+			        ELSE '1'
+			    END AS 'isMark'
+			FROM
+				table_exam_detail h ,
+				table_student_task i ,
+				table_examination j ,
+				sys_user k,
+				table_course_vesion l,
+			    table_exam_class m,
+			    table_class n,
+			    table_student o
+			WHERE
+				j.teacher_id = k.id
+			AND l.id = j.version_id
+			AND l.course_id = #{courseId}
+			AND j.id = h.exam_id
+			AND h.id = i.exam_detail_id
+			AND i.isSubmit = '1'
+			AND j.del_flag = '0'
+			AND j.exam_type = #{examType}
+			AND i.student_id = #{studentId}
+			AND h.exam_id = m.exam_id
+	        AND m.class_id = n.id
+	        AND n.id = o.class_id
+	        AND o.id = #{studentId}
+		order by examStatus desc,createDate desc
+		LIMIT #{i},#{j}
+	</select>
+	
+	<select id="mobileIsAnswered" parameterType="StudentAnswer" resultType="StudentAnswer">
+		SELECT * FROM table_student_answer 
+			WHERE 
+		student_id = #{studentId} AND question_id = #{questionId} AND exam_id = #{examId}
+	</select>
+	
+	<!-- addStudentAnswer updateStudentAnswer -->
+	<insert id="addStudentAnswer" parameterType="StudentAnswer">
+		INSERT INTO table_student_answer (
+			id,
+			student_id,
+			exam_id,
+			question_id,
+			question_type,
+			answer0,
+			del_flag
+		)
+		VALUES
+		(
+			#{id},	
+			#{studentId},
+			#{examId},
+			#{questionId},
+			#{questionType},
+			#{answer0},
+			'0'
+		)
+	</insert>
+	
+	<update id="updateStudentAnswer" parameterType="StudentAnswer">
+		UPDATE table_student_answer
+		SET 
+		 	answer0 = #{answer0}
+		WHERE
+			id = #{id}
+	</update>
+
+	<update id="updateMobileStudentTask" parameterType="studentTask">
+		update table_student_task set 
+			isSubmit = '1',
+			submitTime = #{submittime},
+			score = (SELECT 
+	            SUM(a.score)
+	        FROM
+	            table_student_answer a
+	        WHERE
+	            a.student_id = #{studentId} AND a.exam_id = #{examId})
+		where student_id=#{studentId} and exam_detail_id=#{examDetail.id}
+	</update>
+	
+	<update id="updatePassword">
+		UPDATE table_student a SET a.std_password = #{password} WHERE a.id = #{studentId} 
+	</update>
+	
+	<select id="getStudentById" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.StudentVo">
+		select * from table_student where id=#{studentId} 
+	</select>
+	
+	<insert id="addStudentTask" parameterType="studentTask">
+		insert into table_student_task(
+			id,
+			student_id,
+			exam_detail_id,
+			isSubmit,
+			startTime,
+			submitTime
+		) values (
+			#{id},
+			#{studentId},
+			#{examDetailId},
+			#{isSubmit},
+			#{starttime},
+			#{submittime}
+		)
+	</insert>
+	
+	<insert id="addStudentAnswerList" parameterType="list" >
+		INSERT INTO table_student_answer (
+			id,
+			student_id,
+			exam_id,
+			question_id,
+			question_type,
+			answer0,
+			answer1,
+			answer2,
+			answer3,
+			answer4,
+			answer5,
+			answer6,
+			answer7,
+			answer8,
+			answer9,
+			answerImg,
+			is_correct,
+			score,
+			del_flag,
+			is_mobile
+		) VALUES
+		<foreach collection ="list" item="item" index= "index" separator =",">
+                (
+                	#{item.id},#{item.studentId},#{item.examId},#{item.questionId},#{item.questionType},#{item.answer0},#{item.answer1},#{item.answer2},#{item.answer3},#{item.answer4},#{item.answer5},#{item.answer6},#{item.answer7},#{item.answer8},#{item.answer9},#{item.answerImg},#{item.isCorrect},#{item.score},'0','1'
+                )
+            </foreach >
+	</insert>
+	
+	<select id="getMissedTestPaper" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.QuestionVo">
+		SELECT
+			a.id ,
+			a.exam_code AS 'examCode' ,
+			a.ques_type AS 'quesType' ,
+			a.ques_level AS 'quesLevel' ,
+			a.ques_point AS 'quesPoint' ,
+			a.title AS 'title' ,
+			(CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.description
+		    END) AS 'description',
+			a.writer ,
+			a.checker ,
+			a.choice0,
+			a.choice1,
+			a.choice2,
+			a.choice3,
+			a.choice4,
+			a.choice5,
+			a.choice6,
+			a.choice7,
+			a.choice8,
+			a.choice9,
+			(CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer0
+		    END) AS 'answer0',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer1
+		    END) AS 'answer1',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer2
+		    END) AS 'answer2',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer3
+		    END) AS 'answer3',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer4
+		    END) AS 'answer4',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer5
+		    END) AS 'answer5',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer6
+		    END) AS 'answer6',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer7
+		    END) AS 'answer7',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer8
+		    END) AS 'answer8',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer9
+		    END) AS 'answer9',(CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer0
+		    END) AS 'answer0',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer1
+		    END) AS 'answer1',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer2
+		    END) AS 'answer2',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer3
+		    END) AS 'answer3',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer4
+		    END) AS 'answer4',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer5
+		    END) AS 'answer5',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer6
+		    END) AS 'answer6',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer7
+		    END) AS 'answer7',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer8
+		    END) AS 'answer8',
+		    (CASE
+		        WHEN
+		            (SELECT 
+		                    te.publish_answer_time
+		                FROM
+		                    table_examination te
+		                WHERE
+		                    te.id = #{examId}) <![CDATA[ > ]]> NOW()
+		        THEN
+		            ''
+		        ELSE a.answer9
+		    END) AS 'answer9'
+		FROM
+			table_version_question a ,
+			table_exam_detail_question b ,
+			table_exam_detail d ,
+			table_examination e ,
+    		sys_dict i
+		WHERE
+			a.id = b.question_id
+		AND b.exam_detail_id = d.id
+		and d.exam_id = #{examId}
+		and e.id = d.exam_id
+		AND i.type = 'question_type'
+        AND i.value = a.ques_type
+		ORDER BY i.sort,b.sort
+	</select>
+	
+	<select id="getQuestionIdAndAnswerByExamDetilId" parameterType="String" resultType="map">
+		SELECT 
+		    a.id,
+		   CONCAT(IFNULL(a.answer0,''),IFNULL(a.answer1,''),IFNULL(a.answer2,''),IFNULL(a.answer3,''),IFNULL(a.answer4,''),IFNULL(a.answer5,''),IFNULL(a.answer6,''),IFNULL(a.answer7,''),IFNULL(a.answer8,''),IFNULL(a.answer9,'')) AS 'answer'
+		FROM
+		    table_version_question a,
+		    table_exam_detail_question b
+		WHERE
+		    a.id = b.question_id
+		        AND b.exam_detail_id = #{examDetailId}
+	</select>
+	
+	<update id="browseQuestion" parameterType="map">
+		UPDATE table_teacher_questions_record 
+		SET 
+		    practice_count = practice_count + 1
+		WHERE
+		    question_id = #{questionId}
+		        AND school_id = (SELECT 
+		            a.company_id
+		        FROM
+		            table_class a,
+		            table_student b
+		        WHERE
+		            a.id = b.class_id AND b.id = #{studentId})
+		        AND version_id = #{versionId}
+	</update>
+	
+	<select id="getQuestionList" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.Question">
+		SELECT 
+		    a.id, a.detail, a.createTime, a.modifyTime, c.name as 'questionerName'
+		FROM
+		    table_question a,
+		    table_class b,
+		    table_student c
+		WHERE
+		    a.office_id = b.company_id
+		        AND b.id = c.class_id
+		        AND c.id = #{studentId}
+		        AND a.del_flag = '2'
+		        AND a.student_id = c.id 
+		UNION SELECT 
+		    a.id, a.detail, a.createTime, a.modifyTime, d.name as 'questionerName'
+		FROM
+		    table_question a,
+		    table_class b,
+		    table_student c,
+		    sys_user d
+		WHERE
+		    a.office_id = b.company_id
+		        AND b.id = c.class_id
+		        AND c.id = #{studentId}
+		        AND a.del_flag = '2'
+		        AND d.id = a.teacher_id
+		LIMIT #{i},#{j}		        
+	</select>
+	
+	<select id="getAnswerList" parameterType="map" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.Answer">
+		SELECT 
+		    a.id AS 'answerId',
+		    a.questionId,
+		    b.name AS 'answerName',
+		    a.detail,
+		    a.createTime
+		FROM
+		    table_answer a,
+		    table_student b
+		WHERE
+		    a.student_id = b.id
+		        AND a.questionId = #{questionId}
+		        AND a.del_flag = '2' 
+		UNION SELECT 
+		    a.id AS 'answerId',
+		    a.questionId,
+		    d.name AS 'answerName',
+		    a.detail,
+		    a.createTime
+		FROM
+		    table_answer a,
+		    sys_user d
+		WHERE
+		    a.teacher_id = d.id
+		        AND a.questionId = #{questionId}
+		        AND a.del_flag = '2'
+		LIMIT #{i},#{j}
+	</select>
+	
+	<insert id="addQuestion" parameterType="map">
+		insert into table_question
+		(
+			detail,
+			student_id,
+			office_id,
+			createTime,
+			del_flag
+		)
+		values
+		(
+			#{content},
+			#{studentId},
+			#{officeId},
+			#{createTime},
+			'0'
+		)
+	</insert>
+	
+	<insert id="submitAnswer" parameterType="map">
+		insert into table_answer
+		(
+			questionId,
+			student_id,
+			office_id,
+			detail,
+			createTime,
+			del_flag
+		)
+		values
+		(
+			#{questionId},
+			#{studentId},
+			#{officeId},
+			#{detail},
+			#{createTime},
+			'0'
+		)
+	</insert>
+	
+	<select id="isExistStudent" parameterType="String" resultType="com.thinkgem.jeesite.modules.student.mobile.domain.StudentVo">
+		select * from table_student where id = #{studentId}	and del_flag = '0'
+	</select>
+	
+	<select id="getAllSchool" resultType="map">
+		SELECT 
+		    a.id AS 'schoolId', a.name AS 'schoolName'
+		FROM
+		    sys_office a
+		WHERE
+		    a.type = '1' AND a.id NOT IN ('1' , '2')
+		        AND a.del_flag = '0'
+	</select>
+	
+	<select id="isGradeTestPaper" parameterType="map" resultType="String">
+		SELECT 
+		    isMark
+		FROM
+		    table_exam_class a,
+		    table_class b,
+		    table_student c
+		WHERE
+		    a.class_id = b.id AND b.id = c.class_id
+		        AND c.id = #{studentId}
+		        AND a.exam_id = #{examId}		
+	</select>
+	
+	
+	
+</mapper>

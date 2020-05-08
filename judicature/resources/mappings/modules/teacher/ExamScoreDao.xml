@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.teacher.dao.ExamScoreDao">
+	<!-- <select id="queryOnLineScore" resultType="StudentTaskDTO">
+		SELECT distinct
+			b.id AS 'studentId',
+			b. NAME AS 'name',
+			b.std_code AS 'stdCode',
+			b.std_phone AS 'stdPhone',
+			c.score AS 'score'
+		FROM
+			table_examination d
+		JOIN table_exam_class e ON e.exam_id = d.id
+		JOIN table_exam_detail ted ON ted.exam_id=d.id
+		JOIN table_student b ON b.class_id = e.class_id
+		JOIN table_student_task c ON c.student_id=b.id AND c.exam_detail_id=ted.id
+		<where>
+			AND b.del_flag='0'
+		    <if test="sqlMap != null and sqlMap != '' and sqlMap.examId != null and sqlMap.examId != ''">
+				AND d.id = #{sqlMap.examId}
+			</if>
+			<if test="sqlMap != null and sqlMap !='' and sqlMap.examClassId != null and sqlMap.examClassId != ''">
+				AND e.class_id = #{sqlMap.examClassId}
+			</if>
+			AND d.del_flag =0
+			AND e.status = '2'
+		</where>
+		ORDER BY c.score DESC,b.std_code
+	</select> -->
+	<select id="queryOnLineScore" resultType="StudentTaskDTO">
+		SELECT DISTINCT
+		b.id AS 'studentId',
+		b. NAME AS 'name',
+		b.std_code AS 'stdCode',
+		b.std_phone AS 'stdPhone',
+		(
+			SELECT
+				score
+			FROM
+				table_student_task
+			WHERE
+				student_id = b.id
+			AND exam_detail_id IN (
+				SELECT
+					id
+				FROM
+					table_exam_detail
+				WHERE
+					exam_id = #{sqlMap.examId}
+			)
+		) AS 'score'
+	FROM
+		table_examination d,
+		table_exam_class e,
+		table_exam_detail ted,
+		table_student b
+	<where>
+		e.exam_id = d.id
+		AND ted.exam_id = d.id
+		AND b.class_id = e.class_id
+		AND b.del_flag = '0'
+		<if test="sqlMap != null and sqlMap != '' and sqlMap.examId != null and sqlMap.examId != ''">
+			AND d.id = #{sqlMap.examId}
+		</if>
+		<if test="sqlMap != null and sqlMap !='' and sqlMap.examClassId != null and sqlMap.examClassId != ''">
+			AND e.class_id = #{sqlMap.examClassId}
+		</if>
+		AND d.del_flag = 0
+		AND e. STATUS = '2'
+	</where>
+	ORDER BY
+		score DESC ,b.std_code
+	</select>
+	<!-- 统计学生未提交作业的次数 -->
+	<select id="queryExamDetail" resultType="String">
+			SELECT
+				ted.id
+			FROM
+				table_teacher_class_course ttcc
+			JOIN table_exam_class tec ON tec.class_id = ttcc.class_id
+			JOIN table_examination e ON e.id = tec.exam_id
+			JOIN table_exam_detail ted ON ted.exam_id = e.id
+			WHERE
+				ttcc.teacher_id =#{userId}
+			AND ttcc.verson_id = #{versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+			AND e.exam_type = '3'	
+			AND tec. STATUS = '2'
+			AND tec.class_id=#{examClassId}
+	</select>
+	<select id="queryUnsubmitCount" resultType="String">
+		SELECT tst.isSubmit FROM table_student_task tst
+		<where>
+			<if test="studentId !=null and studentId!= ''">
+				AND tst.student_id=#{studentId}
+			</if>
+			<if test="examDetailId !=null and examDetailId !=''">
+				AND	tst.exam_detail_id=#{examDetailId}
+			</if>
+		</where>
+	</select>
+	<!-- 统计学生未提交随堂测的次数 -->
+	<select id="queryUnClassCount" resultType="String">
+			SELECT
+				ted.id
+			FROM
+				table_teacher_class_course ttcc
+			JOIN table_exam_class tec ON tec.class_id = ttcc.class_id
+			JOIN table_examination e ON e.id = tec.exam_id
+			JOIN table_exam_detail ted ON ted.exam_id = e.id
+			WHERE
+				ttcc.teacher_id =#{userId}
+			AND ttcc.verson_id = #{versionId}
+			AND ttcc.teacher_id=e.teacher_id
+			AND ttcc.verson_id=e.version_id
+			AND e.exam_type = '1'	
+			AND tec. STATUS = '2'
+			AND tec.class_id=#{examClassId}
+	</select>
+	<!-- 学生在该测试中的线上成绩 -->
+	<!-- 单选题 1 填空题 2 计算题 3 简答题 4 多选题 5 概念题 6 综合题 7 制图题 8 制表题 9 识图题 10 判断题 11 -->
+	<select id="sumOnlineScore" resultType="String">
+		SELECT
+				SUM(tsa.score)
+			FROM
+				table_student_answer tsa
+			JOIN table_student_task tst ON tsa.student_id = tst.student_id
+			JOIN table_exam_detail ted ON ted.exam_id = tsa.exam_id
+		<where>
+			AND	tsa.question_type IN ('1', '5','11')
+			AND ted.id = tst.exam_detail_id
+			AND tst.isSubmit = '1'
+			<if test="studentId !=null and studentId!= ''">
+				AND tsa.student_id =#{studentId}
+			</if>
+			<if test="examId !=null and examId!= ''">
+				AND tsa.exam_id=#{examId}
+			</if>
+		</where>
+	</select>
+	<!-- 学生在该测试中的总成绩 -->
+	<select id="findStudentScore" resultType="String">
+		SELECT
+			score
+		FROM
+			table_student_task
+		<where>
+		 	 <if test="studentId != null and studentId != '' ">
+				AND student_id=#{studentId}
+			</if>
+		 	 <if test="examDetailId != null and examDetailId != '' ">
+				AND exam_detail_id=#{examDetailId}
+			</if>
+		</where>
+	</select>
+	<select id="findStudentScore2" resultType="Float">
+		SELECT
+			tst.score
+		FROM table_student_task tst
+			JOIN table_exam_detail ted ON ted.id = tst.exam_detail_id
+		<where>
+			AND tst.isSubmit = '1'
+		 	 <if test="studentId != null and studentId != '' ">
+				AND tst.student_id=#{studentId}
+			</if>
+		 	 <if test="examId != null and examId != '' ">
+				AND ted.exam_id=#{examId}
+			</if>
+		</where>
+	</select>
+</mapper>

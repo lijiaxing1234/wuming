@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.questionlib.dao.TableQuestionlibImportApplyDao">
+    
+	<sql id="tableQuestionlibImportApplyColumns">
+		a.school_id AS "schoolId",
+		soc.name as "schoolName",
+		a.queslib_import_id AS "queslibImportId",
+		a.status AS "status",
+		a.createDate as 'createDate',
+		tqi.id AS "queslibImport.id",
+		tqi.questionlib_id AS "queslibImport.questionlibId",
+		tqi.specialty_id AS "queslibImport.specialtyId",
+		tqi.title AS "queslibImport.title",
+		tqi.writer AS "queslibImport.writer",
+		tqi.doc_name AS "queslibImport.docName"
+	</sql>
+	
+	<sql id="tableQuestionlibImportApplyJoins">
+	    left join sys_office  soc on  a.school_id=soc.id
+		left join table_questionlib_import tqi on a.queslib_import_id =tqi.id
+	</sql>
+    
+	<select id="get" resultType="TableQuestionlibImportApply">
+		SELECT 
+			<include refid="tableQuestionlibImportApplyColumns"/>
+		FROM table_questionlib_import_apply a
+		<include refid="tableQuestionlibImportApplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TableQuestionlibImportApply">
+		SELECT 
+			<include refid="tableQuestionlibImportApplyColumns"/>
+		FROM table_questionlib_import_apply a
+		<include refid="tableQuestionlibImportApplyJoins"/>
+		<where>
+			 <if test="schoolId !=null and schoolId !=''">
+			    a.school_id=#{schoolId}
+			 </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    order by a.createDate
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TableQuestionlibImportApply">
+		SELECT 
+			<include refid="tableQuestionlibImportApplyColumns"/>
+		FROM table_questionlib_import_apply a
+		<include refid="tableQuestionlibImportApplyJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT  IGNORE INTO table_questionlib_import_apply(
+			school_id,
+			queslib_import_id,
+			status,
+			createDate
+		) VALUES (
+			#{schoolId},
+			#{queslibImportId},
+			#{status},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE table_questionlib_import_apply SET
+			status = #{status}
+		WHERE school_id =#{schoolId}
+		   and  queslib_import_id=#{queslibImportId}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM table_questionlib_import_apply
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
