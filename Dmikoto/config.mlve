@@ -1,0 +1,18 @@
+{
+  "name": "mikoto",
+  "id": "mikoto",
+  "encrypt": "false",
+  "version": "1.0",
+  "list": [
+    {
+      "id": "mikoto",
+      "character": "mikoto",
+      "costume": [
+        {
+          "name": "mikoto",
+          "path": "mikoto/mikoto.model.json"
+        }
+      ]
+    }
+  ]
+}
