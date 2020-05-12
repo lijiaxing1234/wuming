@@ -3,18 +3,18 @@
 	"model":"mikoto.moc",
 	"pose":"pose.json"
 	"textures":[
-		"mikoto.1024/texture_00.png",
-		"mikoto.1024/texture_01.png"
+		"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/mikoto.1024/texture_00.png",
+		"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/mikoto.1024/texture_01.png"
 	],
 	"expressions":[
-		{"name":"f01.exp.json","file":"expressions/f01.exp.json"},
-		{"name":"f02.exp.json","file":"expressions/f02.exp.json"},
-		{"name":"f03.exp.json","file":"expressions/f03.exp.json"},
-		{"name":"f04.exp.json","file":"expressions/f04.exp.json"},
-		{"name":"f05.exp.json","file":"expressions/f05.exp.json"},
-		{"name":"f06.exp.json","file":"expressions/f06.exp.json"},
-		{"name":"f07.exp.json","file":"expressions/f07.exp.json"},
-		{"name":"f08.exp.json","file":"expressions/f08.exp.json"}
+		{"name":"f01.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f01.exp.json"},
+		{"name":"f02.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f02.exp.json"},
+		{"name":"f03.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f03.exp.json"},
+		{"name":"f04.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f04.exp.json"},
+		{"name":"f05.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f05.exp.json"},
+		{"name":"f06.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f06.exp.json"},
+		{"name":"f07.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f07.exp.json"},
+		{"name":"f08.exp.json","file":"https://cdn.jsdelivr.net/gh/lijiaxing1234/wuming@v1.0.1/Dmikoto/mikoto/expressions/f08.exp.json"}
 	],
 	"motions":{
 		"tap":[
