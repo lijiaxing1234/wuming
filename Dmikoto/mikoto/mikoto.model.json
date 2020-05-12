@@ -1,6 +1,7 @@
 {
 	"version":"Sample 1.0.0",
 	"model":"mikoto.moc",
+	"pose":"pose.json"
 	"textures":[
 		"mikoto.1024/texture_00.png",
 		"mikoto.1024/texture_01.png"
@@ -33,5 +34,8 @@
 			{"file":"motions/tap/motion9.mtn","sound":"sounds/夹击妹抖（御坂美琴）.mp3"}
 		]
 	},
-	"physics":"physics.json"
+	"physics":"physics.json",
+	"hit_areas":[
+			{"name":"body","id":"D_REF.BODY"}
+			]
 }
