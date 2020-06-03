@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style type="text/css"></style>
+<style>
+    .main{
+        align-content: center;
+    }
+    .input1{
+        width: 450px;
+        height: 50px;
+    }
+    .bt1{
+
+        width: 100px;
+        height: 55px;
+        margin-top: -40px;
+        margin-left: 186px;
+
+    }
+</style>
+<body>
+   <div align="center" id="app">
+   <div class="main">
+       <h1>段子查询</h1>
+   <input class="input1"  v-model="duanzi" type="text" placeholder="请输入查询内容" @keyup.enter="Tianqi">
+       <div class="bt1"><button class="bt1" type="button" value="获取天气信息" @click="Tianqi">查询</button></div>
+   </div>
+       <div>
+           <a style="color: red" href="javascript:;"@click="changeType('蟠桃是谁')">热门段子</a>
+           <a style="color: red" href="javascript:;">内涵笑话</a>
+           <a style="color: red" href="javascript:;">最热话题</a>
+           <a style="color: red" href="javascript:;">新闻资讯</a>
+       </div>
+       <ul v-for="item in duanzilist">
+           <li>{{item.name}}</li>
+           <li>{{item.text}}</li>
+           <li>{{item.type}}</li>
+           <li>{{item.video}}</li>
+       </ul>
+   </div>
+</body>
+<script src="http://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="../vue/main.js"></script>
+</html>
